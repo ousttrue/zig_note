@@ -1,0 +1,35 @@
+# Trouble
+
+## `use of undeclared identifier`
+
+`0.9.0` で `usingnamespace` の仕様が変わっとる。
+
+<https://ziglang.org/download/0.9.0/release-notes.html#usingnamespace-No-Longer-Affects-Identifier-Lookup>
+
+例
+
+```zig
+const std = @import("std");
+usingnamespace std.os.windows.user32;
+
+pub fn main() anyerror!void {
+    const wndclass = WNDCLASSEXA // <- use of undeclared identifier
+```
+
+👇 symbol import に頼らない
+
+```zig
+const std = @import("std");
+const user32 = std.os.windows.user32;
+
+pub fn main() anyerror!void {
+    const wndclass = user32.WNDCLASSEXA
+```
+
+## `unused local constant`
+
+```zig
+const a = 0;
+// とりあえず
+_ = a;
+```

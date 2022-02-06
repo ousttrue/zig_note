@@ -1,0 +1,10 @@
+# zig.mod
+
+* <https://github.com/nektro/zigmod>
+  * <https://nektro.github.io/zigmod/>
+  * <https://github.com/nektro/zigmod/blob/master/docs/tutorial.md>
+
+```
+zig init-exe
+zigmod init
+```
