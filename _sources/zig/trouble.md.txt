@@ -33,3 +33,18 @@ const a = 0;
 // とりあえず
 _ = a;
 ```
+
+## `libc headers not available; compilation does not link against libc`
+
+`biuld.zig`
+
+```zig
+    exe.linkLibC();
+```
+
+## `error: AccessDenied`
+
+```zig
+    exe.linkSystemLibrary("c");
+    exe.linkSystemLibrary("c++");
+```

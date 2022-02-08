@@ -17,3 +17,9 @@ Windows だと `llvm-config` が無いので、`llvm` のビルドからやる�
 ```
 LINK : fatal error LNK1201: error writing to program database ''; check for insufficient disk space, invalid path,      or insufficient privilege
 ```
+
+`atl` 必要
+
+`x64-windows-static`
+
+`i7-10700F 2.9GHZ で 90分くらい`

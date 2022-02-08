@@ -160,6 +160,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../zig/trouble.html">Trouble</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../zig/build.html">build.zig</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../zig/import.html">Import</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../zig/cimport.html">@cImport</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../zig_building.html">zig をビルドする</a></li>
@@ -212,7 +213,15 @@
 <span class="kr">const</span><span class="w"> </span><span class="n">user32</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">windows</span><span class="p">.</span><span class="n">user32</span><span class="p">;</span><span class="w"></span>
 
 <span class="k">fn</span><span class="w"> </span><span class="n">wndProc</span><span class="p">(</span><span class="n">hWnd</span><span class="o">:</span><span class="w"> </span><span class="n">windows</span><span class="p">.</span><span class="n">HWND</span><span class="p">,</span><span class="w"> </span><span class="n">msg</span><span class="o">:</span><span class="w"> </span><span class="n">windows</span><span class="p">.</span><span class="n">UINT</span><span class="p">,</span><span class="w"> </span><span class="n">wParam</span><span class="o">:</span><span class="w"> </span><span class="n">windows</span><span class="p">.</span><span class="n">WPARAM</span><span class="p">,</span><span class="w"> </span><span class="n">lParam</span><span class="o">:</span><span class="w"> </span><span class="n">windows</span><span class="p">.</span><span class="n">LPARAM</span><span class="p">)</span><span class="w"> </span><span class="n">callconv</span><span class="p">(</span><span class="n">windows</span><span class="p">.</span><span class="n">WINAPI</span><span class="p">)</span><span class="w"> </span><span class="n">windows</span><span class="p">.</span><span class="n">LRESULT</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">user32</span><span class="p">.</span><span class="n">DefWindowProcA</span><span class="p">(</span><span class="n">hWnd</span><span class="p">,</span><span class="w"> </span><span class="n">msg</span><span class="p">,</span><span class="w"> </span><span class="n">wParam</span><span class="p">,</span><span class="w"> </span><span class="n">lParam</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">msg</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">user32</span><span class="p">.</span><span class="n">WM_DESTROY</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">user32</span><span class="p">.</span><span class="n">PostQuitMessage</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">},</span><span class="w"></span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">user32</span><span class="p">.</span><span class="n">DefWindowProcA</span><span class="p">(</span><span class="n">hWnd</span><span class="p">,</span><span class="w"> </span><span class="n">msg</span><span class="p">,</span><span class="w"> </span><span class="n">wParam</span><span class="p">,</span><span class="w"> </span><span class="n">lParam</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
@@ -266,8 +275,41 @@
 <h2>ImGui 合体<a class="headerlink" href="#imgui" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>先人の手法を眺める・・・</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/SpexGuy/Zig-ImGui">https://github.com/SpexGuy/Zig-ImGui</a></p></li>
+<li><p><a class="reference external" href="https://github.com/SpexGuy/Zig-ImGui/blob/master/zig/imgui.zig">https://github.com/SpexGuy/Zig-ImGui/blob/master/zig/imgui.zig</a></p></li>
 </ul>
+<p><code class="docutils literal notranslate"><span class="pre">extern</span></code> を生成している？</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/michal-z/zig-gamedev/blob/main/libs/common/c.zig">https://github.com/michal-z/zig-gamedev/blob/main/libs/common/c.zig</a></p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">cImport</span></code> でヘッダーを直接読み込んでいる？
+<code class="docutils literal notranslate"><span class="pre">cImport</span></code> やってみよう。</p>
+<section id="cimport">
+<h3>cImport<a class="headerlink" href="#cimport" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">c.zig</span></code></p>
+<div class="highlight-zig notranslate"><div class="highlight"><pre><span></span><span class="kr">pub</span><span class="w"> </span><span class="k">usingnamespace</span><span class="w"> </span><span class="nb">@cImport</span><span class="p">({</span><span class="w"></span>
+<span class="w">    </span><span class="nb">@cDefine</span><span class="p">(</span><span class="s">"CIMGUI_DEFINE_ENUMS_AND_STRUCTS"</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="nb">@cDefine</span><span class="p">(</span><span class="s">"CIMGUI_NO_EXPORT"</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="nb">@cInclude</span><span class="p">(</span><span class="s">"cimgui.h"</span><span class="p">);</span><span class="w"></span>
+<span class="p">});</span><span class="w"></span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">cimgui.h</span></code> が見えるようにする。 <code class="docutils literal notranslate"><span class="pre">build.zig</span></code></p>
+<div class="highlight-zig notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="c1">// c.zig</span>
+<span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">addIncludeDir</span><span class="p">(</span><span class="s">"libs"</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">addIncludeDir</span><span class="p">(</span><span class="s">"libs/cimgui"</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">linkLibC</span><span class="p">();</span><span class="w"></span>
+<span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">linkSystemLibrary</span><span class="p">(</span><span class="s">"c"</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">linkSystemLibrary</span><span class="p">(</span><span class="s">"c++"</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="s">"libs/imgui/imgui.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
+<span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="s">"libs/imgui/imgui_widgets.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
+<span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="s">"libs/imgui/imgui_tables.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
+<span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="s">"libs/imgui/imgui_draw.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
+<span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="s">"libs/imgui/imgui_demo.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
+<span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="s">"libs/cimgui/cimgui.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">d3d11</span></code> にしようと思っていたのだけど <code class="docutils literal notranslate"><span class="pre">sokol</span></code> いってみよう。</p>
+</section>
 </section>
 </section>
 
@@ -324,7 +366,10 @@
             <ul>
 <li><a class="reference internal" href="#">example_win32_directx11 の移植</a><ul>
 <li><a class="reference internal" href="#createwindow">CreateWindow</a></li>
-<li><a class="reference internal" href="#imgui">ImGui 合体</a></li>
+<li><a class="reference internal" href="#imgui">ImGui 合体</a><ul>
+<li><a class="reference internal" href="#cimport">cImport</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

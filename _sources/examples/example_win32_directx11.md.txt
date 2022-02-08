@@ -12,7 +12,15 @@ const windows = std.os.windows;
 const user32 = windows.user32;
 
 fn wndProc(hWnd: windows.HWND, msg: windows.UINT, wParam: windows.WPARAM, lParam: windows.LPARAM) callconv(windows.WINAPI) windows.LRESULT {
-    return user32.DefWindowProcA(hWnd, msg, wParam, lParam);
+    switch (msg) {
+        user32.WM_DESTROY => {
+            user32.PostQuitMessage(0);
+            return 0;
+        },
+        else => {
+            return user32.DefWindowProcA(hWnd, msg, wParam, lParam);
+        },
+    }
 }
 ```
 
@@ -66,4 +74,42 @@ pub fn main() anyerror!void {
 
 先人の手法を眺める・・・
 
-* <https://github.com/SpexGuy/Zig-ImGui>
+* <https://github.com/SpexGuy/Zig-ImGui/blob/master/zig/imgui.zig>
+
+`extern` を生成している？
+
+* <https://github.com/michal-z/zig-gamedev/blob/main/libs/common/c.zig>
+
+`cImport` でヘッダーを直接読み込んでいる？
+`cImport` やってみよう。
+
+### cImport
+
+`c.zig`
+
+```zig
+pub usingnamespace @cImport({
+    @cDefine("CIMGUI_DEFINE_ENUMS_AND_STRUCTS", "");
+    @cDefine("CIMGUI_NO_EXPORT", "");
+    @cInclude("cimgui.h");
+});
+```
+
+`cimgui.h` が見えるようにする。 `build.zig`
+
+```zig
+    // c.zig
+    exe.addIncludeDir("libs");
+    exe.addIncludeDir("libs/cimgui");
+    exe.linkLibC();
+    exe.linkSystemLibrary("c");
+    exe.linkSystemLibrary("c++");
+    exe.addCSourceFile("libs/imgui/imgui.cpp", &[_][]const u8{""});
+    exe.addCSourceFile("libs/imgui/imgui_widgets.cpp", &[_][]const u8{""});
+    exe.addCSourceFile("libs/imgui/imgui_tables.cpp", &[_][]const u8{""});
+    exe.addCSourceFile("libs/imgui/imgui_draw.cpp", &[_][]const u8{""});
+    exe.addCSourceFile("libs/imgui/imgui_demo.cpp", &[_][]const u8{""});
+    exe.addCSourceFile("libs/cimgui/cimgui.cpp", &[_][]const u8{""});
+```
+
+`d3d11` にしようと思っていたのだけど `sokol` いってみよう。

@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="索引" href="../genindex.html" /><link rel="search" title="検索" href="../search.html" /><link rel="next" title="Trouble" href="trouble.html" /><link rel="prev" title="basic" href="../basic.html" />
+<link rel="index" title="索引" href="../genindex.html" /><link rel="search" title="検索" href="../search.html" /><link rel="next" title="zig をビルドする" href="../zig_building.html" /><link rel="prev" title="Import" href="import.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.01.02"/>
-        <title>zig言語 - zig 練習帳 ドキュメント</title>
+        <title>@cImport - zig 練習帳 ドキュメント</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=df49af52631e7917044a9c21a57f7b83170a6dd0" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=fade93df149f7c5fedb3ff897f799dc7d283b420" />
@@ -134,7 +134,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -156,11 +156,11 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../basic.html">basic</a></li>
-<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">zig言語</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">zig言語</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="trouble.html">Trouble</a></li>
 <li class="toctree-l2"><a class="reference internal" href="build.html">build.zig</a></li>
 <li class="toctree-l2"><a class="reference internal" href="import.html">Import</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cimport.html">@cImport</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">@cImport</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../zig_building.html">zig をビルドする</a></li>
@@ -196,39 +196,47 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="zig">
-<h1>zig言語<a class="headerlink" href="#zig" title="このヘッドラインへのパーマリンク">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="trouble.html">Trouble</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="trouble.html#use-of-undeclared-identifier"><code class="docutils literal notranslate"><span class="pre">use</span> <span class="pre">of</span> <span class="pre">undeclared</span> <span class="pre">identifier</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="trouble.html#unused-local-constant"><code class="docutils literal notranslate"><span class="pre">unused</span> <span class="pre">local</span> <span class="pre">constant</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="trouble.html#libc-headers-not-available-compilation-does-not-link-against-libc"><code class="docutils literal notranslate"><span class="pre">libc</span> <span class="pre">headers</span> <span class="pre">not</span> <span class="pre">available;</span> <span class="pre">compilation</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">link</span> <span class="pre">against</span> <span class="pre">libc</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="trouble.html#error-accessdenied"><code class="docutils literal notranslate"><span class="pre">error:</span> <span class="pre">AccessDenied</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="build.html">build.zig</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="build.html#minimum">minimum</a></li>
-<li class="toctree-l2"><a class="reference internal" href="build.html#addpacakge">addpacakge</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="import.html">Import</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="import.html#std">std</a></li>
-<li class="toctree-l2"><a class="reference internal" href="import.html#std-os-windows">std.os.windows</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="cimport.html">@cImport</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="cimport.html#id1">例</a></li>
-</ul>
-</li>
-</ul>
+          <section class="tex2jax_ignore mathjax_ignore" id="cimport">
+<h1>@cImport<a class="headerlink" href="#cimport" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<p><a class="reference external" href="https://ziglang.org/documentation/master/#toc-Import-from-C-Header-File">https://ziglang.org/documentation/master/#toc-Import-from-C-Header-File</a></p>
+<section id="id1">
+<h2>例<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p><a class="reference external" href="https://github.com/michal-z/zig-gamedev/blob/main/samples/intro/build.zig">https://github.com/michal-z/zig-gamedev/blob/main/samples/intro/build.zig</a></p>
+<div class="highlight-zig notranslate"><div class="highlight"><pre><span></span><span class="w">        </span><span class="kr">const</span><span class="w"> </span><span class="n">external</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"../../external/src"</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">addIncludeDir</span><span class="p">(</span><span class="n">external</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">linkSystemLibrary</span><span class="p">(</span><span class="s">"c"</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">linkSystemLibrary</span><span class="p">(</span><span class="s">"c++"</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">linkSystemLibrary</span><span class="p">(</span><span class="s">"imm32"</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="n">external</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="s">"/imgui/imgui.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
+<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="n">external</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="s">"/imgui/imgui_widgets.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
+<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="n">external</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="s">"/imgui/imgui_tables.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
+<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="n">external</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="s">"/imgui/imgui_draw.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
+<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="n">external</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="s">"/imgui/imgui_demo.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
+<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="n">external</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="s">"/cimgui.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
+</pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/michal-z/zig-gamedev/blob/main/libs/common/c.zig">https://github.com/michal-z/zig-gamedev/blob/main/libs/common/c.zig</a></p>
+<div class="highlight-zig notranslate"><div class="highlight"><pre><span></span><span class="kr">pub</span><span class="w"> </span><span class="k">usingnamespace</span><span class="w"> </span><span class="nb">@cImport</span><span class="p">({</span><span class="w"></span>
+<span class="w">    </span><span class="nb">@cDefine</span><span class="p">(</span><span class="s">"CIMGUI_DEFINE_ENUMS_AND_STRUCTS"</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="nb">@cDefine</span><span class="p">(</span><span class="s">"CIMGUI_NO_EXPORT"</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="nb">@cInclude</span><span class="p">(</span><span class="s">"cimgui.h"</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="nb">@cInclude</span><span class="p">(</span><span class="s">"cgltf.h"</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="nb">@cInclude</span><span class="p">(</span><span class="s">"cbullet.h"</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="nb">@cInclude</span><span class="p">(</span><span class="s">"meshoptimizer.h"</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="nb">@cInclude</span><span class="p">(</span><span class="s">"stb_perlin.h"</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="nb">@cInclude</span><span class="p">(</span><span class="s">"stb_image.h"</span><span class="p">);</span><span class="w"></span>
+<span class="p">});</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
 </section>
 
         </article>
@@ -236,23 +244,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="trouble.html">
+          <a class="next-page" href="../zig_building.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Trouble</div>
+                <div class="title">zig をビルドする</div>
               </div>
               <svg><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../basic.html">
+          <a class="prev-page" href="import.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">basic</div>
+                <div class="title">Import</div>
                 
               </div>
             </a>
@@ -262,7 +270,7 @@
               Copyright &#169; 2022, ousttrue |
           Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
           <a href="https://github.com/pradyunsg/furo">Furo theme</a>.
-            | <a class="muted-link" href="../_sources/zig/index.md.txt"
+            | <a class="muted-link" href="../_sources/zig/cimport.md.txt"
                rel="nofollow">
               ソースコードを表示
             </a>
@@ -270,8 +278,27 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            コンテンツ
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">&#64;cImport</a><ul>
+<li><a class="reference internal" href="#id1">例</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

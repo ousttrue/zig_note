@@ -160,6 +160,7 @@
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Trouble</a></li>
 <li class="toctree-l2"><a class="reference internal" href="build.html">build.zig</a></li>
 <li class="toctree-l2"><a class="reference internal" href="import.html">Import</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cimport.html">@cImport</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../zig_building.html">zig をビルドする</a></li>
@@ -232,6 +233,20 @@
 </pre></div>
 </div>
 </section>
+<section id="libc-headers-not-available-compilation-does-not-link-against-libc">
+<h2><code class="docutils literal notranslate"><span class="pre">libc</span> <span class="pre">headers</span> <span class="pre">not</span> <span class="pre">available;</span> <span class="pre">compilation</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">link</span> <span class="pre">against</span> <span class="pre">libc</span></code><a class="headerlink" href="#libc-headers-not-available-compilation-does-not-link-against-libc" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">biuld.zig</span></code></p>
+<div class="highlight-zig notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">linkLibC</span><span class="p">();</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="error-accessdenied">
+<h2><code class="docutils literal notranslate"><span class="pre">error:</span> <span class="pre">AccessDenied</span></code><a class="headerlink" href="#error-accessdenied" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="highlight-zig notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">linkSystemLibrary</span><span class="p">(</span><span class="s">"c"</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">linkSystemLibrary</span><span class="p">(</span><span class="s">"c++"</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
 </section>
 
         </article>
@@ -288,6 +303,8 @@
 <li><a class="reference internal" href="#">Trouble</a><ul>
 <li><a class="reference internal" href="#use-of-undeclared-identifier"><code class="docutils literal notranslate"><span class="pre">use</span> <span class="pre">of</span> <span class="pre">undeclared</span> <span class="pre">identifier</span></code></a></li>
 <li><a class="reference internal" href="#unused-local-constant"><code class="docutils literal notranslate"><span class="pre">unused</span> <span class="pre">local</span> <span class="pre">constant</span></code></a></li>
+<li><a class="reference internal" href="#libc-headers-not-available-compilation-does-not-link-against-libc"><code class="docutils literal notranslate"><span class="pre">libc</span> <span class="pre">headers</span> <span class="pre">not</span> <span class="pre">available;</span> <span class="pre">compilation</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">link</span> <span class="pre">against</span> <span class="pre">libc</span></code></a></li>
+<li><a class="reference internal" href="#error-accessdenied"><code class="docutils literal notranslate"><span class="pre">error:</span> <span class="pre">AccessDenied</span></code></a></li>
 </ul>
 </li>
 </ul>
