@@ -10,6 +10,7 @@
 :maxdepth: 1
 basic
 zig/index
+zig_building
 examples/index
 articles
 ```

@@ -1,0 +1,19 @@
+# zig をビルドする
+
+## LLVM
+
+Windows だと `llvm-config` が無いので、`llvm` のビルドからやる。
+
+<https://github.com/ziglang/zig/wiki/How-to-build-LLVM,-libclang,-and-liblld-from-source#windows>
+
+## `vcpkg` 使えるか？
+
+`vcpkg install llvm` クラッシュする・・・。
+
+`VCPKG_MAX_CONCURRENCY=4` で再試行。
+
+<https://github.com/microsoft/vcpkg/issues/7543>
+
+```
+LINK : fatal error LNK1201: error writing to program database ''; check for insufficient disk space, invalid path,      or insufficient privilege
+```

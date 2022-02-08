@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="索引" href="genindex.html" /><link rel="search" title="検索" href="search.html" /><link rel="prev" title="zig-gamedev" href="examples/gamedev.html" />
+<link rel="index" title="索引" href="genindex.html" /><link rel="search" title="検索" href="search.html" /><link rel="next" title="例" href="examples/index.html" /><link rel="prev" title="Import" href="zig/import.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.01.02"/>
-        <title>記事 - zig 練習帳 ドキュメント</title>
+        <title>zig をビルドする - zig 練習帳 ドキュメント</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=df49af52631e7917044a9c21a57f7b83170a6dd0" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=fade93df149f7c5fedb3ff897f799dc7d283b420" />
@@ -162,7 +162,7 @@
 <li class="toctree-l2"><a class="reference internal" href="zig/import.html">Import</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="zig_building.html">zig をビルドする</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">zig をビルドする</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="examples/index.html">例</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="examples/example_win32_directx11.html">example_win32_directx11 の移植</a></li>
 <li class="toctree-l2"><a class="reference internal" href="examples/zigmod.html">zig.mod</a></li>
@@ -170,7 +170,7 @@
 <li class="toctree-l2"><a class="reference internal" href="examples/gamedev.html">zig-gamedev</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">記事</a></li>
+<li class="toctree-l1"><a class="reference internal" href="articles.html">記事</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">external</span></p>
 <ul>
@@ -201,32 +201,21 @@
           </label>
         </div>
         <article role="main">
-          <section class="tex2jax_ignore mathjax_ignore" id="id1">
-<h1>記事<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h1>
-<ul class="simple">
-<li><p><a class="reference external" href="https://ziglang.org/news/statement-regarding-zen-programming-language/">Zigソフトウェア財団とZenプログラミング言語に関する声明</a></p></li>
-</ul>
-<section id="articles">
-<h2>articles<a class="headerlink" href="#articles" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<ul class="simple">
-<li><p><a class="reference external" href="https://zig.news/">https://zig.news/</a></p></li>
-<li><p><a class="reference external" href="https://github.com/nrdmn/awesome-zig">https://github.com/nrdmn/awesome-zig</a></p></li>
-<li><p><a class="reference external" href="https://zenn.dev/helloyuki/scraps/a012ef8cc52fc0">Zig 言語を触ってみる</a></p></li>
-<li><p><a class="reference external" href="https://qiita.com/bellbind/items/f2338fa1d82a2a79f290">オープンソースプログラミング言語zigまとめ</a></p></li>
-<li><p><a class="reference external" href="https://wp.jmuk.org/2020/09/09/zig%E8%A8%80%E8%AA%9E%E3%81%A7toml%E3%83%91%E3%83%BC%E3%82%B5%E3%82%92%E6%9B%B8%E3%81%84%E3%81%A6%E3%81%BF%E3%81%9F/">zig言語でtomlパーサを書いてみた</a></p></li>
-</ul>
+          <section class="tex2jax_ignore mathjax_ignore" id="zig">
+<h1>zig をビルドする<a class="headerlink" href="#zig" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<section id="llvm">
+<h2>LLVM<a class="headerlink" href="#llvm" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>Windows だと <code class="docutils literal notranslate"><span class="pre">llvm-config</span></code> が無いので、<code class="docutils literal notranslate"><span class="pre">llvm</span></code> のビルドからやる。</p>
+<p><a class="reference external" href="https://github.com/ziglang/zig/wiki/How-to-build-LLVM,-libclang,-and-liblld-from-source#windows">https://github.com/ziglang/zig/wiki/How-to-build-LLVM,-libclang,-and-liblld-from-source#windows</a></p>
 </section>
-<section id="tutorials">
-<h2>tutorials<a class="headerlink" href="#tutorials" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<ul class="simple">
-<li><p><a class="reference external" href="https://ziglearn.org/">https://ziglearn.org/</a></p></li>
-</ul>
-</section>
-<section id="bindings">
-<h2>bindings<a class="headerlink" href="#bindings" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/hexops/mach-glfw">https://github.com/hexops/mach-glfw</a></p></li>
-</ul>
+<section id="vcpkg">
+<h2><code class="docutils literal notranslate"><span class="pre">vcpkg</span></code> 使えるか？<a class="headerlink" href="#vcpkg" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">vcpkg</span> <span class="pre">install</span> <span class="pre">llvm</span></code> クラッシュする・・・。</p>
+<p><code class="docutils literal notranslate"><span class="pre">VCPKG_MAX_CONCURRENCY=4</span></code> で再試行。</p>
+<p><a class="reference external" href="https://github.com/microsoft/vcpkg/issues/7543">https://github.com/microsoft/vcpkg/issues/7543</a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">LINK</span> <span class="p">:</span> <span class="n">fatal</span> <span class="n">error</span> <span class="n">LNK1201</span><span class="p">:</span> <span class="n">error</span> <span class="n">writing</span> <span class="n">to</span> <span class="n">program</span> <span class="n">database</span> <span class="s1">''</span><span class="p">;</span> <span class="n">check</span> <span class="k">for</span> <span class="n">insufficient</span> <span class="n">disk</span> <span class="n">space</span><span class="p">,</span> <span class="n">invalid</span> <span class="n">path</span><span class="p">,</span>      <span class="ow">or</span> <span class="n">insufficient</span> <span class="n">privilege</span>
+</pre></div>
+</div>
 </section>
 </section>
 
@@ -235,15 +224,23 @@
       <footer>
         
         <div class="related-pages">
-          
-          <a class="prev-page" href="examples/gamedev.html">
+          <a class="next-page" href="examples/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">例</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="zig/import.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">zig-gamedev</div>
+                <div class="title">Import</div>
                 
               </div>
             </a>
@@ -253,7 +250,7 @@
               Copyright &#169; 2022, ousttrue |
           Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
           <a href="https://github.com/pradyunsg/furo">Furo theme</a>.
-            | <a class="muted-link" href="_sources/articles.md.txt"
+            | <a class="muted-link" href="_sources/zig_building.md.txt"
                rel="nofollow">
               ソースコードを表示
             </a>
@@ -273,10 +270,9 @@
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">記事</a><ul>
-<li><a class="reference internal" href="#articles">articles</a></li>
-<li><a class="reference internal" href="#tutorials">tutorials</a></li>
-<li><a class="reference internal" href="#bindings">bindings</a></li>
+<li><a class="reference internal" href="#">zig をビルドする</a><ul>
+<li><a class="reference internal" href="#llvm">LLVM</a></li>
+<li><a class="reference internal" href="#vcpkg"><code class="docutils literal notranslate"><span class="pre">vcpkg</span></code> 使えるか？</a></li>
 </ul>
 </li>
 </ul>
