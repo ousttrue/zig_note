@@ -2,15 +2,15 @@
 
 ## LLVM
 
-Windows だと `llvm-config` が無いので、`llvm` のビルドからやる。
+`zig` コンパイラが LLVM の `static` ビルドとリンクするようになっているので、
+`static` ビルドを作る必要がある。
 
 <https://github.com/ziglang/zig/wiki/How-to-build-LLVM,-libclang,-and-liblld-from-source#windows>
 
 ## `vcpkg` 使えるか？
 
-`vcpkg install llvm` クラッシュする・・・。
-
-`VCPKG_MAX_CONCURRENCY=4` で再試行。
+`x64-windows-static`
+`atl` 必要
 
 <https://github.com/microsoft/vcpkg/issues/7543>
 
@@ -18,8 +18,35 @@ Windows だと `llvm-config` が無いので、`llvm` のビルドからやる�
 LINK : fatal error LNK1201: error writing to program database ''; check for insufficient disk space, invalid path,      or insufficient privilege
 ```
 
-`atl` 必要
+`VCPKG_MAX_CONCURRENCY=4` で再試行。
 
-`x64-windows-static`
+`i7-10700F 2.9GHZ` で 90分くらいかかった。
 
-`i7-10700F 2.9GHZ で 90分くらい`
+## @byteOffsetOf
+
+`@offsetOf`
+
+https://github.com/ziglang/zig/issues/7794
+
+
+## @OpaqueType
+
+```zig
+pub const GLFWwindow = @OpaqueType();
+
+pub const GLFWwindow = opaque {};
+```
+
+## enum
+
+```zig
+pub const DataType = extern enum {
+    S8 = 0,
+
+pub const DataType = enum(int32) {
+    S8 = 0,
+```
+
+## c_void => `anyopaque`
+
+https://ziglang.org/download/0.9.0/release-notes.html#c_void-renamed-to-anyopaque

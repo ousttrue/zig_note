@@ -144,6 +144,7 @@ fn NAME(params) RETURN_TYPE
 ```zig
 pub fn parseU64(buf: []const u8, radix: u8) !u64 {
 }
+```
 
 ```zig
 // エラーか非エラー

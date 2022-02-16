@@ -1,5 +1,13 @@
 # Trouble
 
+<https://ziglang.org/download/>
+
+
+* `0.9.1`
+* `0.9.0`
+* `0.8.1`
+* `0.8.0`
+
 ## `use of undeclared identifier`
 
 `0.9.0` で `usingnamespace` の仕様が変わっとる。
@@ -47,4 +55,26 @@ _ = a;
 ```zig
     exe.linkSystemLibrary("c");
     exe.linkSystemLibrary("c++");
+```
+
+## `expected type expression, found 'var'`
+
+```
+comptime name: var
+```
+
+型推論の文法？
+
+<https://ziglang.org/documentation/master/#Function-Parameter-Type-Inference>
+
+```
+comptime name: anytype
+```
+
+## `container 'std.builtin' has no member called 'os'`
+
+
+```
+const builtin = @import("builtin");
+const separator = if (builtin.os.tag == builtin.Os.windows) '\\' else '/';
 ```
