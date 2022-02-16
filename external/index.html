@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="索引" href="../genindex.html" /><link rel="search" title="検索" href="../search.html" /><link rel="next" title="zig をビルドする" href="../zig_building.html" /><link rel="prev" title="Import" href="import.html" />
+<link rel="index" title="索引" href="../genindex.html" /><link rel="search" title="検索" href="../search.html" /><link rel="next" title="@cImport" href="cimport.html" /><link rel="prev" title="Import" href="../dev/import.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
-        <title>@cImport - zig 練習帳 ドキュメント</title>
+        <title>外部ライブラリの利用 - zig 練習帳 ドキュメント</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=a8f031f701c6af50c9919b48f173a5785af06fac" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
@@ -151,21 +151,23 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
-<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">zig言語</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="trouble.html">Trouble</a></li>
-<li class="toctree-l2"><a class="reference internal" href="build.html">build.zig</a></li>
-<li class="toctree-l2"><a class="reference internal" href="import.html">Import</a></li>
-<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">@cImport</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../dev/index.html">use zig</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dev/basic.html">basic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/trouble.html">Trouble</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/build.html">build.zig</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/import.html">Import</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">外部ライブラリの利用</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="cimport.html">@cImport</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zigmod.html">zig.mod</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example_win32_directx11.html">example_win32_directx11 の移植</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gamedev.html">zig-gamedev</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zigwin32.html">zigwin32</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sokol.html">sokol</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../zig_building.html">zig をビルドする</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../examples/index.html">例</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../examples/example_win32_directx11.html">example_win32_directx11 の移植</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/zigmod.html">zig.mod</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/zigwin32.html">zigwin32</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/gamedev.html">zig-gamedev</a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="../articles.html">記事</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">external</span></p>
@@ -197,39 +199,72 @@
           </label>
         </div>
         <article role="main">
-          <section id="cimport">
-<h1>@cImport<a class="headerlink" href="#cimport" title="このヘッドラインへのパーマリンク">#</a></h1>
-<p><a class="reference external" href="https://ziglang.org/documentation/master/#toc-Import-from-C-Header-File">https://ziglang.org/documentation/master/#toc-Import-from-C-Header-File</a></p>
-<section id="id1">
-<h2>例<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">#</a></h2>
-<p><a class="reference external" href="https://github.com/michal-z/zig-gamedev/blob/main/samples/intro/build.zig">https://github.com/michal-z/zig-gamedev/blob/main/samples/intro/build.zig</a></p>
-<div class="highlight-zig notranslate"><div class="highlight"><pre><span></span><span class="w">        </span><span class="kr">const</span><span class="w"> </span><span class="n">external</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"../../external/src"</span><span class="p">;</span><span class="w"></span>
-<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">addIncludeDir</span><span class="p">(</span><span class="n">external</span><span class="p">);</span><span class="w"></span>
-
-<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">linkSystemLibrary</span><span class="p">(</span><span class="s">"c"</span><span class="p">);</span><span class="w"></span>
-<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">linkSystemLibrary</span><span class="p">(</span><span class="s">"c++"</span><span class="p">);</span><span class="w"></span>
-<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">linkSystemLibrary</span><span class="p">(</span><span class="s">"imm32"</span><span class="p">);</span><span class="w"></span>
-
-<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="n">external</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="s">"/imgui/imgui.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
-<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="n">external</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="s">"/imgui/imgui_widgets.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
-<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="n">external</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="s">"/imgui/imgui_tables.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
-<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="n">external</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="s">"/imgui/imgui_draw.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
-<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="n">external</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="s">"/imgui/imgui_demo.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
-<span class="w">        </span><span class="n">exe</span><span class="p">.</span><span class="n">addCSourceFile</span><span class="p">(</span><span class="n">external</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="s">"/cimgui.cpp"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">[</span><span class="n">_</span><span class="p">][]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">{</span><span class="s">""</span><span class="p">});</span><span class="w"></span>
-</pre></div>
+          <section id="id1">
+<h1>外部ライブラリの利用<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">#</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">cImport</span></code> するとインテリセンスが効かない。明示的に定義してある方が使いやすいかも。
+<code class="docutils literal notranslate"><span class="pre">zls</span></code> の進化待ち。</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="cimport.html">@cImport</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cimport.html#id1">例</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="zigmod.html">zig.mod</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_win32_directx11.html">example_win32_directx11 の移植</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="example_win32_directx11.html#createwindow">CreateWindow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example_win32_directx11.html#imgui">ImGui 合体</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="example_win32_directx11.html#cimport">cImport</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 </div>
-<p><a class="reference external" href="https://github.com/michal-z/zig-gamedev/blob/main/libs/common/c.zig">https://github.com/michal-z/zig-gamedev/blob/main/libs/common/c.zig</a></p>
-<div class="highlight-zig notranslate"><div class="highlight"><pre><span></span><span class="kr">pub</span><span class="w"> </span><span class="k">usingnamespace</span><span class="w"> </span><span class="nb">@cImport</span><span class="p">({</span><span class="w"></span>
-<span class="w">    </span><span class="nb">@cDefine</span><span class="p">(</span><span class="s">"CIMGUI_DEFINE_ENUMS_AND_STRUCTS"</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="nb">@cDefine</span><span class="p">(</span><span class="s">"CIMGUI_NO_EXPORT"</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="nb">@cInclude</span><span class="p">(</span><span class="s">"cimgui.h"</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="nb">@cInclude</span><span class="p">(</span><span class="s">"cgltf.h"</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="nb">@cInclude</span><span class="p">(</span><span class="s">"cbullet.h"</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="nb">@cInclude</span><span class="p">(</span><span class="s">"meshoptimizer.h"</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="nb">@cInclude</span><span class="p">(</span><span class="s">"stb_perlin.h"</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="nb">@cInclude</span><span class="p">(</span><span class="s">"stb_image.h"</span><span class="p">);</span><span class="w"></span>
-<span class="p">});</span><span class="w"></span>
-</pre></div>
+<section id="imgui">
+<h2>imgui<a class="headerlink" href="#imgui" title="このヘッドラインへのパーマリンク">#</a></h2>
+<section id="zt">
+<h3>ZT<a class="headerlink" href="#zt" title="このヘッドラインへのパーマリンク">#</a></h3>
+<p><a class="reference external" href="https://github.com/JonSnowbd/ZT">https://github.com/JonSnowbd/ZT</a></p>
+</section>
+<section id="zig-imgui">
+<h3>(2020)Zig-ImGui<a class="headerlink" href="#zig-imgui" title="このヘッドラインへのパーマリンク">#</a></h3>
+<p>Zig のバージョンが古い。</p>
+<p><a class="reference external" href="https://github.com/SpexGuy/Zig-ImGui.git">https://github.com/SpexGuy/Zig-ImGui.git</a></p>
+</section>
+</section>
+<section id="opengl">
+<h2>OpenGL<a class="headerlink" href="#opengl" title="このヘッドラインへのパーマリンク">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/ziglibs/zgl">https://github.com/ziglibs/zgl</a></p></li>
+</ul>
+</section>
+<section id="d3d">
+<h2>d3d<a class="headerlink" href="#d3d" title="このヘッドラインへのパーマリンク">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="gamedev.html">zig-gamedev</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gamedev.html#libs-win32">libs/win32</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gamedev.html#libs-common">libs/common</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gamedev.html#intro">intro</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="zigwin32.html">zigwin32</a></li>
+</ul>
+</div>
+</section>
+<section id="sokol">
+<h2>sokol<a class="headerlink" href="#sokol" title="このヘッドラインへのパーマリンク">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sokol.html">sokol</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sokol.html#sokol-gfx-h">sokol_gfx.h</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sokol.html#magnum">magnum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sokol.html#zig-upaya">zig-upaya</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 </div>
 </section>
 </section>
@@ -239,16 +274,16 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../zig_building.html">
+          <a class="next-page" href="cimport.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">zig をビルドする</div>
+                <div class="title">&#64;cImport</div>
               </div>
               <svg><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="import.html">
+          <a class="prev-page" href="../dev/import.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
@@ -291,8 +326,15 @@
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">&#64;cImport</a><ul>
-<li><a class="reference internal" href="#id1">例</a></li>
+<li><a class="reference internal" href="#">外部ライブラリの利用</a><ul>
+<li><a class="reference internal" href="#imgui">imgui</a><ul>
+<li><a class="reference internal" href="#zt">ZT</a></li>
+<li><a class="reference internal" href="#zig-imgui">(2020)Zig-ImGui</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#opengl">OpenGL</a></li>
+<li><a class="reference internal" href="#d3d">d3d</a></li>
+<li><a class="reference internal" href="#sokol">sokol</a></li>
 </ul>
 </li>
 </ul>

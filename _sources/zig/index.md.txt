@@ -1,8 +1,0 @@
-# zig言語
-
-```{toctree}
-trouble
-build
-import
-cimport
-```

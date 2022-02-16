@@ -1,7 +1,0 @@
-# imgui
-
-`1.87`
-
-<https://github.com/ocornut/imgui>
-
-<https://github.com/SpexGuy/Zig-ImGui.git>

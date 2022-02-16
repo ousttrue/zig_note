@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="索引" href="../genindex.html" /><link rel="search" title="検索" href="../search.html" /><link rel="next" title="Trouble" href="trouble.html" /><link rel="prev" title="zig 練習帳" href="../index.html" />
+<link rel="index" title="索引" href="../genindex.html" /><link rel="search" title="検索" href="../search.html" /><link rel="next" title="zigwin32" href="zigwin32.html" /><link rel="prev" title="example_win32_directx11 の移植" href="example_win32_directx11.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
-        <title>zig言語 - zig 練習帳 ドキュメント</title>
+        <title>zig-gamedev - zig 練習帳 ドキュメント</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=a8f031f701c6af50c9919b48f173a5785af06fac" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
@@ -130,7 +130,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -151,21 +151,23 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
-<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">zig言語</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="trouble.html">Trouble</a></li>
-<li class="toctree-l2"><a class="reference internal" href="build.html">build.zig</a></li>
-<li class="toctree-l2"><a class="reference internal" href="import.html">Import</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../dev/index.html">use zig</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dev/basic.html">basic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/trouble.html">Trouble</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/build.html">build.zig</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/import.html">Import</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">外部ライブラリの利用</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="cimport.html">@cImport</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zigmod.html">zig.mod</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example_win32_directx11.html">example_win32_directx11 の移植</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">zig-gamedev</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zigwin32.html">zigwin32</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sokol.html">sokol</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../zig_building.html">zig をビルドする</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../examples/index.html">例</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../examples/example_win32_directx11.html">example_win32_directx11 の移植</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/zigmod.html">zig.mod</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/zigwin32.html">zigwin32</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/gamedev.html">zig-gamedev</a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="../articles.html">記事</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">external</span></p>
@@ -191,41 +193,25 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main">
-          <section id="zig">
-<h1>zig言語<a class="headerlink" href="#zig" title="このヘッドラインへのパーマリンク">#</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="trouble.html">Trouble</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="trouble.html#use-of-undeclared-identifier"><code class="docutils literal notranslate"><span class="pre">use</span> <span class="pre">of</span> <span class="pre">undeclared</span> <span class="pre">identifier</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="trouble.html#unused-local-constant"><code class="docutils literal notranslate"><span class="pre">unused</span> <span class="pre">local</span> <span class="pre">constant</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="trouble.html#libc-headers-not-available-compilation-does-not-link-against-libc"><code class="docutils literal notranslate"><span class="pre">libc</span> <span class="pre">headers</span> <span class="pre">not</span> <span class="pre">available;</span> <span class="pre">compilation</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">link</span> <span class="pre">against</span> <span class="pre">libc</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="trouble.html#error-accessdenied"><code class="docutils literal notranslate"><span class="pre">error:</span> <span class="pre">AccessDenied</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="trouble.html#expected-type-expression-found-var"><code class="docutils literal notranslate"><span class="pre">expected</span> <span class="pre">type</span> <span class="pre">expression,</span> <span class="pre">found</span> <span class="pre">'var'</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="trouble.html#container-std-builtin-has-no-member-called-os"><code class="docutils literal notranslate"><span class="pre">container</span> <span class="pre">'std.builtin'</span> <span class="pre">has</span> <span class="pre">no</span> <span class="pre">member</span> <span class="pre">called</span> <span class="pre">'os'</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="build.html">build.zig</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="build.html#minimum">minimum</a></li>
-<li class="toctree-l2"><a class="reference internal" href="build.html#addpacakge">addpacakge</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="import.html">Import</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="import.html#std">std</a></li>
-<li class="toctree-l2"><a class="reference internal" href="import.html#std-os-windows">std.os.windows</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="cimport.html">@cImport</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="cimport.html#id1">例</a></li>
-</ul>
-</li>
-</ul>
-</div>
+          <section id="zig-gamedev">
+<h1>zig-gamedev<a class="headerlink" href="#zig-gamedev" title="このヘッドラインへのパーマリンク">#</a></h1>
+<p><a class="reference external" href="https://github.com/michal-z/zig-gamedev">https://github.com/michal-z/zig-gamedev</a></p>
+<p><a class="reference external" href="https://github.com/michal-z/zig-gamedev#sample-applications">samples</a> 下のフォルダがそれぞれ zig プロジェクト(build.zig) になっている。</p>
+<section id="libs-win32">
+<h2>libs/win32<a class="headerlink" href="#libs-win32" title="このヘッドラインへのパーマリンク">#</a></h2>
+</section>
+<section id="libs-common">
+<h2>libs/common<a class="headerlink" href="#libs-common" title="このヘッドラインへのパーマリンク">#</a></h2>
+</section>
+<section id="intro">
+<h2>intro<a class="headerlink" href="#intro" title="このヘッドラインへのパーマリンク">#</a></h2>
+</section>
 </section>
 
         </article>
@@ -233,23 +219,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="trouble.html">
+          <a class="next-page" href="zigwin32.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Trouble</div>
+                <div class="title">zigwin32</div>
               </div>
               <svg><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../index.html">
+          <a class="prev-page" href="example_win32_directx11.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Home</div>
+                <div class="title">example_win32_directx11 の移植</div>
                 
               </div>
             </a>
@@ -273,8 +259,29 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            コンテンツ
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">zig-gamedev</a><ul>
+<li><a class="reference internal" href="#libs-win32">libs/win32</a></li>
+<li><a class="reference internal" href="#libs-common">libs/common</a></li>
+<li><a class="reference internal" href="#intro">intro</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

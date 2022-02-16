@@ -13,3 +13,7 @@
 
 * <https://magnum.graphics/>
     * https://doc.magnum.graphics/magnum/getting-started.html
+
+### zig-upaya
+
+<https://github.com/prime31/zig-upaya>

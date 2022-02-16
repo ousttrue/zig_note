@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="索引" href="../genindex.html" /><link rel="search" title="検索" href="../search.html" /><link rel="next" title="build.zig" href="build.html" /><link rel="prev" title="zig言語" href="index.html" />
+<link rel="index" title="索引" href="../genindex.html" /><link rel="search" title="検索" href="../search.html" /><link rel="next" title="build.zig" href="build.html" /><link rel="prev" title="basic" href="basic.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
         <title>Trouble - zig 練習帳 ドキュメント</title>
@@ -151,21 +151,23 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
-<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">zig言語</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">use zig</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="basic.html">basic</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Trouble</a></li>
 <li class="toctree-l2"><a class="reference internal" href="build.html">build.zig</a></li>
 <li class="toctree-l2"><a class="reference internal" href="import.html">Import</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cimport.html">@cImport</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../external/index.html">外部ライブラリの利用</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../external/cimport.html">@cImport</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../external/zigmod.html">zig.mod</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../external/example_win32_directx11.html">example_win32_directx11 の移植</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../external/gamedev.html">zig-gamedev</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../external/zigwin32.html">zigwin32</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../external/sokol.html">sokol</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../zig_building.html">zig をビルドする</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../examples/index.html">例</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../examples/example_win32_directx11.html">example_win32_directx11 の移植</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/zigmod.html">zig.mod</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/zigwin32.html">zigwin32</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/gamedev.html">zig-gamedev</a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="../articles.html">記事</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">external</span></p>
@@ -262,6 +264,10 @@
 </section>
 <section id="container-std-builtin-has-no-member-called-os">
 <h2><code class="docutils literal notranslate"><span class="pre">container</span> <span class="pre">'std.builtin'</span> <span class="pre">has</span> <span class="pre">no</span> <span class="pre">member</span> <span class="pre">called</span> <span class="pre">'os'</span></code><a class="headerlink" href="#container-std-builtin-has-no-member-called-os" title="このヘッドラインへのパーマリンク">#</a></h2>
+<p>OS判定ができない</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">.</span><span class="n">Target</span><span class="o">.</span><span class="n">current</span><span class="o">.</span><span class="n">os</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="o">.</span><span class="n">macos</span>
+</pre></div>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">const</span> <span class="n">builtin</span> <span class="o">=</span> <span class="nd">@import</span><span class="p">(</span><span class="s2">"builtin"</span><span class="p">);</span>
 <span class="n">const</span> <span class="n">separator</span> <span class="o">=</span> <span class="k">if</span> <span class="p">(</span><span class="n">builtin</span><span class="o">.</span><span class="n">os</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">builtin</span><span class="o">.</span><span class="n">Os</span><span class="o">.</span><span class="n">windows</span><span class="p">)</span> <span class="s1">'</span><span class="se">\\</span><span class="s1">'</span> <span class="k">else</span> <span class="s1">'/'</span><span class="p">;</span>
 </pre></div>
@@ -283,14 +289,14 @@
               </div>
               <svg><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="index.html">
+          <a class="prev-page" href="basic.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">zig言語</div>
+                <div class="title">basic</div>
                 
               </div>
             </a>

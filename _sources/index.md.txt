@@ -8,10 +8,10 @@
 
 ```{toctree}
 :maxdepth: 1
-basic
+dev/index
+external/index
 zig/index
 zig_building
-examples/index
 articles
 ```
 

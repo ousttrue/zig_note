@@ -1,9 +1,8 @@
-# Basic
-
-`cImport` するとインテリセンスが効かない。明示的に定義してある方が使いやすいかも。
+# use zig
 
 ```{toctree}
 basic
-imgui
-sokol
+trouble
+build
+import
 ```

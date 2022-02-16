@@ -73,6 +73,11 @@ comptime name: anytype
 
 ## `container 'std.builtin' has no member called 'os'`
 
+OS判定ができない
+
+```
+std.Target.current.os.tag == .macos
+```
 
 ```
 const builtin = @import("builtin");
