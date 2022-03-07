@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="索引" href="../genindex.html" /><link rel="search" title="検索" href="../search.html" /><link rel="next" title="Import" href="import.html" /><link rel="prev" title="Trouble" href="trouble.html" />
 
-    <meta name="generator" content="sphinx-4.4.0, furo 2022.02.14.1"/>
+    <meta name="generator" content="sphinx-4.4.0, furo 2022.03.04"/>
         <title>build.zig - zig 練習帳 ドキュメント</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=a8f031f701c6af50c9919b48f173a5785af06fac" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=935aa2abcc5c1da4283d1dc201fb1f0add16d23a" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
     
     
@@ -20,16 +20,18 @@
   --color-code-foreground: black;
   
   }
-  body[data-theme="dark"] {
-    --color-code-background: #202020;
-  --color-code-foreground: #d0d0d0;
-  
-  }
-  @media (prefers-color-scheme: dark) {
-    body:not([data-theme="light"]) {
+  @media not print {
+    body[data-theme="dark"] {
       --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
   
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
     }
   }
 </style></head>
@@ -186,6 +188,12 @@
   <div class="main">
     <div class="content">
       <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
         <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
@@ -205,52 +213,37 @@
 <p><a class="reference external" href="https://ziglang.org/documentation/master/#Zig-Build-System">https://ziglang.org/documentation/master/#Zig-Build-System</a></p>
 <div class="highlight-zig notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span><span class="w"> </span><span class="n">std</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">@import</span><span class="p">(</span><span class="s">"std"</span><span class="p">);</span><span class="w"></span>
 
+<span class="c1">// minimum</span>
 <span class="kr">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="n">build</span><span class="p">(</span><span class="n">b</span><span class="o">:</span><span class="w"> </span><span class="o">*</span><span class="n">std</span><span class="p">.</span><span class="n">build</span><span class="p">.</span><span class="n">Builder</span><span class="p">)</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="c1">// Standard target options allows the person running `zig build` to choose</span>
-<span class="w">    </span><span class="c1">// what target to build for. Here we do not override the defaults, which</span>
-<span class="w">    </span><span class="c1">// means any target is allowed, and the default is native. Other options</span>
-<span class="w">    </span><span class="c1">// for restricting supported target set are available.</span>
-<span class="w">    </span><span class="kr">const</span><span class="w"> </span><span class="n">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">standardTargetOptions</span><span class="p">(.{});</span><span class="w"></span>
-
-<span class="w">    </span><span class="c1">// Standard release options allow the person running `zig build` to select</span>
-<span class="w">    </span><span class="c1">// between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.</span>
-<span class="w">    </span><span class="kr">const</span><span class="w"> </span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">standardReleaseOptions</span><span class="p">();</span><span class="w"></span>
-
 <span class="w">    </span><span class="kr">const</span><span class="w"> </span><span class="n">exe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">addExecutable</span><span class="p">(</span><span class="s">"hello"</span><span class="p">,</span><span class="w"> </span><span class="s">"src/main.zig"</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="kr">const</span><span class="w"> </span><span class="n">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">standardTargetOptions</span><span class="p">(.{});</span><span class="w"></span>
 <span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">setTarget</span><span class="p">(</span><span class="n">target</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="kr">const</span><span class="w"> </span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">standardReleaseOptions</span><span class="p">();</span><span class="w"></span>
 <span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">setBuildMode</span><span class="p">(</span><span class="n">mode</span><span class="p">);</span><span class="w"></span>
+
 <span class="w">    </span><span class="n">exe</span><span class="p">.</span><span class="n">install</span><span class="p">();</span><span class="w"></span>
-
-<span class="w">    </span><span class="kr">const</span><span class="w"> </span><span class="n">run_cmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exe</span><span class="p">.</span><span class="n">run</span><span class="p">();</span><span class="w"></span>
-<span class="w">    </span><span class="n">run_cmd</span><span class="p">.</span><span class="n">step</span><span class="p">.</span><span class="n">dependOn</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">getInstallStep</span><span class="p">());</span><span class="w"></span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="n">args</span><span class="o">|</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">        </span><span class="n">run_cmd</span><span class="p">.</span><span class="n">addArgs</span><span class="p">(</span><span class="n">args</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="p">}</span><span class="w"></span>
-
-<span class="w">    </span><span class="kr">const</span><span class="w"> </span><span class="n">run_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">step</span><span class="p">(</span><span class="s">"run"</span><span class="p">,</span><span class="w"> </span><span class="s">"Run the app"</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="n">run_step</span><span class="p">.</span><span class="n">dependOn</span><span class="p">(</span><span class="o">&amp;</span><span class="n">run_cmd</span><span class="p">.</span><span class="n">step</span><span class="p">);</span><span class="w"></span>
-
-<span class="w">    </span><span class="kr">const</span><span class="w"> </span><span class="n">exe_tests</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">addTest</span><span class="p">(</span><span class="s">"src/main.zig"</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="n">exe_tests</span><span class="p">.</span><span class="n">setTarget</span><span class="p">(</span><span class="n">target</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="n">exe_tests</span><span class="p">.</span><span class="n">setBuildMode</span><span class="p">(</span><span class="n">mode</span><span class="p">);</span><span class="w"></span>
-
-<span class="w">    </span><span class="kr">const</span><span class="w"> </span><span class="n">test_step</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">step</span><span class="p">(</span><span class="s">"test"</span><span class="p">,</span><span class="w"> </span><span class="s">"Run unit tests"</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="n">test_step</span><span class="p">.</span><span class="n">dependOn</span><span class="p">(</span><span class="o">&amp;</span><span class="n">exe_tests</span><span class="p">.</span><span class="n">step</span><span class="p">);</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
+<ul class="simple">
+<li><p><a class="reference external" href="https://ziglang.org/documentation/0.9.1/std/#std;build.Builder.addExecutable">https://ziglang.org/documentation/0.9.1/std/#std;build.Builder.addExecutable</a></p></li>
+<li><p><a class="reference external" href="https://ziglang.org/documentation/0.9.1/std/#std;build.LibExeObjStep">https://ziglang.org/documentation/0.9.1/std/#std;build.LibExeObjStep</a></p></li>
+</ul>
 <p>CMake ぽい？ <code class="docutils literal notranslate"><span class="pre">addexecutable</span></code> でビルドターゲットを定義するという感じか。</p>
-<section id="minimum">
-<h2>minimum<a class="headerlink" href="#minimum" title="このヘッドラインへのパーマリンク">#</a></h2>
-<div class="highlight-zig notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span><span class="w"> </span><span class="n">std</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">@import</span><span class="p">(</span><span class="s">"std"</span><span class="p">);</span><span class="w"></span>
-
-<span class="kr">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="n">build</span><span class="p">(</span><span class="n">b</span><span class="o">:</span><span class="w"> </span><span class="o">*</span><span class="n">std</span><span class="p">.</span><span class="n">build</span><span class="p">.</span><span class="n">Builder</span><span class="p">)</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ zig build
 </pre></div>
 </div>
+<p>build to <code class="docutils literal notranslate"><span class="pre">zig-out/bin/hello.exe</span></code></p>
+<section id="run">
+<h2>run<a class="headerlink" href="#run" title="このヘッドラインへのパーマリンク">#</a></h2>
 </section>
-<section id="addpacakge">
-<h2>addpacakge<a class="headerlink" href="#addpacakge" title="このヘッドラインへのパーマリンク">#</a></h2>
+<section id="test">
+<h2>test<a class="headerlink" href="#test" title="このヘッドラインへのパーマリンク">#</a></h2>
+</section>
+<section id="packages">
+<h2>packages<a class="headerlink" href="#packages" title="このヘッドラインへのパーマリンク">#</a></h2>
 <p><a class="reference external" href="https://github.com/ziglang/zig/wiki/FAQ#zig-build">https://github.com/ziglang/zig/wiki/FAQ#zig-build</a></p>
 <div class="highlight-zig notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="kr">const</span><span class="w"> </span><span class="n">pkg_common</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="p">.</span><span class="n">build</span><span class="p">.</span><span class="n">Pkg</span><span class="p">{</span><span class="w"></span>
 <span class="w">        </span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"common"</span><span class="p">,</span><span class="w"></span>
@@ -332,8 +325,9 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">build.zig</a><ul>
-<li><a class="reference internal" href="#minimum">minimum</a></li>
-<li><a class="reference internal" href="#addpacakge">addpacakge</a></li>
+<li><a class="reference internal" href="#run">run</a></li>
+<li><a class="reference internal" href="#test">test</a></li>
+<li><a class="reference internal" href="#packages">packages</a></li>
 </ul>
 </li>
 </ul>
