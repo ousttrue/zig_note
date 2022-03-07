@@ -5,7 +5,6 @@
 
 ```{toctree}
 cimport
-zigmod
 example_win32_directx11
 ```
 
@@ -20,10 +19,6 @@ example_win32_directx11
 Zig のバージョンが古い。
 
 <https://github.com/SpexGuy/Zig-ImGui.git>
-
-## OpenGL
-
-* <https://github.com/ziglibs/zgl>
 
 ## d3d
 
