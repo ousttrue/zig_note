@@ -1,3 +1,0 @@
-# zigwin32
-
-<https://github.com/marlersoft/zigwin32gen>

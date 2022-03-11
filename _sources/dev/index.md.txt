@@ -1,8 +1,9 @@
 # use zig
 
+{doc}`/articles/zig_version`
+
 ```{toctree}
 basic
-trouble
 build
 import
 async

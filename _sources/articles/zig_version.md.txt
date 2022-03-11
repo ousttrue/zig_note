@@ -1,0 +1,114 @@
+# zig version
+
+## (20220214)0.9.1
+
+* https://ziglang.org/download/0.9.1/release-notes.html
+
+## 0.9.0
+
+* https://ziglang.org/download/0.9.0/release-notes.html
+
+* [usingnamespace No Longer Affects Identifier Lookup](https://ziglang.org/download/0.9.0/release-notes.html#usingnamespace-No-Longer-Affects-Identifier-Lookup)
+* [c_void renamed to anyopaque](https://ziglang.org/download/0.9.0/release-notes.html#c_void-renamed-to-anyopaque)
+
+## 0.8.0
+
+* https://ziglang.org/download/0.8.0/release-notes.html
+
+* [No More Extern or Packed Enums](https://ziglang.org/download/0.8.0/release-notes.html#No-More-Extern-or-Packed-Enums)
+
+## 0.7.0
+
+* https://ziglang.org/download/0.7.0/release-notes.html
+
+## 0.6.0
+
+* https://ziglang.org/download/0.6.0/release-notes.html
+
+* [Remove Array-to-Reference Type Coercion](https://ziglang.org/download/0.6.0/release-notes.html#Remove-Array-to-Reference-Type-Coercion)
+
+# Trouble
+
+<https://ziglang.org/download/>
+
+
+* `0.9.1`
+* `0.9.0`
+* `0.8.1`
+* `0.8.0`
+
+## `use of undeclared identifier`
+
+`0.9.0` で `usingnamespace` の仕様が変わっとる。
+
+<https://ziglang.org/download/0.9.0/release-notes.html#usingnamespace-No-Longer-Affects-Identifier-Lookup>
+
+例
+
+```zig
+const std = @import("std");
+usingnamespace std.os.windows.user32;
+
+pub fn main() anyerror!void {
+    const wndclass = WNDCLASSEXA // <- use of undeclared identifier
+```
+
+👇 symbol import に頼らない
+
+```zig
+const std = @import("std");
+const user32 = std.os.windows.user32;
+
+pub fn main() anyerror!void {
+    const wndclass = user32.WNDCLASSEXA
+```
+
+## `unused local constant`
+
+```zig
+const a = 0;
+// とりあえず
+_ = a;
+```
+
+## `libc headers not available; compilation does not link against libc`
+
+`biuld.zig`
+
+```zig
+    exe.linkLibC();
+```
+
+## `error: AccessDenied`
+
+```zig
+    exe.linkSystemLibrary("c");
+    exe.linkSystemLibrary("c++");
+```
+
+## `expected type expression, found 'var'`
+
+```
+comptime name: var
+```
+
+型推論の文法？
+
+<https://ziglang.org/documentation/master/#Function-Parameter-Type-Inference>
+
+```
+comptime name: anytype
+```
+
+## `container 'std.builtin' has no member called 'os'`
+
+OS判定ができない
+
+```
+std.Target.current.os.tag == .macos
+```
+
+```
+const builtin = @import("builtin");
+const separator = if (builtin.os.tag == builtin.Os.windows) '\\' else '/';
+```

@@ -12,7 +12,7 @@ dev/index
 external/index
 package_manager/index
 zig_building
-articles
+articles/index
 ```
 
 ```{toctree}

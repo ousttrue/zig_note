@@ -24,7 +24,6 @@ Zig のバージョンが古い。
 
 ```{toctree}
 gamedev
-zigwin32
 ```
 
 ## sokol
