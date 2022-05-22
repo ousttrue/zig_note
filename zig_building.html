@@ -1,15 +1,15 @@
 <!doctype html>
-<html class="no-js" lang="ja">
+<html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="索引" href="genindex.html" /><link rel="search" title="検索" href="search.html" /><link rel="next" title="記事" href="articles/index.html" /><link rel="prev" title="zpm" href="package_manager/zpm.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Articles" href="articles/index.html" /><link rel="prev" title="async" href="dev/async.html" />
 
-    <meta name="generator" content="sphinx-4.4.0, furo 2022.03.04"/>
-        <title>zig をビルドする - zig 練習帳 ドキュメント</title>
+    <meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
+        <title>build zig - zig note documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=935aa2abcc5c1da4283d1dc201fb1f0add16d23a" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
 
@@ -36,10 +36,12 @@
   }
 </style></head>
   <body>
+    
     <script>
       document.body.dataset.theme = localStorage.getItem("theme") || "auto";
     </script>
     
+
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="svg-toc" viewBox="0 0 24 24">
     <title>Contents</title>
@@ -121,7 +123,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">zig 練習帳  ドキュメント</div></a>
+      <a href="index.html"><div class="brand">zig note  documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -144,41 +146,37 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
   
-  <span class="sidebar-brand-text">zig 練習帳  ドキュメント</span>
+  <span class="sidebar-brand-text">zig note  documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
-  <input class="sidebar-search" placeholder=検索 name="q" aria-label="検索">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
-<li class="toctree-l1 has-children"><a class="reference internal" href="dev/index.html">use zig</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1"><a class="reference internal" href="zig_version.html">zig version</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="build/index.html">build</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="build/gyro.html">gyro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build/zigmod.html">zig.mod</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build/zpm.html">zpm</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="build/external/index.html">外部ライブラリの利用</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="build/external/cimport.html">@cImport</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/external/example_win32_directx11.html">example_win32_directx11 の移植</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/external/gamedev.html">zig-gamedev</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build/external/sokol.html">sokol</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="dev/index.html">use zig</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="dev/basic.html">basic</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dev/build.html">build.zig</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dev/import.html">Import</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dev/async.html">async</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="external/index.html">外部ライブラリの利用</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="external/cimport.html">@cImport</a></li>
-<li class="toctree-l2"><a class="reference internal" href="external/example_win32_directx11.html">example_win32_directx11 の移植</a></li>
-<li class="toctree-l2"><a class="reference internal" href="external/gamedev.html">zig-gamedev</a></li>
-<li class="toctree-l2"><a class="reference internal" href="external/sokol.html">sokol</a></li>
-</ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="package_manager/index.html">PackageManager</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="package_manager/gyro.html">gyro</a></li>
-<li class="toctree-l2"><a class="reference internal" href="package_manager/zigmod.html">zig.mod</a></li>
-<li class="toctree-l2"><a class="reference internal" href="package_manager/zpm.html">zpm</a></li>
-</ul>
-</li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">zig をビルドする</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="articles/index.html">記事</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="articles/zig_version.html">zig version</a></li>
-<li class="toctree-l2"><a class="reference internal" href="articles/zig_version.html#trouble">Trouble</a></li>
-</ul>
-</li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">build zig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="articles/index.html">Articles</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">external</span></p>
 <ul>
@@ -215,16 +213,17 @@
           </label>
         </div>
         <article role="main">
-          <section id="zig">
-<h1>zig をビルドする<a class="headerlink" href="#zig" title="このヘッドラインへのパーマリンク">#</a></h1>
+          <section id="build-zig">
+<h1>build zig<a class="headerlink" href="#build-zig" title="Permalink to this headline">#</a></h1>
+<p>LLVM をクロス環境込みで独自ビルドするのがわりと大変。</p>
 <section id="llvm">
-<h2>LLVM<a class="headerlink" href="#llvm" title="このヘッドラインへのパーマリンク">#</a></h2>
+<h2>LLVM<a class="headerlink" href="#llvm" title="Permalink to this headline">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">zig</span></code> コンパイラが LLVM の <code class="docutils literal notranslate"><span class="pre">static</span></code> ビルドとリンクするようになっているので、
 <code class="docutils literal notranslate"><span class="pre">static</span></code> ビルドを作る必要がある。</p>
 <p><a class="reference external" href="https://github.com/ziglang/zig/wiki/How-to-build-LLVM,-libclang,-and-liblld-from-source#windows">https://github.com/ziglang/zig/wiki/How-to-build-LLVM,-libclang,-and-liblld-from-source#windows</a></p>
 </section>
 <section id="vcpkg">
-<h2><code class="docutils literal notranslate"><span class="pre">vcpkg</span></code> 使えるか？<a class="headerlink" href="#vcpkg" title="このヘッドラインへのパーマリンク">#</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">vcpkg</span></code> 使えるか？<a class="headerlink" href="#vcpkg" title="Permalink to this headline">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">x64-windows-static</span></code>
 <code class="docutils literal notranslate"><span class="pre">atl</span></code> 必要</p>
 <p><a class="reference external" href="https://github.com/microsoft/vcpkg/issues/7543">https://github.com/microsoft/vcpkg/issues/7543</a></p>
@@ -235,12 +234,12 @@
 <p><code class="docutils literal notranslate"><span class="pre">i7-10700F</span> <span class="pre">2.9GHZ</span></code> で 90分くらいかかった。</p>
 </section>
 <section id="byteoffsetof">
-<h2>@byteOffsetOf<a class="headerlink" href="#byteoffsetof" title="このヘッドラインへのパーマリンク">#</a></h2>
+<h2>@byteOffsetOf<a class="headerlink" href="#byteoffsetof" title="Permalink to this headline">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">@offsetOf</span></code></p>
 <p>https://github.com/ziglang/zig/issues/7794</p>
 </section>
 <section id="opaquetype">
-<h2>@OpaqueType<a class="headerlink" href="#opaquetype" title="このヘッドラインへのパーマリンク">#</a></h2>
+<h2>@OpaqueType<a class="headerlink" href="#opaquetype" title="Permalink to this headline">#</a></h2>
 <div class="highlight-zig notranslate"><div class="highlight"><pre><span></span><span class="kr">pub</span><span class="w"> </span><span class="kr">const</span><span class="w"> </span><span class="n">GLFWwindow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">@OpaqueType</span><span class="p">();</span><span class="w"></span>
 
 <span class="kr">pub</span><span class="w"> </span><span class="kr">const</span><span class="w"> </span><span class="n">GLFWwindow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">opaque</span><span class="w"> </span><span class="p">{};</span><span class="w"></span>
@@ -248,7 +247,7 @@
 </div>
 </section>
 <section id="enum">
-<h2>enum<a class="headerlink" href="#enum" title="このヘッドラインへのパーマリンク">#</a></h2>
+<h2>enum<a class="headerlink" href="#enum" title="Permalink to this headline">#</a></h2>
 <div class="highlight-zig notranslate"><div class="highlight"><pre><span></span><span class="kr">pub</span><span class="w"> </span><span class="kr">const</span><span class="w"> </span><span class="n">DataType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kr">extern</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="n">S8</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
 
@@ -258,7 +257,7 @@
 </div>
 </section>
 <section id="c-void-anyopaque">
-<h2>c_void =&gt; <code class="docutils literal notranslate"><span class="pre">anyopaque</span></code><a class="headerlink" href="#c-void-anyopaque" title="このヘッドラインへのパーマリンク">#</a></h2>
+<h2>c_void =&gt; <code class="docutils literal notranslate"><span class="pre">anyopaque</span></code><a class="headerlink" href="#c-void-anyopaque" title="Permalink to this headline">#</a></h2>
 <p>https://ziglang.org/download/0.9.0/release-notes.html#c_void-renamed-to-anyopaque</p>
 </section>
 </section>
@@ -273,18 +272,18 @@
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">記事</div>
+                <div class="title">Articles</div>
               </div>
               <svg><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="package_manager/zpm.html">
+          <a class="prev-page" href="dev/async.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">zpm</div>
+                <div class="title">async</div>
                 
               </div>
             </a>
@@ -314,13 +313,13 @@
       <div class="toc-sticky toc-scroll">
         <div class="toc-title-container">
           <span class="toc-title">
-            コンテンツ
+            Contents
           </span>
         </div>
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">zig をビルドする</a><ul>
+<li><a class="reference internal" href="#">build zig</a><ul>
 <li><a class="reference internal" href="#llvm">LLVM</a></li>
 <li><a class="reference internal" href="#vcpkg"><code class="docutils literal notranslate"><span class="pre">vcpkg</span></code> 使えるか？</a></li>
 <li><a class="reference internal" href="#byteoffsetof">&#64;byteOffsetOf</a></li>
@@ -343,6 +342,5 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/scripts/furo.js"></script>
-    <script src="_static/translations.js"></script>
     </body>
 </html>

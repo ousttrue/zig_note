@@ -1,10 +1,9 @@
 # use zig
 
-{doc}`/articles/zig_version`
+{doc}`/zig_version`
 
 ```{toctree}
 basic
-build
 import
 async
 ```

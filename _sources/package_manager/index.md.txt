@@ -1,7 +1,0 @@
-# PackageManager
-
-```{toctree}
-gyro
-zigmod
-zpm
-```

@@ -1,6 +1,7 @@
-# zig 練習帳
+# zig note
 
 * <https://ziglang.org/>
+    * <https://ziglang.org/download/>
     * <https://ziglang.org/learn/>
     * <https://ziglang.org/documentation/master/>
     * <https://ziglang.org/documentation/master/std/>
@@ -8,9 +9,9 @@
 
 ```{toctree}
 :maxdepth: 1
+zig_version
+build/index
 dev/index
-external/index
-package_manager/index
 zig_building
 articles/index
 ```

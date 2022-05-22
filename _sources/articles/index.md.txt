@@ -1,10 +1,4 @@
-# 記事
-
-```{toctree}
-zig_version
-```
-
-## articles
+# Articles
 
 * <https://zig.news/>
 * <https://github.com/nrdmn/awesome-zig>
@@ -17,7 +11,3 @@ zig_version
 ## tutorials
 
 * <https://ziglearn.org/>
-
-## bindings
-
-* <https://github.com/hexops/mach-glfw>

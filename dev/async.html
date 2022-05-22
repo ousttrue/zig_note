@@ -1,15 +1,15 @@
 <!doctype html>
-<html class="no-js" lang="ja">
+<html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="索引" href="../genindex.html" /><link rel="search" title="検索" href="../search.html" /><link rel="next" title="外部ライブラリの利用" href="../external/index.html" /><link rel="prev" title="Import" href="import.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="build zig" href="../zig_building.html" /><link rel="prev" title="Import" href="import.html" />
 
-    <meta name="generator" content="sphinx-4.4.0, furo 2022.03.04"/>
-        <title>async - zig 練習帳 ドキュメント</title>
+    <meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
+        <title>async - zig note documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=935aa2abcc5c1da4283d1dc201fb1f0add16d23a" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=25ceb02ed1c46dc30f2321ff83e92799f69dfdb9" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
 
@@ -36,10 +36,12 @@
   }
 </style></head>
   <body>
+    
     <script>
       document.body.dataset.theme = localStorage.getItem("theme") || "auto";
     </script>
     
+
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="svg-toc" viewBox="0 0 24 24">
     <title>Contents</title>
@@ -121,7 +123,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">zig 練習帳  ドキュメント</div></a>
+      <a href="../index.html"><div class="brand">zig note  documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -144,41 +146,37 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
   
   
-  <span class="sidebar-brand-text">zig 練習帳  ドキュメント</span>
+  <span class="sidebar-brand-text">zig note  documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
-  <input class="sidebar-search" placeholder=検索 name="q" aria-label="検索">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
-<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">use zig</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../zig_version.html">zig version</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../build/index.html">build</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../build/gyro.html">gyro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../build/zigmod.html">zig.mod</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../build/zpm.html">zpm</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../build/external/index.html">外部ライブラリの利用</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../build/external/cimport.html">@cImport</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../build/external/example_win32_directx11.html">example_win32_directx11 の移植</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../build/external/gamedev.html">zig-gamedev</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../build/external/sokol.html">sokol</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">use zig</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="basic.html">basic</a></li>
-<li class="toctree-l2"><a class="reference internal" href="build.html">build.zig</a></li>
 <li class="toctree-l2"><a class="reference internal" href="import.html">Import</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">async</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../external/index.html">外部ライブラリの利用</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../external/cimport.html">@cImport</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../external/example_win32_directx11.html">example_win32_directx11 の移植</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../external/gamedev.html">zig-gamedev</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../external/sokol.html">sokol</a></li>
-</ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../package_manager/index.html">PackageManager</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../package_manager/gyro.html">gyro</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../package_manager/zigmod.html">zig.mod</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../package_manager/zpm.html">zpm</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="../zig_building.html">zig をビルドする</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../articles/index.html">記事</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../articles/zig_version.html">zig version</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../articles/zig_version.html#trouble">Trouble</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="../zig_building.html">build zig</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../articles/index.html">Articles</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">external</span></p>
 <ul>
@@ -216,7 +214,7 @@
         </div>
         <article role="main">
           <section id="async">
-<h1>async<a class="headerlink" href="#async" title="このヘッドラインへのパーマリンク">#</a></h1>
+<h1>async<a class="headerlink" href="#async" title="Permalink to this headline">#</a></h1>
 <p>https://kristoff.it/blog/zig-colorblind-async-await/</p>
 </section>
 
@@ -225,12 +223,12 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../external/index.html">
+          <a class="next-page" href="../zig_building.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">外部ライブラリの利用</div>
+                <div class="title">build zig</div>
               </div>
               <svg><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -276,6 +274,5 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/scripts/furo.js"></script>
-    <script src="../_static/translations.js"></script>
     </body>
 </html>
