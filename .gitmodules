@@ -1,3 +1,6 @@
 [submodule "pkgs/imgui/pkgs/imgui"]
 	path = pkgs/imgui/pkgs/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "pkgs/glfw/pkgs/glfw"]
+	path = pkgs/glfw/pkgs/glfw
+	url = https://github.com/glfw/glfw.git
