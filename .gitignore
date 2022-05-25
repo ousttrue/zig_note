@@ -1,0 +1,8 @@
+zig-cache
+zig-out
+_build
+
+deps.zig
+gyro.lock
+.gyro
+*.log
