@@ -1,4 +1,5 @@
 const std = @import("std");
+const glfw = @import("pkgs/glfw/pkg.zig");
 
 pub fn build(b: *std.build.Builder) void {
     // Standard target options allows the person running `zig build` to choose
@@ -15,6 +16,10 @@ pub fn build(b: *std.build.Builder) void {
     exe.setTarget(target);
     exe.setBuildMode(mode);
     exe.install();
+
+    exe.linkLibC();
+    exe.linkLibCpp();
+    glfw.addTo(exe, "pkgs/glfw");
 
     const run_cmd = exe.run();
     run_cmd.step.dependOn(b.getInstallStep());
