@@ -1,6 +1,11 @@
 const std = @import("std");
 const glfw = @import("pkgs/glfw/pkg.zig");
 
+const gl = std.build.Pkg{
+    .name = "gl",
+    .path = std.build.FileSource{ .path = "pkgs/zig-opengl/exports/gl_4v0.zig" },
+};
+
 pub fn build(b: *std.build.Builder) void {
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
@@ -20,6 +25,7 @@ pub fn build(b: *std.build.Builder) void {
     exe.linkLibC();
     exe.linkLibCpp();
     glfw.addTo(exe, "pkgs/glfw");
+    exe.addPackage(gl);
 
     const run_cmd = exe.run();
     run_cmd.step.dependOn(b.getInstallStep());
