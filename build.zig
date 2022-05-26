@@ -1,5 +1,6 @@
 const std = @import("std");
 const glfw = @import("pkgs/glfw/pkg.zig");
+const imgui = @import("pkgs/imgui/pkg.zig");
 
 const gl = std.build.Pkg{
     .name = "gl",
@@ -17,7 +18,7 @@ pub fn build(b: *std.build.Builder) void {
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const mode = b.standardReleaseOptions();
 
-    const exe = b.addExecutable("zig_note", "src/main.zig");
+    const exe = b.addExecutable("zig_note", "main.zig");
     exe.setTarget(target);
     exe.setBuildMode(mode);
     exe.install();
@@ -25,6 +26,7 @@ pub fn build(b: *std.build.Builder) void {
     exe.linkLibC();
     exe.linkLibCpp();
     glfw.addTo(exe, "pkgs/glfw");
+    imgui.addTo(exe, "pkgs/imgui");
     exe.addPackage(gl);
 
     const run_cmd = exe.run();
