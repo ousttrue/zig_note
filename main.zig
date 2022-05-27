@@ -4,7 +4,7 @@ const gl = @import("gl");
 const imgui = @import("pkgs/imgui/src/main.zig");
 
 fn getProc(_: ?*glfw.GLFWwindow, name: [:0]const u8) ?*const anyopaque {
-    return glfw.glfwGetProcAddress(@ptrCast([*]const u8, name));
+    return glfw.glfwGetProcAddress(@ptrCast([*:0]const u8, name));
 }
 
 fn glfw_error_callback(code: c_int, description: ?[*:0]const u8) callconv(.C) void {
