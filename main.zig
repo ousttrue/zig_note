@@ -44,7 +44,7 @@ pub fn main() anyerror!void {
     _ = imgui.CreateContext(.{});
     defer imgui.DestroyContext(.{});
 
-    const io = imgui.GetIO() orelse @panic("GetIO");
+    const io = imgui.GetIO();
     io.ConfigFlags |= @enumToInt(imgui.ImGuiConfigFlags._NavEnableKeyboard); // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= @enumToInt(imgui.ImGuiConfigFlags._DockingEnable); // Enable Docking
@@ -56,7 +56,7 @@ pub fn main() anyerror!void {
     imgui.StyleColorsDark(.{});
 
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-    var style = imgui.GetStyle() orelse @panic("GetStyle");
+    var style = imgui.GetStyle();
     if ((io.ConfigFlags & @enumToInt(imgui.ImGuiConfigFlags._ViewportsEnable)) != 0) {
         style.WindowRounding = 0.0;
         style.Colors[@enumToInt(imgui.ImGuiCol._WindowBg)].w = 1.0;
@@ -69,7 +69,7 @@ pub fn main() anyerror!void {
     _ = imgui.ImGui_ImplOpenGL3_Init(.{ .glsl_version = glsl_version });
     defer imgui.ImGui_ImplOpenGL3_Shutdown();
 
-    var renderer = Renderer{};
+    var renderer = try Renderer.init(std.testing.allocator);
     // Loop until the user closes the window
     while (glfw.glfwWindowShouldClose(window) == 0) {
         // Poll for and process events
