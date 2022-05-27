@@ -3,19 +3,19 @@ const glfw = @import("pkgs/glfw/src/main.zig");
 const gl = @import("gl");
 const imgui = @import("pkgs/imgui/src/main.zig");
 
-fn getProc(_: ?*glfw.GLFWwindow, name: [:0]const u8) ?*anyopaque {
+fn getProc(_: ?*glfw.GLFWwindow, name: [:0]const u8) ?*const anyopaque {
     return glfw.glfwGetProcAddress(@ptrCast([*]const u8, name));
 }
 
-// fn glfw_error_callback(code: c_int, description: [*]const u8) void {
-//     std.debug.print("Glfw Error {}: {s}", .{ code, description });
-// }
+fn glfw_error_callback(code: c_int, description: ?[*:0]const u8) callconv(.C) void {
+    std.debug.print("Glfw Error {}: {s}", .{ code, description });
+}
 
 pub fn main() anyerror!void {
     // https://www.glfw.org/documentation.html
 
     // Initialize the library
-    // glfw.glfwSetErrorCallback(@ptrCast(?*?*anyopaque, glfw_error_callback));
+    _ = glfw.glfwSetErrorCallback(&glfw_error_callback);
 
     if (glfw.glfwInit() == 0)
         @panic("glfwInit");
