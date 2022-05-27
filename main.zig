@@ -70,6 +70,8 @@ pub fn main() anyerror!void {
     defer imgui.ImGui_ImplOpenGL3_Shutdown();
 
     var renderer = try Renderer.init(std.testing.allocator);
+    defer renderer.deinit();
+
     // Loop until the user closes the window
     while (glfw.glfwWindowShouldClose(window) == 0) {
         // Poll for and process events
