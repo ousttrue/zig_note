@@ -3,52 +3,40 @@ const gl = @import("pkgs/zig-opengl/exports/gl_4v0.zig");
 const imgui = @import("pkgs/imgui/src/main.zig");
 const dockspace = @import("src/dockspace.zig");
 
-// pub const ImmutableCopy = struct {
-//     const Self = @This();
-
-//     allocator: std.mem.Allocator,
-//     buffer: ?[*:0]const u8,
-
-//     pub fn init(allocator: std.mem.Allocator, src: []const u8) !Self {
-//         var buffer = try allocator.alloc(u8, src.len + 1);
-//         for (src) |c, i| {
-//             buffer[i] = c;
-//         }
-//         buffer[src.len] = 0;
-//         var str = ImmutableCopy{
-//             .allocator = allocator,
-//             .buffer = @ptrCast([*:0]u8, buffer),
-//         };
-//         return str;
-//     }
-
-//     pub fn deinit(self: *Self) void {
-//         self.allocator.free(self.buffer);
-//     }
-// };
-
-
-fn show_demo(p_open: ?*bool, _: ?*anyopaque) void {
-    imgui.ShowDemoWindow(.{ .p_open = p_open });
-}
-
-const Hello = struct {
+const DemoDock = struct {
     const Self = @This();
+    name: [*:0]const u8 = "demo",
+    is_open: bool = true,
 
-    const ptr_info = @typeInfo(@This());
-    show_demo_window: bool = true,
-    show_another_window: bool = false,
+    pub fn show(self: *Self) void {
+        if (!self.is_open) {
+            return;
+        }
+        imgui.ShowDemoWindow(.{ .p_open = &self.is_open });
+    }
+};
+
+const HelloDock = struct {
+    const Self = @This();
+    name: [*:0]const u8 = "hello",
+    is_open: bool = true,
+    show_demo_window: *bool,
+    show_another_window: *bool,
     clear_color: imgui.ImVec4 = .{ .x = 0.45, .y = 0.55, .z = 0.60, .w = 1.00 },
     f: f32 = 0.0,
     counter: i32 = 0,
 
-    fn show(self: *Self, p_open: *bool) void {
+    pub fn show(self: *Self) void {
+        if (!self.is_open) {
+            return;
+        }
+
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-        if (imgui.Begin("Hello, world!", .{ .p_open = p_open })) { // Create a window called "Hello, world!" and append into it.
+        if (imgui.Begin("Hello, world!", .{ .p_open = &self.is_open })) { // Create a window called "Hello, world!" and append into it.
             imgui.Text("This is some useful text."); // Display some text (you can use a format strings too)
 
-            _ = imgui.Checkbox("Demo Window", &self.show_demo_window); // Edit bools storing our window open/close state
-            _ = imgui.Checkbox("Another Window", &self.show_another_window);
+            _ = imgui.Checkbox("Demo Window", self.show_demo_window); // Edit bools storing our window open/close state
+            _ = imgui.Checkbox("Another Window", self.show_another_window);
 
             _ = imgui.SliderFloat("float", &self.f, 0.0, 1.0, .{}); // Edit 1 float using a slider from 0.0f to 1.0f
             _ = imgui.ColorEdit3("clear color", &self.clear_color.x, .{}); // Edit 3 floats representing a color
@@ -62,76 +50,76 @@ const Hello = struct {
         imgui.End();
     }
 };
-fn show_hello(_p_open: ?*bool, data: ?*anyopaque) void {
-    if (_p_open) |p_open| {
-        if (!p_open.*) {
+
+const AnotherDock = struct {
+    const Self = @This();
+    name: [*:0]const u8 = "another",
+    is_open: bool = false,
+
+    pub fn show(self: *Self) void {
+        if (!self.is_open) {
             return;
         }
-        var p = @ptrCast(?*Hello, @alignCast(4, data));
-        if (p) |ptr| {
-            ptr.show(p_open);
+        // 3. Show another simple window.
+        if (imgui.Begin("Another Window", .{ .p_open = &self.is_open })) { // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+            imgui.Text("Hello from another window!");
+            if (imgui.Button("Close Me", .{})) {
+                self.is_open = false;
+            }
+        }
+        imgui.End();
+    }
+};
+
+const Dock = union(enum) {
+    const Self = @This();
+
+    demo: *DemoDock,
+    hello: *HelloDock,
+    another: *AnotherDock,
+
+    pub fn show(self: *Self) void {
+        switch (self.*) {
+            .demo => |demo| demo.show(),
+            .hello => |hello| hello.show(),
+            .another => |another| another.show(),
         }
     }
-}
-
-// const Count = struct {
-//     const Self = @This();
-
-//     fn show(_: *Self) void {
-//         // 3. Show another simple window.
-//         {
-//             _ = imgui.Begin("Another Window", .{}); // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-//             // imgui.Text("Hello from another window!");
-//             // if (imgui.Button("Close Me", .{}))
-//             //     self.show_another_window = false;
-//             imgui.End();
-//         }
-//     }
-// };
-// fn show_count(_p_open: ?*bool, _: ?*anyopaque) void {
-//     if (_p_open) |p_open| {
-//         if (!p_open.*) {
-//             return;
-//         }
-//     }
-//     // var p = @ptrCast(?*Count, @alignCast(4, data));
-//     // if (p) |ptr| {
-//     //     ptr.show(_p_open);
-//     // }
-// }
-
+};
 
 pub const Renderer = struct {
     const Self = @This();
 
     allocator: std.mem.Allocator,
     is_initialized: bool,
-    hello: Hello,
-    docks: std.ArrayList(dockspace.Dock),
+
+    demo: DemoDock = .{},
+    another: AnotherDock = .{},
+    hello: HelloDock = .{},
+
+    docks: std.ArrayList(Dock),
 
     pub fn init(allocator: std.mem.Allocator) !*Self {
         var renderer = try allocator.create(Renderer);
         renderer.allocator = allocator;
         renderer.is_initialized = false;
-        renderer.hello = .{};
-        renderer.docks = std.ArrayList(dockspace.Dock).init(allocator);
+        renderer.another = .{};
+        renderer.demo = .{};
+        renderer.hello = .{
+            .show_another_window = &renderer.another.is_open,
+            .show_demo_window = &renderer.demo.is_open,
+        };
+        renderer.docks = std.ArrayList(Dock).init(allocator);
 
         try renderer.docks.append(.{
-            .name = "demo",
-            .drawable = &show_demo,
+            .demo = &renderer.demo,
         });
-
         try renderer.docks.append(.{
-            .name = "hello",
-            .drawable = &show_hello,
-            .data = &renderer.hello,
+            .hello = &renderer.hello,
         });
-
-        // try renderer.docks.append(.{
-        //     .name = try ImmutableCopy.init(allocator, "count"),
-        //     .drawable = &show_count,
-        //     .data = &renderer.count,
-        // });
+        try renderer.docks.append(.{
+            .another = &renderer.another,
+        });
 
         return renderer;
     }
@@ -176,7 +164,7 @@ pub const Renderer = struct {
 
         _ = dockspace.DockSpace("dockspace", 0);
         for (self.docks.items) |*dock| {
-            dock.*.draw();
+            dock.*.show();
         }
 
         imgui.Render();
