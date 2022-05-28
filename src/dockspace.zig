@@ -1,19 +1,5 @@
 const imgui = @import("imgui");
 
-// const DockDrawCallback = fn (p_open: *bool, data: ?*anyopaque) void;
-// pub const Dock = struct {
-//     const Self = @This();
-
-//     name: [*:0]const u8,
-//     drawable: *const DockDrawCallback,
-//     data: ?*anyopaque = null,
-//     p_open: bool = true,
-
-//     pub fn draw(self: *Self) void {
-//         self.drawable.*(&self.p_open, self.data);
-//     }
-// };
-
 pub fn DockSpace(name: [*:0]const u8, toolbar_size: f32) i32 {
     var io = imgui.GetIO();
     io.ConfigFlags |= @enumToInt(imgui.ImGuiConfigFlags._DockingEnable);

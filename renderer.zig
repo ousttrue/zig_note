@@ -33,7 +33,7 @@ const HelloDock = struct {
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
         if (imgui.Begin("Hello, world!", .{ .p_open = &self.is_open })) { // Create a window called "Hello, world!" and append into it.
-            imgui.Text("This is some useful text."); // Display some text (you can use a format strings too)
+            imgui.Text("This is some useful text.", .{}); // Display some text (you can use a format strings too)
 
             _ = imgui.Checkbox("Demo Window", self.show_demo_window); // Edit bools storing our window open/close state
             _ = imgui.Checkbox("Another Window", self.show_another_window);
@@ -44,8 +44,8 @@ const HelloDock = struct {
             if (imgui.Button("Button", .{})) // Buttons return true when clicked (most widgets return true when edited/activated)
                 self.counter += 1;
             imgui.SameLine(.{});
-            // imgui.Text("counter = %d", counter);
-            // imgui.Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0 / imgui.GetIO().Framerate, imgui.GetIO().Framerate);
+            imgui.Text("counter = %d", .{self.counter});
+            imgui.Text("Application average %.3f ms/frame (%.1f FPS)", .{ 1000.0 / imgui.GetIO().Framerate, imgui.GetIO().Framerate });
         }
         imgui.End();
     }
@@ -62,7 +62,7 @@ const AnotherDock = struct {
         }
         // 3. Show another simple window.
         if (imgui.Begin("Another Window", .{ .p_open = &self.is_open })) { // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            imgui.Text("Hello from another window!");
+            imgui.Text("Hello from another window!", .{});
             if (imgui.Button("Close Me", .{})) {
                 self.is_open = false;
             }
