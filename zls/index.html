@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="外部ライブラリの利用" href="external/index.html" /><link rel="prev" title="zig.mod" href="zigmod.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="build zig" href="../zig_building.html" /><link rel="prev" title="std.zig.Ast" href="../ast/index.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
-        <title>zpm - zig note documentation</title>
+        <title>zls を読む - zig note documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -134,7 +134,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -156,15 +156,15 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../zig_version.html">zig version</a></li>
-<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">build</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="gyro.html">gyro</a></li>
-<li class="toctree-l2"><a class="reference internal" href="zigmod.html">zig.mod</a></li>
-<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">zpm</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="external/index.html">外部ライブラリの利用</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="external/cimport.html">@cImport</a></li>
-<li class="toctree-l3"><a class="reference internal" href="external/example_win32_directx11.html">example_win32_directx11 の移植</a></li>
-<li class="toctree-l3"><a class="reference internal" href="external/gamedev.html">zig-gamedev</a></li>
-<li class="toctree-l3"><a class="reference internal" href="external/sokol.html">sokol</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../build/index.html">build</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../build/gyro.html">gyro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../build/zigmod.html">zig.mod</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../build/zpm.html">zpm</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../build/external/index.html">外部ライブラリの利用</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../build/external/cimport.html">@cImport</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../build/external/example_win32_directx11.html">example_win32_directx11 の移植</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../build/external/gamedev.html">zig-gamedev</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../build/external/sokol.html">sokol</a></li>
 </ul>
 </li>
 </ul>
@@ -177,7 +177,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../ast/index.html">std.zig.Ast</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../zls/index.html">zls を読む</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">zls を読む</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../zig_building.html">build zig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../articles/index.html">Articles</a></li>
 </ul>
@@ -210,15 +210,59 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main">
-          <section id="zpm">
-<h1>zpm<a class="headerlink" href="#zpm" title="Permalink to this headline">#</a></h1>
-<p><a class="reference external" href="https://github.com/zigtools/zpm">https://github.com/zigtools/zpm</a></p>
+          <section id="zls">
+<h1>zls を読む<a class="headerlink" href="#zls" title="Permalink to this headline">#</a></h1>
+<ul class="simple">
+<li><p><a class="reference external" href="https://zenn.dev/tamago324/scraps/d158ca008b14e1">zls を workspace/configuration と workspace/didChangeConfiguration に対応させたい</a></p></li>
+</ul>
+<section id="import">
+<h2><code class="docutils literal notranslate"><span class="pre">@import</span></code> のパッケージ解決を改造したい<a class="headerlink" href="#import" title="Permalink to this headline">#</a></h2>
+<section id="ast">
+<h3>AST<a class="headerlink" href="#ast" title="Permalink to this headline">#</a></h3>
+<ul class="simple">
+<li><p><a class="reference external" href="https://mitchellh.com/zig/parser">Zig Parser – Mitchell Hashimoto</a></p></li>
+</ul>
+<div class="highlight-zig notranslate"><div class="highlight"><pre><span></span><span class="c1">// DocumentStore.zig</span>
+<span class="kr">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="n">newDocument</span><span class="w"></span>
+<span class="kr">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="n">refreshDocument</span><span class="w"></span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">AST</span></code></p>
+<div class="highlight-zig notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="n">handle</span><span class="p">.</span><span class="n">tree</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">try</span><span class="w"> </span><span class="n">std</span><span class="p">.</span><span class="n">zig</span><span class="p">.</span><span class="n">parse</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">allocator</span><span class="p">,</span><span class="w"> </span><span class="n">handle</span><span class="p">.</span><span class="n">document</span><span class="p">.</span><span class="n">text</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+<section id="id1">
+<h3>@import<a class="headerlink" href="#id1" title="Permalink to this headline">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">import_uris</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>fn collectImportUris(self: *DocumentStore, handle: *Handle) ![]const []const u8
+</pre></div>
+</div>
+<div class="highlight-zig notranslate"><div class="highlight"><pre><span></span><span class="c1">// analysis.zig</span>
+<span class="c1">/// Collects all imports we can find into a slice of import paths (without quotes).</span>
+<span class="kr">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="n">collectImports</span><span class="p">(</span><span class="n">import_arr</span><span class="o">:</span><span class="w"> </span><span class="o">*</span><span class="n">std</span><span class="p">.</span><span class="n">ArrayList</span><span class="p">([]</span><span class="kr">const</span><span class="w"> </span><span class="kt">u8</span><span class="p">),</span><span class="w"> </span><span class="n">tree</span><span class="o">:</span><span class="w"> </span><span class="n">Ast</span><span class="p">)</span><span class="w"> </span><span class="o">!</span><span class="kt">void</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="cimport">
+<h2><code class="docutils literal notranslate"><span class="pre">@cImport</span></code> を解決したい<a class="headerlink" href="#cimport" title="Permalink to this headline">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">cImport</span></code> するとインテリセンスが効かない。<code class="docutils literal notranslate"><span class="pre">zig</span></code> でラップしたものの方が使いやすいかも。
+<code class="docutils literal notranslate"><span class="pre">zls</span></code> の進化待ち。</p>
+<p><a class="reference external" href="https://github.com/zigtools/zls">https://github.com/zigtools/zls</a></p>
+<blockquote>
+<div><p>Notable language features that are not currently implemented include @cImport as well as most forms of compile time evaluation.</p>
+</div></blockquote>
+</section>
 </section>
 
         </article>
@@ -226,23 +270,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="external/index.html">
+          <a class="next-page" href="../zig_building.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">外部ライブラリの利用</div>
+                <div class="title">build zig</div>
               </div>
               <svg><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="zigmod.html">
+          <a class="prev-page" href="../ast/index.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">zig.mod</div>
+                <div class="title">std.zig.Ast</div>
                 
               </div>
             </a>
@@ -266,8 +310,32 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">zls を読む</a><ul>
+<li><a class="reference internal" href="#import"><code class="docutils literal notranslate"><span class="pre">&#64;import</span></code> のパッケージ解決を改造したい</a><ul>
+<li><a class="reference internal" href="#ast">AST</a></li>
+<li><a class="reference internal" href="#id1">&#64;import</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cimport"><code class="docutils literal notranslate"><span class="pre">&#64;cImport</span></code> を解決したい</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

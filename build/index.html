@@ -171,10 +171,13 @@
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../dev/index.html">use zig</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../dev/basic.html">basic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/string.html">[*:0]const u8</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../dev/import.html">Import</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../dev/async.html">async</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../ast/index.html">std.zig.Ast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../zls/index.html">zls を読む</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../zig_building.html">build zig</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../articles/index.html">Articles</a></li>
 </ul>
@@ -215,7 +218,10 @@
         <article role="main">
           <section id="build">
 <h1>build<a class="headerlink" href="#build" title="Permalink to this headline">#</a></h1>
-<p><a class="reference external" href="https://ziglang.org/documentation/master/#Zig-Build-System">https://ziglang.org/documentation/master/#Zig-Build-System</a></p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://ziglang.org/documentation/master/#Zig-Build-System">https://ziglang.org/documentation/master/#Zig-Build-System</a></p></li>
+<li><p><a class="reference external" href="https://mitchellh.com/zig/build-internals">Zig Build System Internals – Mitchell Hashimoto</a></p></li>
+</ul>
 <p>zig の独特の感じになれる必要がある。</p>
 <ul class="simple">
 <li><p>main.zig(entrypoint) からの <code class="docutils literal notranslate"><span class="pre">@import</span></code> の連鎖</p></li>
@@ -305,7 +311,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="external/index.html">外部ライブラリの利用</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="external/cimport.html">@cImport</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="external/cimport.html#zls">zls未対応問題</a></li>
 <li class="toctree-l3"><a class="reference internal" href="external/cimport.html#id1">例</a></li>
 </ul>
 </li>

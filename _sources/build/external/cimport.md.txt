@@ -2,15 +2,6 @@
 
 <https://ziglang.org/documentation/master/#toc-Import-from-C-Header-File>
 
-## zls未対応問題
-
-`cImport` するとインテリセンスが効かない。`zig` でラップしたものの方が使いやすいかも。
-`zls` の進化待ち。
-
-<https://github.com/zigtools/zls>
-
-> Notable language features that are not currently implemented include @cImport as well as most forms of compile time evaluation.
-
 ## 例
 
 <https://github.com/michal-z/zig-gamedev/blob/main/samples/intro/build.zig>
