@@ -1,7 +1,7 @@
 # Articles
 
 * <https://zig.news/>
-* <https://github.com/nrdmn/awesome-zig>
+* <https://github.com/C-BJ/awesome-zig>
 
 * [Zig 言語を触ってみる](https://zenn.dev/helloyuki/scraps/a012ef8cc52fc0)
 * [素朴な自作言語のコンパイラをZigに移植した - memo88](https://memo88.hatenablog.com/entry/2021/01/07/235019)
@@ -12,4 +12,5 @@
 
 ## tutorials
 
+* <https://github.com/ratfactor/ziglings>
 * <https://ziglearn.org/>

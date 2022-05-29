@@ -190,4 +190,9 @@ test "null terminated array" {
 }
 ```
 
+### slice
 
+
+### sentinel
+
+### litrral/alloc/変換
