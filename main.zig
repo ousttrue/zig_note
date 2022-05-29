@@ -23,7 +23,7 @@ pub fn main() anyerror!void {
     defer glfw.glfwTerminate();
 
     // Create a windowed mode window and its OpenGL context
-    const window = glfw.glfwCreateWindow(640, 480, "Hello World", null, null);
+    const window = glfw.glfwCreateWindow(1920, 1024, "Hello World", null, null);
     if (window == null) {
         @panic("glfwCreateWindow");
     }

@@ -4,6 +4,7 @@
 
 ```{toctree}
 basic
+string
 import
 async
 ```

@@ -71,21 +71,64 @@ const AnotherDock = struct {
     }
 };
 
+const AstDock = struct {
+    const Self = @This();
+    name: [*:0]const u8 = "ast",
+    is_open: bool = true,
+    ast: std.zig.Ast,
+
+    pub fn show(self: *Self) void {
+        if (!self.is_open) {
+            return;
+        }
+
+        // std.log.debug("{}", .{std.os.argv.len});
+        // 3. Show another simple window.
+        if (imgui.Begin("Ast", .{ .p_open = &self.is_open })) { // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+
+            // https://mitchellh.com/zig/parser
+            for (self.ast.nodes.items(.tag)) |tag, i| {
+                const name = @tagName(tag);
+                imgui.Text("%03d %s", .{i, &name[0]});
+            }
+        }
+        imgui.End();
+    }
+};
+
 const Dock = union(enum) {
     const Self = @This();
 
     demo: *DemoDock,
     hello: *HelloDock,
     another: *AnotherDock,
+    ast: *AstDock,
 
     pub fn show(self: *Self) void {
         switch (self.*) {
             .demo => |demo| demo.show(),
             .hello => |hello| hello.show(),
             .another => |another| another.show(),
+            .ast => |ast| ast.show(),
         }
     }
 };
+
+fn readsource(allocator: std.mem.Allocator) !?[:0]const u8 {
+    if (std.os.argv.len == 1) {
+        return null;
+    }
+
+    const arg1 = try std.fmt.allocPrint(allocator, "{s}", .{std.os.argv[1]});
+    var file = try std.fs.cwd().openFile(arg1, .{});
+    defer file.close();
+    const file_size = try file.getEndPos();
+
+    var buffer = try allocator.allocSentinel(u8, file_size, 0);
+    const bytes_read = try file.read(buffer);
+    std.debug.assert(bytes_read == file_size);
+    return buffer;
+}
 
 pub const Renderer = struct {
     const Self = @This();
@@ -96,6 +139,7 @@ pub const Renderer = struct {
     demo: DemoDock = .{},
     another: AnotherDock = .{},
     hello: HelloDock = .{},
+    ast: AstDock = .{},
 
     docks: std.ArrayList(Dock),
 
@@ -109,8 +153,8 @@ pub const Renderer = struct {
             .show_another_window = &renderer.another.is_open,
             .show_demo_window = &renderer.demo.is_open,
         };
-        renderer.docks = std.ArrayList(Dock).init(allocator);
 
+        renderer.docks = std.ArrayList(Dock).init(allocator);
         try renderer.docks.append(.{
             .demo = &renderer.demo,
         });
@@ -120,6 +164,20 @@ pub const Renderer = struct {
         try renderer.docks.append(.{
             .another = &renderer.another,
         });
+
+        const source = try readsource(allocator);
+        if (source) |src| {
+            if (std.zig.parse(std.heap.page_allocator, src)) |ast| {
+                renderer.ast = .{
+                    .ast = ast,
+                };
+                try renderer.docks.append(.{
+                    .ast = &renderer.ast,
+                });
+            } else |err| {
+                std.log.debug("{}", .{err});
+            }
+        }
 
         return renderer;
     }

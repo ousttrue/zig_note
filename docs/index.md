@@ -12,6 +12,8 @@
 zig_version
 build/index
 dev/index
+ast/index
+zls/index
 zig_building
 articles/index
 ```

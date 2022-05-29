@@ -1,6 +1,7 @@
 # build
 
-<https://ziglang.org/documentation/master/#Zig-Build-System>
+- <https://ziglang.org/documentation/master/#Zig-Build-System>
+- [Zig Build System Internals – Mitchell Hashimoto](https://mitchellh.com/zig/build-internals)
 
 zig の独特の感じになれる必要がある。
 
