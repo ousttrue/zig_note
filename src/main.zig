@@ -1,7 +1,7 @@
 const std = @import("std");
-const glfw = @import("pkgs/glfw/src/main.zig");
-const gl = @import("pkgs/zig-opengl/exports/gl_4v0.zig");
-const imgui = @import("pkgs/imgui/src/main.zig");
+const glfw = @import("glfw");
+const gl = @import("gl");
+const imgui = @import("imgui");
 const Renderer = @import("renderer.zig").Renderer;
 
 fn getProc(_: ?*glfw.GLFWwindow, name: [:0]const u8) ?*const anyopaque {

@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/zig-out/bin/zig_note.exe",
             "args": [
-                "main.zig",
+                "src/main.zig",
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

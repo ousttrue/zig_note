@@ -1,7 +1,7 @@
 const std = @import("std");
-const gl = @import("pkgs/zig-opengl/exports/gl_4v0.zig");
-const imgui = @import("pkgs/imgui/src/main.zig");
-const dockspace = @import("src/dockspace.zig");
+const gl = @import("gl");
+const imgui = @import("imgui");
+const dockspace = @import("dockspace.zig");
 
 const DemoDock = struct {
     const Self = @This();
