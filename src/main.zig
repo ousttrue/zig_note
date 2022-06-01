@@ -63,11 +63,15 @@ pub fn main() anyerror!void {
     var renderer = try Renderer.init(std.testing.allocator);
     defer renderer.deinit();
 
+    if (std.os.argv.len > 1) {
+        const arg1 = try std.fmt.allocPrint(allocator, "{s}", .{std.os.argv[1]});
+        renderer.load(arg1);
+    }
+
     //
     // Loop until the user closes the window
     //
-    while(window.nextFrame())|size|
-    {
+    while (window.nextFrame()) |size| {
         renderer.render(size.width, size.height);
 
         // Update and Render additional Platform Windows

@@ -2,6 +2,7 @@ const std = @import("std");
 const gl = @import("gl");
 const imgui = @import("imgui");
 const dockspace = @import("dockspace.zig");
+const gltf = @import("./gltf.zig");
 
 const DemoDock = struct {
     const Self = @This();
@@ -96,13 +97,8 @@ const AstDock = struct {
     }
 };
 
-fn readsource(allocator: std.mem.Allocator) !?[:0]const u8 {
-    if (std.os.argv.len == 1) {
-        return null;
-    }
-
-    const arg1 = try std.fmt.allocPrint(allocator, "{s}", .{std.os.argv[1]});
-    var file = try std.fs.cwd().openFile(arg1, .{});
+fn readsource(allocator: std.mem.Allocator, arg: []const u8) ![:0]const u8 {
+    var file = try std.fs.cwd().openFile(arg, .{});
     defer file.close();
     const file_size = try file.getEndPos();
 
@@ -171,6 +167,30 @@ pub const Renderer = struct {
         if (io.Fonts) |fonts| {
             const font = fonts.AddFontFromFileTTF("c:\\Windows\\Fonts\\msgothic.ttc", 18.0, null, fonts.GetGlyphRangesJapanese());
             std.debug.assert(font != null);
+        }
+    }
+
+    pub fn load(self: *Self, path: []const u8) void {
+        _ = self;
+        _ = path;
+
+        if (readsource(self.allocator, path)) |data| {
+            std.debug.print("{}bytes\n", .{data.len});
+            if (gltf.Glb.parse(data)) |glb| {
+                std.debug.print("parse glb\n", .{});
+
+                if(gltf.Gltf.parse(glb.jsonChunk, glb.binChunk))|parsed|{
+                    _ = parsed;
+                }
+                else |err|{
+                    std.debug.print("error: {s}", .{@errorName(err)});
+                }
+
+            } else |err| {
+                std.debug.print("error: {s}", .{@errorName(err)});
+            }
+        } else |err| {
+            std.debug.print("error: {s}", .{@errorName(err)});
         }
     }
 
