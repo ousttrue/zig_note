@@ -2,7 +2,8 @@ const std = @import("std");
 const gl = @import("gl");
 const imgui = @import("imgui");
 const dockspace = @import("dockspace.zig");
-const gltf = @import("./gltf.zig");
+const Scene = @import("./scene.zig").Scene;
+const fbo = @import("./fbo.zig");
 
 const DemoDock = struct {
     const Self = @This();
@@ -72,57 +73,73 @@ const AnotherDock = struct {
     }
 };
 
-const AstDock = struct {
+const FboDock = struct {
     const Self = @This();
-    name: [*:0]const u8 = "ast",
-    is_open: bool = true,
-    ast: std.zig.Ast,
+    name: [*:0]const u8 = "fbo",
+    is_open: bool = false,
+
+    fbo: fbo.FboManager,
+    bg: imgui.ImVec4 = .{ .x = 0, .y = 0, .z = 0, .w = 0 },
+    tint: imgui.ImVec4 = .{ .x = 1, .y = 1, .z = 1, .w = 1 },
+    clearColor: [4]f32 = .{ 1, 1, 1, 1 },
+
+    pub fn showFbo(self: *Self, x: f32, y: f32, size: imgui.ImVec2) void {
+        _ = self;
+        _ = x;
+        _ = y;
+        // std.debug.assert(size != imgui.ImVec2{.x=0, .y=0});
+        if (self.fbo.clear(@floatToInt(c_int, size.x), @floatToInt(c_int, size.y), self.clearColor)) |texture| {
+            _ = imgui.ImageButton(texture, size, .{ .uv0 = .{ .x = 0, .y = 1 }, .uv1 = .{ .x = 1, .y = 0 }, .frame_padding = 0, .bg_col = self.bg, .tint_col = self.tint });
+            //     from pydear import imgui_internal
+            //     imgui_internal.ButtonBehavior(ImGui.Custom_GetLastItemRect(), ImGui.Custom_GetLastItemId(), None, None,  # type: ignore
+            //                                   ImGui.ImGuiButtonFlags_.MouseButtonMiddle | ImGui.ImGuiButtonFlags_.MouseButtonRight)
+
+            //     io = ImGui.GetIO()
+
+            //     mouse_input = MouseInput(
+            //         (int(io.MousePos.x) - x), (int(io.MousePos.y) - y),
+            //         w, h,
+            //         io.MouseDown[0], io.MouseDown[1], io.MouseDown[2],
+            //         ImGui.IsItemActive(), ImGui.IsItemHovered(), int(io.MouseWheel))
+            //     self.mouse_event.process(mouse_input)
+
+            //     if self.render:
+            //         self.render(mouse_input)
+            //     else:
+            //         self.mouse_event.debug_draw()
+        }
+    }
 
     pub fn show(self: *Self) void {
-        if (!self.is_open) {
-            return;
-        }
-
-        // std.log.debug("{}", .{std.os.argv.len});
-        // 3. Show another simple window.
-        if (imgui.Begin("Ast", .{ .p_open = &self.is_open })) { // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-
-            // https://mitchellh.com/zig/parser
-            for (self.ast.nodes.items(.tag)) |tag, i| {
-                const name = @tagName(tag);
-                imgui.Text("%03d %s", .{ i, &name[0] });
-            }
+        imgui.PushStyleVar_2(@enumToInt(imgui.ImGuiStyleVar._WindowPadding), .{ .x = 0, .y = 0 });
+        if (imgui.Begin("render target", .{ .p_open = &self.is_open, .flags = (@enumToInt(imgui.ImGuiWindowFlags._NoScrollbar) | @enumToInt(imgui.ImGuiWindowFlags._NoScrollWithMouse)) })) {
+            var pos = imgui.GetWindowPos();
+            pos.y += imgui.GetFrameHeight();
+            var size = imgui.GetContentRegionAvail();
+            self.showFbo(pos.x, pos.y, size);
         }
         imgui.End();
+        imgui.PopStyleVar(.{});
     }
 };
-
-fn readsource(allocator: std.mem.Allocator, arg: []const u8) ![:0]const u8 {
-    var file = try std.fs.cwd().openFile(arg, .{});
-    defer file.close();
-    const file_size = try file.getEndPos();
-
-    var buffer = try allocator.allocSentinel(u8, file_size, 0);
-    const bytes_read = try file.read(buffer);
-    std.debug.assert(bytes_read == file_size);
-    return buffer;
-}
 
 pub const Renderer = struct {
     const Self = @This();
 
     allocator: std.mem.Allocator,
+    scene: Scene,
     is_initialized: bool,
 
     demo: DemoDock = .{},
     another: AnotherDock = .{},
     hello: HelloDock = .{},
-    ast: AstDock = .{},
+    fbo: FboDock = .{},
 
     docks: std.ArrayList(dockspace.Dock),
 
     pub fn init(allocator: std.mem.Allocator) !*Self {
         var renderer = try allocator.create(Renderer);
+        renderer.scene = Scene.init(allocator);
         renderer.allocator = allocator;
         renderer.is_initialized = false;
         renderer.another = .{};
@@ -131,11 +148,15 @@ pub const Renderer = struct {
             .show_another_window = &renderer.another.is_open,
             .show_demo_window = &renderer.demo.is_open,
         };
+        renderer.fbo = FboDock{
+            .fbo = fbo.FboManager{},
+        };
 
         renderer.docks = std.ArrayList(dockspace.Dock).init(allocator);
         try renderer.docks.append(dockspace.Dock.create(&renderer.demo));
         try renderer.docks.append(dockspace.Dock.create(&renderer.hello));
         try renderer.docks.append(dockspace.Dock.create(&renderer.another));
+        try renderer.docks.append(dockspace.Dock.create(&renderer.fbo));
 
         return renderer;
     }
@@ -170,34 +191,10 @@ pub const Renderer = struct {
         }
     }
 
-    pub fn load(self: *Self, path: []const u8) void {
-        _ = self;
-        _ = path;
-
-        if (readsource(self.allocator, path)) |data| {
-            std.debug.print("{}bytes\n", .{data.len});
-            if (gltf.Glb.parse(data)) |glb| {
-                std.debug.print("parse glb\n", .{});
-
-                if(gltf.Gltf.parse(glb.jsonChunk, glb.binChunk))|parsed|{
-                    _ = parsed;
-                }
-                else |err|{
-                    std.debug.print("error: {s}", .{@errorName(err)});
-                }
-
-            } else |err| {
-                std.debug.print("error: {s}", .{@errorName(err)});
-            }
-        } else |err| {
-            std.debug.print("error: {s}", .{@errorName(err)});
-        }
-    }
-
     pub fn render(self: *Renderer, width: i32, height: i32) void {
         self.initialize();
 
-        // Start the Dear ImGui frame
+        // Start the Dear imgui frame
         _ = imgui.ImGui_ImplOpenGL3_NewFrame();
         imgui.ImGui_ImplGlfw_NewFrame();
         imgui.NewFrame();

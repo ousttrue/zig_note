@@ -69,12 +69,104 @@ pub const Glb = struct {
     }
 };
 
+pub const Asset = struct {
+    generator: ?[]const u8,
+    version: ?[]const u8,
+};
+
+pub const Scene = struct {
+    nodes: ?[]const u32,
+};
+
+pub const Node = struct {
+    children: ?[]const u32,
+    matrix: ?[16]f32,
+    camera: ?u32,
+    mesh: ?u32,
+};
+
+pub const Camera = struct {
+    perspective: ?struct {
+        aspectRatio: ?f32,
+        yfov: ?f32,
+        zfar: ?f32,
+        znear: ?f32,
+    },
+    @"type": ?[]const u8,
+};
+
+pub const Primitive = struct {
+    attributes: ?struct { NORMAL: ?u32, POSITION: ?u32, TEXCOORD_0: ?u32 },
+    indices: ?u32,
+    mode: ?u32,
+    material: ?u32,
+};
+
+pub const Mesh = struct {
+    name: ?[]const u8,
+    primitives: ?[]Primitive,
+};
+
+pub const Accessor = struct {
+    bufferView: ?u32,
+    byteOffset: ?u32,
+    componentType: ?u32,
+    count: ?u32,
+    max: ?[]f32,
+    min: ?[]f32,
+    @"type": ?[]const u8,
+};
+
+pub const Material = struct {
+    pbrMetallicRoughness: ?struct {
+        baseColorTexture: ?struct { index: ?u32 },
+        metallicFactor: ?f32,
+    },
+    emissiveFactor: ?[3]f32,
+    name: ?[]const u8,
+};
+
+pub const Texture = struct {
+    sampler: ?u32,
+    source: ?u32,
+};
+
+pub const Image = struct {
+    uri: ?[]const u8,
+};
+
+pub const Sampler = struct {
+    magFilter: ?u32,
+    minFilter: ?u32,
+    wrapS: ?u32,
+    wrapT: ?u32,
+};
+
+pub const BufferView = struct {
+    buffer: ?u32,
+    byteOffset: ?u32,
+    byteLength: ?u32,
+    byteStride: ?u32,
+    target: ?u32,
+};
+
+pub const Buffer = struct {
+    byteLength: ?u32,
+    uri: ?[]const u8,
+};
+
 pub const Gltf = struct {
-
-    pub fn parse(json: []const u8, bin: ?[]const u8) !Gltf {
-        _ = json;
-        _ = bin;
-        return Gltf{};
-    }
-
+    asset: ?Asset,
+    scene: ?u32,
+    scenes: ?[]Scene,
+    nodes: ?[]Node,
+    cameras: ?[]Camera,
+    meshes: ?[]Mesh,
+    accessors: ?[]Accessor,
+    materials: ?[]Material,
+    textures: ?[]Texture,
+    images: ?[]Image,
+    samplers: ?[]Sampler,
+    bufferViews: ?[]BufferView,
+    buffers: ?[]Buffer,
 };

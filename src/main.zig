@@ -65,7 +65,7 @@ pub fn main() anyerror!void {
 
     if (std.os.argv.len > 1) {
         const arg1 = try std.fmt.allocPrint(allocator, "{s}", .{std.os.argv[1]});
-        renderer.load(arg1);
+        renderer.scene.load(arg1);
     }
 
     //
@@ -85,4 +85,6 @@ pub fn main() anyerror!void {
         }
     }
     store.clear();
+
+    std.debug.print("exit\n", .{});
 }
