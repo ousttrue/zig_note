@@ -100,6 +100,13 @@ pub const FboManager = struct {
 
     fbo: ?Fbo = null,
 
+    pub fn unbind(self: *Self)void
+    {        
+        if (self.fbo) |fbo| {
+            fbo.unbind();
+        }
+    }
+
     pub fn clear(self: *Self, width: c_int, height: c_int, color: [4]f32) ?*anyopaque {
         if (width == 0 or height == 0) {
             return null;

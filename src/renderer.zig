@@ -87,26 +87,30 @@ const FboDock = struct {
         _ = self;
         _ = x;
         _ = y;
+        _ = size;
         // std.debug.assert(size != imgui.ImVec2{.x=0, .y=0});
         if (self.fbo.clear(@floatToInt(c_int, size.x), @floatToInt(c_int, size.y), self.clearColor)) |texture| {
+            defer self.fbo.unbind();
+            _ = texture;
             _ = imgui.ImageButton(texture, size, .{ .uv0 = .{ .x = 0, .y = 1 }, .uv1 = .{ .x = 1, .y = 0 }, .frame_padding = 0, .bg_col = self.bg, .tint_col = self.tint });
-            //     from pydear import imgui_internal
-            //     imgui_internal.ButtonBehavior(ImGui.Custom_GetLastItemRect(), ImGui.Custom_GetLastItemId(), None, None,  # type: ignore
-            //                                   ImGui.ImGuiButtonFlags_.MouseButtonMiddle | ImGui.ImGuiButtonFlags_.MouseButtonRight)
+        //     //     from pydear import imgui_internal
+        //     //     imgui_internal.ButtonBehavior(ImGui.Custom_GetLastItemRect(), ImGui.Custom_GetLastItemId(), None, None,  # type: ignore
+        //     //                                   ImGui.ImGuiButtonFlags_.MouseButtonMiddle | ImGui.ImGuiButtonFlags_.MouseButtonRight)
 
-            //     io = ImGui.GetIO()
+        //     //     io = ImGui.GetIO()
 
-            //     mouse_input = MouseInput(
-            //         (int(io.MousePos.x) - x), (int(io.MousePos.y) - y),
-            //         w, h,
-            //         io.MouseDown[0], io.MouseDown[1], io.MouseDown[2],
-            //         ImGui.IsItemActive(), ImGui.IsItemHovered(), int(io.MouseWheel))
-            //     self.mouse_event.process(mouse_input)
+        //     //     mouse_input = MouseInput(
+        //     //         (int(io.MousePos.x) - x), (int(io.MousePos.y) - y),
+        //     //         w, h,
+        //     //         io.MouseDown[0], io.MouseDown[1], io.MouseDown[2],
+        //     //         ImGui.IsItemActive(), ImGui.IsItemHovered(), int(io.MouseWheel))
+        //     //     self.mouse_event.process(mouse_input)
 
-            //     if self.render:
-            //         self.render(mouse_input)
-            //     else:
-            //         self.mouse_event.debug_draw()
+        //     //     if self.render:
+        //     //         self.render(mouse_input)
+        //     //     else:
+        //     //         self.mouse_event.debug_draw()
+
         }
     }
 

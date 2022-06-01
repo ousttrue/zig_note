@@ -89,7 +89,7 @@ void imgui_{f.cursor.spelling}({", ".join(args)})
         if t.name.startswith('ImVector<'):
             return 'ImVector'
 
-    generator.generate(IMGUI_ZIG, custom=custom)
+    generator.generate(IMGUI_ZIG, function_custom=lambda f: 'ImVec' in f.result_type.spelling, custom=custom)
 
 
 def main():
