@@ -171,11 +171,15 @@
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../dev/index.html">use zig</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../dev/basic.html">basic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/block.html">block / if / switch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/loop.html">for / while</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dev/pointer.html">pointer / slice / sentinel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../dev/string.html">[*:0]const u8</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../dev/import.html">Import</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../dev/async.html">async</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../std/index.html">std</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../ast/index.html">std.zig.Ast</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">zls を読む</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../zig_building.html">build zig</a></li>
@@ -223,6 +227,8 @@
 </ul>
 <section id="import">
 <h2><code class="docutils literal notranslate"><span class="pre">@import</span></code> のパッケージ解決を改造したい<a class="headerlink" href="#import" title="Permalink to this headline">#</a></h2>
+<p>改造していたら治った。
+おそらく、 <code class="docutils literal notranslate"><span class="pre">request</span> <span class="pre">/</span> <span class="pre">response</span></code> がちゃんとペアになってないなど。</p>
 <section id="ast">
 <h3>AST<a class="headerlink" href="#ast" title="Permalink to this headline">#</a></h3>
 <ul class="simple">
@@ -252,6 +258,10 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
 </pre></div>
 </div>
+</section>
+<section id="formatter">
+<h3>formatter<a class="headerlink" href="#formatter" title="Permalink to this headline">#</a></h3>
+<p>メモリエラー。</p>
 </section>
 </section>
 <section id="cimport">
@@ -326,6 +336,7 @@
 <li><a class="reference internal" href="#import"><code class="docutils literal notranslate"><span class="pre">&#64;import</span></code> のパッケージ解決を改造したい</a><ul>
 <li><a class="reference internal" href="#ast">AST</a></li>
 <li><a class="reference internal" href="#id1">&#64;import</a></li>
+<li><a class="reference internal" href="#formatter">formatter</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#cimport"><code class="docutils literal notranslate"><span class="pre">&#64;cImport</span></code> を解決したい</a></li>

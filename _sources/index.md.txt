@@ -12,6 +12,7 @@
 zig_version
 build/index
 dev/index
+std/index
 ast/index
 zls/index
 zig_building

@@ -4,6 +4,9 @@
 
 ## `@import` のパッケージ解決を改造したい
 
+改造していたら治った。
+おそらく、 `request / response` がちゃんとペアになってないなど。
+
 ### AST
 
 - [Zig Parser – Mitchell Hashimoto](https://mitchellh.com/zig/parser)
@@ -36,6 +39,10 @@ pub fn collectImports(import_arr: *std.ArrayList([]const u8), tree: Ast) !void
 
 ```
 ```
+
+### formatter
+
+メモリエラー。
 
 ## `@cImport` を解決したい
 

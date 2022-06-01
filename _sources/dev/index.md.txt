@@ -4,6 +4,9 @@
 
 ```{toctree}
 basic
+block
+loop
+pointer
 string
 import
 async

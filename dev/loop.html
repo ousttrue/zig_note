@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="zig.mod" href="zigmod.html" /><link rel="prev" title="build" href="index.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="pointer / slice / sentinel" href="pointer.html" /><link rel="prev" title="block / if / switch" href="block.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
-        <title>gyro - zig note documentation</title>
+        <title>for / while - zig note documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -134,7 +134,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -156,27 +156,27 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../zig_version.html">zig version</a></li>
-<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">build</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">gyro</a></li>
-<li class="toctree-l2"><a class="reference internal" href="zigmod.html">zig.mod</a></li>
-<li class="toctree-l2"><a class="reference internal" href="zpm.html">zpm</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="external/index.html">外部ライブラリの利用</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="external/cimport.html">@cImport</a></li>
-<li class="toctree-l3"><a class="reference internal" href="external/example_win32_directx11.html">example_win32_directx11 の移植</a></li>
-<li class="toctree-l3"><a class="reference internal" href="external/gamedev.html">zig-gamedev</a></li>
-<li class="toctree-l3"><a class="reference internal" href="external/sokol.html">sokol</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../build/index.html">build</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../build/gyro.html">gyro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../build/zigmod.html">zig.mod</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../build/zpm.html">zpm</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../build/external/index.html">外部ライブラリの利用</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../build/external/cimport.html">@cImport</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../build/external/example_win32_directx11.html">example_win32_directx11 の移植</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../build/external/gamedev.html">zig-gamedev</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../build/external/sokol.html">sokol</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../dev/index.html">use zig</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../dev/basic.html">basic</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../dev/block.html">block / if / switch</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../dev/loop.html">for / while</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../dev/pointer.html">pointer / slice / sentinel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../dev/string.html">[*:0]const u8</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../dev/import.html">Import</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../dev/async.html">async</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">use zig</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="basic.html">basic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="block.html">block / if / switch</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">for / while</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pointer.html">pointer / slice / sentinel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="string.html">[*:0]const u8</a></li>
+<li class="toctree-l2"><a class="reference internal" href="import.html">Import</a></li>
+<li class="toctree-l2"><a class="reference internal" href="async.html">async</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../std/index.html">std</a></li>
@@ -214,33 +214,14 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main">
-          <section id="gyro">
-<h1>gyro<a class="headerlink" href="#gyro" title="Permalink to this headline">#</a></h1>
-<p><a class="reference external" href="https://github.com/mattnite/gyro">https://github.com/mattnite/gyro</a></p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://astrolabe.pm/">https://astrolabe.pm/</a></p></li>
-</ul>
-<section id="zgl">
-<h2>zgl<a class="headerlink" href="#zgl" title="Permalink to this headline">#</a></h2>
-<p><a class="reference external" href="https://github.com/ziglibs/zgl">https://github.com/ziglibs/zgl</a></p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/anholt/libepoxy">https://github.com/anholt/libepoxy</a></p></li>
-</ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">vcpkg</span><span class="o">.</span><span class="n">exe</span> <span class="n">install</span> <span class="n">libepoxy</span> <span class="o">--</span><span class="n">triplet</span> <span class="n">x64</span><span class="o">-</span><span class="n">windows</span><span class="o">-</span><span class="n">static</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gyro</span> <span class="n">init</span>
-<span class="n">gyro</span> <span class="n">add</span> <span class="o">--</span><span class="n">src</span> <span class="n">github</span> <span class="n">ziglibs</span><span class="o">/</span><span class="n">zgl</span>
-<span class="n">gyro</span> <span class="n">build</span>
-</pre></div>
-</div>
-</section>
+          <section id="for-while">
+<h1>for / while<a class="headerlink" href="#for-while" title="Permalink to this headline">#</a></h1>
 </section>
 
         </article>
@@ -248,23 +229,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="zigmod.html">
+          <a class="next-page" href="pointer.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">zig.mod</div>
+                <div class="title">pointer / slice / sentinel</div>
               </div>
               <svg><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="index.html">
+          <a class="prev-page" href="block.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">build</div>
+                <div class="title">block / if / switch</div>
                 
               </div>
             </a>
@@ -288,27 +269,8 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            Contents
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">gyro</a><ul>
-<li><a class="reference internal" href="#zgl">zgl</a></li>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>
