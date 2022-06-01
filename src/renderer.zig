@@ -89,28 +89,10 @@ const AstDock = struct {
             // https://mitchellh.com/zig/parser
             for (self.ast.nodes.items(.tag)) |tag, i| {
                 const name = @tagName(tag);
-                imgui.Text("%03d %s", .{i, &name[0]});
+                imgui.Text("%03d %s", .{ i, &name[0] });
             }
         }
         imgui.End();
-    }
-};
-
-const Dock = union(enum) {
-    const Self = @This();
-
-    demo: *DemoDock,
-    hello: *HelloDock,
-    another: *AnotherDock,
-    ast: *AstDock,
-
-    pub fn show(self: *Self) void {
-        switch (self.*) {
-            .demo => |demo| demo.show(),
-            .hello => |hello| hello.show(),
-            .another => |another| another.show(),
-            .ast => |ast| ast.show(),
-        }
     }
 };
 
@@ -141,7 +123,7 @@ pub const Renderer = struct {
     hello: HelloDock = .{},
     ast: AstDock = .{},
 
-    docks: std.ArrayList(Dock),
+    docks: std.ArrayList(dockspace.Dock),
 
     pub fn init(allocator: std.mem.Allocator) !*Self {
         var renderer = try allocator.create(Renderer);
@@ -154,30 +136,10 @@ pub const Renderer = struct {
             .show_demo_window = &renderer.demo.is_open,
         };
 
-        renderer.docks = std.ArrayList(Dock).init(allocator);
-        try renderer.docks.append(.{
-            .demo = &renderer.demo,
-        });
-        try renderer.docks.append(.{
-            .hello = &renderer.hello,
-        });
-        try renderer.docks.append(.{
-            .another = &renderer.another,
-        });
-
-        const source = try readsource(allocator);
-        if (source) |src| {
-            if (std.zig.parse(std.heap.page_allocator, src)) |ast| {
-                renderer.ast = .{
-                    .ast = ast,
-                };
-                try renderer.docks.append(.{
-                    .ast = &renderer.ast,
-                });
-            } else |err| {
-                std.log.debug("{}", .{err});
-            }
-        }
+        renderer.docks = std.ArrayList(dockspace.Dock).init(allocator);
+        try renderer.docks.append(dockspace.Dock.create(&renderer.demo));
+        try renderer.docks.append(dockspace.Dock.create(&renderer.hello));
+        try renderer.docks.append(dockspace.Dock.create(&renderer.another));
 
         return renderer;
     }

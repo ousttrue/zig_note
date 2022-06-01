@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/zig-out/bin/zig_note.exe",
             "args": [
-                "src/main.zig",
+                "${env:GLTF_SAMPLE_MODELS}/2.0/Duck/glTF-Binary/Duck.glb",
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

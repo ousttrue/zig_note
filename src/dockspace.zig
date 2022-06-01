@@ -57,3 +57,31 @@ pub fn DockSpace(name: [*:0]const u8, toolbar_size: f32) i32 {
 
     return menubar_height;
 }
+
+pub const Dock = struct {
+    const Self = @This();
+
+    ptr: *anyopaque,
+    callback: fn (ptr: *anyopaque) void,
+
+    pub fn show(self: *Self) void {
+        self.callback(self.ptr);
+    }
+
+    pub fn create(p: anytype) Dock
+    {
+        const t = @TypeOf(p.*);
+        const T = struct {
+            fn call(src: * anyopaque) void
+            {
+                const comp_size = comptime @alignOf(*t);
+                var dst = @ptrCast(*t, @alignCast(comp_size, src));
+                t.show(dst);
+            }
+        };
+        return .{
+            .ptr = p,
+            .callback = T.call,
+        };
+    }
+};
