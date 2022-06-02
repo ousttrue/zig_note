@@ -115,15 +115,13 @@ const FboDock = struct {
         if (self.fbo.clear(@floatToInt(c_int, size.x), @floatToInt(c_int, size.y), self.clearColor)) |texture| {
             defer self.fbo.unbind();
             _ = imgui.ImageButton(texture, size, .{ .uv0 = .{ .x = 0, .y = 1 }, .uv1 = .{ .x = 1, .y = 0 }, .frame_padding = 0, .bg_col = self.bg, .tint_col = self.tint });
-            _ = imgui.ButtonBehavior(imgui.GetCurrentContext().?.LastItemData.Rect, imgui.GetCurrentContext().?.LastItemData.ID, null, null, .{ .flags = @enumToInt(imgui.ImGuiButtonFlags._MouseButtonMiddle) | @enumToInt(imgui.ImGuiButtonFlags._MouseButtonRight) });
-
             const io = imgui.GetIO();
-
             const mouseInput = MouseInput{ .x = @floatToInt(i32, io.MousePos.x - x), .y = @floatToInt(i32, io.MousePos.y - y), .width = @floatToInt(i32, size.x), .height = @floatToInt(i32, size.y), .left_down = io.MouseDown[0], .right_down = io.MouseDown[1], .middle_down = io.MouseDown[2], .is_active = imgui.IsItemActive(), .is_hover = imgui.IsItemHovered(.{}), .wheel = @floatToInt(i32, io.MouseWheel) };
             // _ = mouse_input;
             self.mouseEvent.process(mouseInput);
 
             if (mouseInput.is_active) {
+                imgui.GetForegroundDrawList().?.AddLine(io.MouseClickedPos[0], io.MousePos, imgui.GetColorU32(@enumToInt(imgui.ImGuiCol._Button), .{}), .{ .thickness = 4.0 }); // Draw a line between the button and the mouse cursor
                 self.clearColor[0] = @intToFloat(f32, mouseInput.x) / @intToFloat(f32, mouseInput.width);
                 self.clearColor[1] = @intToFloat(f32, mouseInput.y) / @intToFloat(f32, mouseInput.height);
                 self.tint.x = 1.0;
@@ -211,7 +209,7 @@ pub const Renderer = struct {
         //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
         //io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
         if (io.Fonts) |fonts| {
-            const font = fonts.AddFontFromFileTTF("c:\\Windows\\Fonts\\msgothic.ttc", 18.0, null, fonts.GetGlyphRangesJapanese());
+            const font = fonts.AddFontFromFileTTF("c:\\Windows\\Fonts\\msgothic.ttc", 18.0, .{ .font_cfg = null, .glyph_ranges = fonts.GetGlyphRangesJapanese() });
             std.debug.assert(font != null);
         }
     }
