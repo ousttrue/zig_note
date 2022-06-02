@@ -23,6 +23,7 @@ def generate_glfw():
 
 def generate_imgui():
     IMGUI_HEADER = WORKSPACE / 'pkgs/imgui/pkgs/imgui/imgui.h'
+    IMGUI_HEADER_INTERNAL = WORKSPACE / 'pkgs/imgui/pkgs/imgui/imgui_internal.h'
     IMGUI_IMPL_GLFW = WORKSPACE / 'pkgs/imgui/pkgs/imgui/backends/imgui_impl_glfw.h'
     IMGUI_IMPL_OPENGL3 = WORKSPACE / \
         'pkgs/imgui/pkgs/imgui/backends/imgui_impl_opengl3.h'
@@ -39,7 +40,72 @@ pub const ImVector = extern struct {
     Data: *anyopaque,
 };
 
+const ImWchar = u16;
+const STB_TEXTEDIT_UNDOSTATECOUNT = 99;
+const STB_TEXTEDIT_UNDOCHARCOUNT = 999;
+const STB_TEXTEDIT_POSITIONTYPE = c_int;
+const STB_TEXTEDIT_CHARTYPE = ImWchar;
+
+const ImGuiKey_NamedKey_BEGIN         = 512;
+const ImGuiKey_NamedKey_END           = 0x285; //ImGuiKey_COUNT;
+const ImGuiKey_NamedKey_COUNT         = ImGuiKey_NamedKey_END - ImGuiKey_NamedKey_BEGIN;
+
+pub const ImSpan = extern struct {
+    Data: *anyopaque,
+    DataEnd: *anyopaque,
+};
+
+pub const ImChunkStream = extern struct {
+    Buf: ImVector,
+};
+
+pub const ImPool = extern struct {
+    Buf: ImVector,
+    Map: ImGuiStorage,
+    FreeIdx: i32,
+    AliveCount: i32,
+};
+
+pub const ImBitArray = extern struct {
+    Storage: [(ImGuiKey_NamedKey_COUNT + 31) >> 5]u32,
+};
+
+pub const StbUndoRecord = extern struct {
+    where: STB_TEXTEDIT_POSITIONTYPE,
+    insert_length: STB_TEXTEDIT_POSITIONTYPE,
+    delete_length: STB_TEXTEDIT_POSITIONTYPE,
+    char_storage: c_int,
+};
+
+pub const StbUndoState = extern struct {
+    undo_rec: [STB_TEXTEDIT_UNDOSTATECOUNT]StbUndoRecord,
+    undo_char: [STB_TEXTEDIT_UNDOCHARCOUNT]STB_TEXTEDIT_CHARTYPE,
+    undo_point: c_short,
+    redo_point: c_short,
+    undo_char_point: c_int,
+    redo_char_point: c_int,
+};
+
+pub const STB_TexteditState = extern struct {
+   cursor: c_int,
+   select_start: c_int,
+   select_end: c_int,
+   insert_mode: u8,
+   row_count_per_page: c_int,
+   cursor_at_end_of_line: u8,
+   initialized: u8,
+   has_preferred_x: u8,
+   single_line: u8,
+   padding1: u8,
+   padding2: u8,
+   padding3: u8,
+   preferred_x: f32,
+   undostate: StbUndoState,
+};
+
 '''),
+        Header(IMGUI_HEADER_INTERNAL,
+               if_include=lambda f_name: f_name == 'ButtonBehavior'),
         Header(IMGUI_IMPL_GLFW),
         Header(IMGUI_IMPL_OPENGL3),
     ]
@@ -47,8 +113,12 @@ pub const ImVector = extern struct {
     generator = ZigGenerator(*headers)
 
     def custom(t: BaseType) -> Optional[str]:
-        if t.name.startswith('ImVector<'):
-            return 'ImVector'
+        for template in ('ImVector', 'ImSpan', 'ImChunkStream', 'ImPool', 'ImBitArray'):
+            if t.name.startswith(f'{template}<'):
+                return template
+
+        if t.name == 'ImStb::STB_TexteditState':
+            return 'STB_TexteditState'
 
     workarounds = generator.generate(
         IMGUI_ZIG, custom=custom, return_byvalue_workaround=True)
@@ -64,7 +134,7 @@ pub const ImVector = extern struct {
 #ifdef __cplusplus
 extern "C" {{
 #endif
-{"".join(workarounds)}
+{"".join([w.code for w in workarounds if w.f.path == IMGUI_HEADER])}
 #ifdef __cplusplus
 }}
 #endif        
