@@ -73,6 +73,28 @@ const AnotherDock = struct {
     }
 };
 
+const MouseInput = struct {
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
+    left_down: bool,
+    right_down: bool,
+    middle_down: bool,
+    is_active: bool,
+    is_hover: bool,
+    wheel: i32,
+};
+
+const MouseEvent = struct {
+    const Self = @This();
+
+    pub fn process(self: *Self, mouseInput: MouseInput) void {
+        _ = self;
+        _ = mouseInput;
+    }
+};
+
 const FboDock = struct {
     const Self = @This();
     name: [*:0]const u8 = "fbo",
@@ -82,6 +104,7 @@ const FboDock = struct {
     bg: imgui.ImVec4 = .{ .x = 0, .y = 0, .z = 0, .w = 0 },
     tint: imgui.ImVec4 = .{ .x = 1, .y = 1, .z = 1, .w = 1 },
     clearColor: [4]f32 = .{ 1, 1, 1, 1 },
+    mouseEvent: MouseEvent = .{},
 
     pub fn showFbo(self: *Self, x: f32, y: f32, size: imgui.ImVec2) void {
         _ = self;
@@ -91,25 +114,24 @@ const FboDock = struct {
         // std.debug.assert(size != imgui.ImVec2{.x=0, .y=0});
         if (self.fbo.clear(@floatToInt(c_int, size.x), @floatToInt(c_int, size.y), self.clearColor)) |texture| {
             defer self.fbo.unbind();
-            _ = texture;
             _ = imgui.ImageButton(texture, size, .{ .uv0 = .{ .x = 0, .y = 1 }, .uv1 = .{ .x = 1, .y = 0 }, .frame_padding = 0, .bg_col = self.bg, .tint_col = self.tint });
+            _ = imgui.ButtonBehavior(imgui.GetCurrentContext().?.LastItemData.Rect, imgui.GetCurrentContext().?.LastItemData.ID, null, null, .{ .flags = @enumToInt(imgui.ImGuiButtonFlags._MouseButtonMiddle) | @enumToInt(imgui.ImGuiButtonFlags._MouseButtonRight) });
 
-            _ = imgui.ButtonBehavior(imgui.GetCurrentContext().?.LastItemData.Rect, imgui.GetCurrentContext().?.LastItemData.ID, null, null, .{.flags=@enumToInt(imgui.ImGuiButtonFlags._MouseButtonMiddle) | @enumToInt(imgui.ImGuiButtonFlags._MouseButtonRight)});
+            const io = imgui.GetIO();
 
-            // io = ImGui.GetIO();
+            const mouseInput = MouseInput{ .x = @floatToInt(i32, io.MousePos.x - x), .y = @floatToInt(i32, io.MousePos.y - y), .width = @floatToInt(i32, size.x), .height = @floatToInt(i32, size.y), .left_down = io.MouseDown[0], .right_down = io.MouseDown[1], .middle_down = io.MouseDown[2], .is_active = imgui.IsItemActive(), .is_hover = imgui.IsItemHovered(.{}), .wheel = @floatToInt(i32, io.MouseWheel) };
+            // _ = mouse_input;
+            self.mouseEvent.process(mouseInput);
 
-            // mouse_input = MouseInput(
-            //     (int(io.MousePos.x) - x), (int(io.MousePos.y) - y),
-            //     w, h,
-            //     io.MouseDown[0], io.MouseDown[1], io.MouseDown[2],
-            //     ImGui.IsItemActive(), ImGui.IsItemHovered(), int(io.MouseWheel))
-            // self.mouse_event.process(mouse_input)
-
-            //     //     if self.render:
-            //     //         self.render(mouse_input)
-            //     //     else:
-            //     //         self.mouse_event.debug_draw()
-
+            if (mouseInput.is_active) {
+                self.clearColor[0] = @intToFloat(f32, mouseInput.x) / @intToFloat(f32, mouseInput.width);
+                self.clearColor[1] = @intToFloat(f32, mouseInput.y) / @intToFloat(f32, mouseInput.height);
+                self.tint.x = 1.0;
+            } else if (mouseInput.is_hover) {
+                self.tint.z = 1.0;
+            } else {
+                self.tint.z = 0.5;
+            }
         }
     }
 

@@ -48,49 +48,46 @@ pub const Fbo = struct {
 
     texture: Texture,
     handle: [1]gl.GLuint = .{0},
+    depth: [1]gl.GLuint = .{0},
 
-    fn _init(self: *Self) void {
+    fn _init(self: *Self, width: c_int, height: c_int, useDepth: bool) void {
         gl.genFramebuffers(self.handle.len, &self.handle[0]);
+        if (useDepth) {
+            gl.genRenderbuffers(self.depth.len, &self.depth[0]);
+        }
+        self.bind();
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, self.texture.handle[0], 0);
+        const drawBuffers = [1]gl.GLuint{gl.COLOR_ATTACHMENT0};
+        gl.drawBuffers(drawBuffers.len, &drawBuffers[0]);
+        if (useDepth) {
+            gl.bindRenderbuffer(gl.RENDERBUFFER, self.depth[0]);
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT, width, height);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, self.depth[0]);
+        }
+        self.unbind();
     }
 
     pub fn init(width: c_int, height: c_int, use_depth: bool) Fbo {
-        _ = use_depth;
-        var fbo = Fbo{
+        var self = Fbo{
             .texture = Texture.init(width, height, gl.RGBA, null),
         };
-        fbo._init();
-        //     gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, self.fbo)
-        //     gl.glFramebufferTexture2D(
-        //         gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0, gl.GL_TEXTURE_2D, self.texture.handle, 0)
-        //     gl.glDrawBuffers([gl.GL_COLOR_ATTACHMENT0])
-
-        //     if use_depth:
-        //         self.depth = gl.glGenRenderbuffers(1)
-        //         gl.glBindRenderbuffer(gl.GL_RENDERBUFFER, self.depth)
-        //         gl.glRenderbufferStorage(
-        //             gl.GL_RENDERBUFFER, gl.GL_DEPTH_COMPONENT, width, height)
-        //         gl.glFramebufferRenderbuffer(
-        //             gl.GL_FRAMEBUFFER, gl.GL_DEPTH_ATTACHMENT, gl.GL_RENDERBUFFER, self.depth)
-        //     else:
-        //         self.depth = 0
-
-        //     gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
-        //     LOGGER.debug(
-        //         f'fbo: {self.fbo}, texture: {self.texture}, depth: {self.depth}')
-
-        return fbo;
+        self._init(width, height, use_depth);
+        // LOGGER.debug(f'fbo: {self.fbo}, texture: {self.texture}, depth: {self.depth}')
+        return self;
     }
 
     pub fn deinit(self: *const Self) void {
         // LOGGER.debug(f'fbo: {self.fbo}')
         gl.deleteFramebuffers(1, &self.handle);
+        gl.deleteRenderbuffers(1, &self.depth);
     }
 
     pub fn bind(self: *const Self) void {
         gl.bindFramebuffer(gl.FRAMEBUFFER, self.handle[0]);
     }
 
-    pub fn unbind(_: *const Self) void {
+    pub fn unbind(self: *const Self) void {
+        _ = self;
         gl.bindFramebuffer(gl.FRAMEBUFFER, 0);
     }
 };
@@ -100,8 +97,7 @@ pub const FboManager = struct {
 
     fbo: ?Fbo = null,
 
-    pub fn unbind(self: *Self)void
-    {        
+    pub fn unbind(self: *Self) void {
         if (self.fbo) |fbo| {
             fbo.unbind();
         }
