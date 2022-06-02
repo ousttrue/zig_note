@@ -8,3 +8,4 @@ gyro.lock
 *.log
 imgui.ini
 /pkgs/imgui/src/main.zig
+app.ini

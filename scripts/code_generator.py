@@ -46,50 +46,29 @@ pub const ImVector = extern struct {
 
     generator = ZigGenerator(*headers)
 
-    # 
-    # return byvalue to pointer
-    #
-    IMGUI_CPP_WORKAROUND = IMGUI_ZIG.parent / 'imvec2_byvalue.cpp'
-    with IMGUI_CPP_WORKAROUND.open('w') as w:
-        w.write('''// https://github.com/ziglang/zig/issues/1481 workaround
-#include <imgui.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-''')
-
-        def to_cpp_arg(p: ParamContext):
-            # t = generator.type_manager.to_type(p)
-            return f'{p.type.spelling} {p.name}'
-
-        for f in generator.parser.functions:
-            if 'ImVec' in f.result_type.spelling:
-                result = generator.type_manager.to_type(f.result)
-                if isinstance(result, ReferenceType):
-                    result = result.base
-
-                args = [f'{result.name} *__ret__'] + [to_cpp_arg(p) for p in f.params]
-                calls = [p.name for p in f.params]
-
-                w.write(f'''
-void imgui_{f.cursor.spelling}({", ".join(args)})
-{{
-    *__ret__ = ImGui::{f.cursor.spelling}({", ".join(calls)});
-}}
-''')
-
-        w.write('''
-#ifdef __cplusplus
-}
-#endif        
-''')
-
     def custom(t: BaseType) -> Optional[str]:
         if t.name.startswith('ImVector<'):
             return 'ImVector'
 
-    generator.generate(IMGUI_ZIG, function_custom=lambda f: 'ImVec' in f.result_type.spelling, custom=custom)
+    workarounds = generator.generate(
+        IMGUI_ZIG, custom=custom, return_byvalue_workaround=True)
+
+    #
+    # return byvalue to pointer
+    #
+    IMGUI_CPP_WORKAROUND = IMGUI_ZIG.parent / 'imvec2_byvalue.cpp'
+    with IMGUI_CPP_WORKAROUND.open('w') as w:
+        w.write(f'''// https://github.com/ziglang/zig/issues/1481 workaround
+#include <imgui.h>
+
+#ifdef __cplusplus
+extern "C" {{
+#endif
+{"".join(workarounds)}
+#ifdef __cplusplus
+}}
+#endif        
+''')
 
 
 def main():

@@ -40,11 +40,6 @@ void imgui_GetFontTexUvWhitePixel(ImVec2 *__ret__)
     *__ret__ = ImGui::GetFontTexUvWhitePixel();
 }
 
-void imgui_GetStyleColorVec4(ImVec4 *__ret__, ImGuiCol idx)
-{
-    *__ret__ = ImGui::GetStyleColorVec4(idx);
-}
-
 void imgui_GetCursorPos(ImVec2 *__ret__)
 {
     *__ret__ = ImGui::GetCursorPos();
