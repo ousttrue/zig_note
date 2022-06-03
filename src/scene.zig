@@ -1,8 +1,7 @@
 const std = @import("std");
 const gltf = @import("./gltf.zig");
-const fbo = @import("./fbo.zig");
 const mouse_input = @import("./mouse_input.zig");
-const ShaderProgram = @import("./shader.zig").ShaderProgram;
+const glo = @import("glo");
 
 const vs = @embedFile("./simple.vs");
 const fs = @embedFile("./simple.fs");
@@ -18,12 +17,36 @@ fn readsource(allocator: std.mem.Allocator, arg: []const u8) ![:0]const u8 {
     return buffer;
 }
 
+const Vertex = struct {
+    x: f32,
+    y: f32,
+    r: f32,
+    g: f32,
+    b: f32,
+
+    pub fn create(v: anytype) Vertex {
+        return .{
+            .x = v.@"0",
+            .y = v.@"1",
+            .r = v.@"2",
+            .g = v.@"3",
+            .b = v.@"4",
+        };
+    }
+};
+
+const vertices: [3]Vertex = .{
+    Vertex.create(.{ -0.6, -0.4, 1.0, 0.0, 0.0 }),
+    Vertex.create(.{ 0.6, -0.4, 0.0, 1.0, 0.0 }),
+    Vertex.create(.{ 0.0, 0.6, 0.0, 0.0, 1.0 }),
+};
+
 pub const Scene = struct {
     const Self = @This();
 
     allocator: std.mem.Allocator,
-    shader: ?ShaderProgram = null,
-    // vao: ?Vao = null,
+    shader: ?glo.ShaderProgram = null,
+    vao: ?glo.Vao = null,
 
     pub fn init(allocator: std.mem.Allocator) Self {
         return .{
@@ -61,25 +84,27 @@ pub const Scene = struct {
         _ = self;
         _ = mouseInput;
 
-        if(self.shader==null){
-            const shader_or_error = ShaderProgram.load(vs, fs);
-            _ = shader_or_error;
-            // if not isinstance(shader_or_error, glo.Shader):
-            //     LOGGER.error(shader_or_error)
-            //     return
-            // self.shader = shader_or_error
-            // vbo = glo.Vbo()
-            // vbo.set_vertices(vertices)
-            // self.vao = glo.Vao(
-            //     vbo, glo.VertexLayout.create_list(self.shader.program))
+        if (self.shader == null) {
+            var errorBuffer: [1024]u8 = undefined;
+            var shader = glo.ShaderProgram.init();
+            if (shader.load(errorBuffer[0..errorBuffer.len], vs, fs)) |errorMessage| {
+                std.debug.print("{s}\n", .{errorMessage});
+                shader.deinit();
+            } else {
+                self.shader = shader;
+
+                var vbo = glo.Vbo.init();
+                vbo.setVertices(vertices, false);
+                self.vao = glo.Vao.create(vbo, shader.createVertexLayout(self.allocator));
+            }
         }
 
-        // if(self.shader)|shader|{
-        //     if(self.vao)|vao|{
-        //         shader.begin();
-        //         defer shader.end();
-        //         vao.draw(3);
-        //     }
-        // }
+        if (self.shader) |shader| {
+            if (self.vao) |vao| {
+                shader.use();
+                defer shader.unuse();
+                vao.draw(3, .{});
+            }
+        }
     }
 };

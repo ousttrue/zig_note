@@ -1,6 +1,7 @@
 const std = @import("std");
 const glfw = @import("pkgs/glfw/pkg.zig");
 const imgui = @import("pkgs/imgui/pkg.zig");
+const glo = @import("pkgs/glo/pkg.zig");
 
 const gl = std.build.Pkg{
     .name = "gl",
@@ -8,6 +9,8 @@ const gl = std.build.Pkg{
 };
 
 pub fn build(b: *std.build.Builder) void {
+    const allocator = std.heap.page_allocator;
+
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
     // means any target is allowed, and the default is native. Other options
@@ -27,6 +30,7 @@ pub fn build(b: *std.build.Builder) void {
     exe.linkLibCpp();
     glfw.addTo(exe, "pkgs/glfw");
     imgui.addTo(exe, "pkgs/imgui");
+    glo.addTo(allocator, exe, "pkgs/glo", &.{gl});
     exe.addPackage(gl);
 
     const run_cmd = exe.run();

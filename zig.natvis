@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<autovisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="[].glo.shader.VertexLayout">
+    <DisplayString>{{size = {length}}}</DisplayString>
+    <Expand>
+      <Item Name="[size]">length</Item>
+      <ArrayItems>
+        <ValuePointer>ptr</ValuePointer>
+        <Size>len</Size>
+      </ArrayItems>
+    </Expand>
+  </Type>
+</autovisualizer>

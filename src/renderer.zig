@@ -3,8 +3,8 @@ const gl = @import("gl");
 const imgui = @import("imgui");
 const dockspace = @import("dockspace.zig");
 const Scene = @import("./scene.zig").Scene;
-const fbo = @import("./fbo.zig");
 const mouse_input = @import("./mouse_input.zig");
+const glo = @import("glo");
 
 const DemoDock = struct {
     const Self = @This();
@@ -79,10 +79,10 @@ const FboDock = struct {
     name: [*:0]const u8 = "fbo",
     is_open: bool = false,
 
-    fbo: fbo.FboManager,
+    fbo: glo.FboManager,
     bg: imgui.ImVec4 = .{ .x = 0, .y = 0, .z = 0, .w = 0 },
     tint: imgui.ImVec4 = .{ .x = 1, .y = 1, .z = 1, .w = 1 },
-    clearColor: [4]f32 = .{ 1, 1, 1, 1 },
+    clearColor: [4]f32 = .{ 0, 0, 0, 1 },
     // mouseEvent: mouse_input.MouseEvent = .{},
     scene: Scene,
 
@@ -152,7 +152,7 @@ pub const Renderer = struct {
             .show_demo_window = &renderer.demo.is_open,
         };
         renderer.fbo = FboDock{
-            .fbo = fbo.FboManager{},
+            .fbo = glo.FboManager{},
             .scene = Scene.init(allocator),
         };
 
