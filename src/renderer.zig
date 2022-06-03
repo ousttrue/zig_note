@@ -4,6 +4,7 @@ const imgui = @import("imgui");
 const dockspace = @import("dockspace.zig");
 const Scene = @import("./scene.zig").Scene;
 const fbo = @import("./fbo.zig");
+const mouse_input = @import("./mouse_input.zig");
 
 const DemoDock = struct {
     const Self = @This();
@@ -73,28 +74,6 @@ const AnotherDock = struct {
     }
 };
 
-const MouseInput = struct {
-    x: i32,
-    y: i32,
-    width: i32,
-    height: i32,
-    left_down: bool,
-    right_down: bool,
-    middle_down: bool,
-    is_active: bool,
-    is_hover: bool,
-    wheel: i32,
-};
-
-const MouseEvent = struct {
-    const Self = @This();
-
-    pub fn process(self: *Self, mouseInput: MouseInput) void {
-        _ = self;
-        _ = mouseInput;
-    }
-};
-
 const FboDock = struct {
     const Self = @This();
     name: [*:0]const u8 = "fbo",
@@ -104,7 +83,8 @@ const FboDock = struct {
     bg: imgui.ImVec4 = .{ .x = 0, .y = 0, .z = 0, .w = 0 },
     tint: imgui.ImVec4 = .{ .x = 1, .y = 1, .z = 1, .w = 1 },
     clearColor: [4]f32 = .{ 1, 1, 1, 1 },
-    mouseEvent: MouseEvent = .{},
+    // mouseEvent: mouse_input.MouseEvent = .{},
+    scene: Scene,
 
     pub fn showFbo(self: *Self, x: f32, y: f32, size: imgui.ImVec2) void {
         _ = self;
@@ -116,20 +96,22 @@ const FboDock = struct {
             defer self.fbo.unbind();
             _ = imgui.ImageButton(texture, size, .{ .uv0 = .{ .x = 0, .y = 1 }, .uv1 = .{ .x = 1, .y = 0 }, .frame_padding = 0, .bg_col = self.bg, .tint_col = self.tint });
             const io = imgui.GetIO();
-            const mouseInput = MouseInput{ .x = @floatToInt(i32, io.MousePos.x - x), .y = @floatToInt(i32, io.MousePos.y - y), .width = @floatToInt(i32, size.x), .height = @floatToInt(i32, size.y), .left_down = io.MouseDown[0], .right_down = io.MouseDown[1], .middle_down = io.MouseDown[2], .is_active = imgui.IsItemActive(), .is_hover = imgui.IsItemHovered(.{}), .wheel = @floatToInt(i32, io.MouseWheel) };
+            const mouseInput = mouse_input.MouseInput{ .x = @floatToInt(i32, io.MousePos.x - x), .y = @floatToInt(i32, io.MousePos.y - y), .width = @floatToInt(i32, size.x), .height = @floatToInt(i32, size.y), .left_down = io.MouseDown[0], .right_down = io.MouseDown[1], .middle_down = io.MouseDown[2], .is_active = imgui.IsItemActive(), .is_hover = imgui.IsItemHovered(.{}), .wheel = @floatToInt(i32, io.MouseWheel) };
             // _ = mouse_input;
-            self.mouseEvent.process(mouseInput);
+            // self.mouseEvent.process(mouseInput);
 
-            if (mouseInput.is_active) {
-                imgui.GetForegroundDrawList().?.AddLine(io.MouseClickedPos[0], io.MousePos, imgui.GetColorU32(@enumToInt(imgui.ImGuiCol._Button), .{}), .{ .thickness = 4.0 }); // Draw a line between the button and the mouse cursor
-                self.clearColor[0] = @intToFloat(f32, mouseInput.x) / @intToFloat(f32, mouseInput.width);
-                self.clearColor[1] = @intToFloat(f32, mouseInput.y) / @intToFloat(f32, mouseInput.height);
-                self.tint.x = 1.0;
-            } else if (mouseInput.is_hover) {
-                self.tint.z = 1.0;
-            } else {
-                self.tint.z = 0.5;
-            }
+            // if (mouseInput.is_active) {
+            //     imgui.GetForegroundDrawList().?.AddLine(io.MouseClickedPos[0], io.MousePos, imgui.GetColorU32(@enumToInt(imgui.ImGuiCol._Button), .{}), .{ .thickness = 4.0 }); // Draw a line between the button and the mouse cursor
+            //     self.clearColor[0] = @intToFloat(f32, mouseInput.x) / @intToFloat(f32, mouseInput.width);
+            //     self.clearColor[1] = @intToFloat(f32, mouseInput.y) / @intToFloat(f32, mouseInput.height);
+            //     self.tint.x = 1.0;
+            // } else if (mouseInput.is_hover) {
+            //     self.tint.z = 1.0;
+            // } else {
+            //     self.tint.z = 0.5;
+            // }
+
+            self.scene.render(mouseInput);
         }
     }
 
@@ -150,7 +132,6 @@ pub const Renderer = struct {
     const Self = @This();
 
     allocator: std.mem.Allocator,
-    scene: Scene,
     is_initialized: bool,
 
     demo: DemoDock = .{},
@@ -162,7 +143,6 @@ pub const Renderer = struct {
 
     pub fn init(allocator: std.mem.Allocator) !*Self {
         var renderer = try allocator.create(Renderer);
-        renderer.scene = Scene.init(allocator);
         renderer.allocator = allocator;
         renderer.is_initialized = false;
         renderer.another = .{};
@@ -173,6 +153,7 @@ pub const Renderer = struct {
         };
         renderer.fbo = FboDock{
             .fbo = fbo.FboManager{},
+            .scene = Scene.init(allocator),
         };
 
         renderer.docks = std.ArrayList(dockspace.Dock).init(allocator);
