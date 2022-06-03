@@ -2,8 +2,8 @@ const std = @import("std");
 const gl = @import("gl");
 const imgui = @import("imgui");
 const dockspace = @import("dockspace.zig");
-const Scene = @import("./scene.zig").Scene;
-const mouse_input = @import("./mouse_input.zig");
+const Scene = @import("scene").Scene;
+const MouseInput = @import("screen").MouseInput;
 const glo = @import("glo");
 
 const DemoDock = struct {
@@ -96,7 +96,7 @@ const FboDock = struct {
             defer self.fbo.unbind();
             _ = imgui.ImageButton(texture, size, .{ .uv0 = .{ .x = 0, .y = 1 }, .uv1 = .{ .x = 1, .y = 0 }, .frame_padding = 0, .bg_col = self.bg, .tint_col = self.tint });
             const io = imgui.GetIO();
-            const mouseInput = mouse_input.MouseInput{ .x = @floatToInt(i32, io.MousePos.x - x), .y = @floatToInt(i32, io.MousePos.y - y), .width = @floatToInt(i32, size.x), .height = @floatToInt(i32, size.y), .left_down = io.MouseDown[0], .right_down = io.MouseDown[1], .middle_down = io.MouseDown[2], .is_active = imgui.IsItemActive(), .is_hover = imgui.IsItemHovered(.{}), .wheel = @floatToInt(i32, io.MouseWheel) };
+            const mouseInput = MouseInput{ .x = @floatToInt(i32, io.MousePos.x - x), .y = @floatToInt(i32, io.MousePos.y - y), .width = @floatToInt(i32, size.x), .height = @floatToInt(i32, size.y), .left_down = io.MouseDown[0], .right_down = io.MouseDown[1], .middle_down = io.MouseDown[2], .is_active = imgui.IsItemActive(), .is_hover = imgui.IsItemHovered(.{}), .wheel = @floatToInt(i32, io.MouseWheel) };
             // _ = mouse_input;
             // self.mouseEvent.process(mouseInput);
 

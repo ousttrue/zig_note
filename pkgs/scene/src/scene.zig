@@ -1,7 +1,7 @@
 const std = @import("std");
-const gltf = @import("./gltf.zig");
-const mouse_input = @import("./mouse_input.zig");
+const screen = @import("screen");
 const glo = @import("glo");
+const gltf = @import("./gltf.zig");
 
 const vs = @embedFile("./simple.vs");
 const fs = @embedFile("./simple.fs");
@@ -80,7 +80,7 @@ pub const Scene = struct {
         }
     }
 
-    pub fn render(self: *Self, mouseInput: mouse_input.MouseInput) void {
+    pub fn render(self: *Self, mouseInput: screen.MouseInput) void {
         _ = self;
         _ = mouseInput;
 

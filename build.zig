@@ -2,6 +2,8 @@ const std = @import("std");
 const glfw = @import("pkgs/glfw/pkg.zig");
 const imgui = @import("pkgs/imgui/pkg.zig");
 const glo = @import("pkgs/glo/pkg.zig");
+const screen = @import("pkgs/screen/pkg.zig");
+const scene = @import("pkgs/scene/pkg.zig");
 
 const gl = std.build.Pkg{
     .name = "gl",
@@ -30,7 +32,9 @@ pub fn build(b: *std.build.Builder) void {
     exe.linkLibCpp();
     glfw.addTo(exe, "pkgs/glfw");
     imgui.addTo(exe, "pkgs/imgui");
-    glo.addTo(allocator, exe, "pkgs/glo", &.{gl});
+    const gloPkg = glo.addTo(allocator, exe, "pkgs/glo", &.{gl});
+    const screenPkg = screen.addTo(allocator, exe, "pkgs/screen", null);
+    scene.addTo(allocator, exe, "pkgs/scene", &.{screenPkg, gloPkg});
     exe.addPackage(gl);
 
     const run_cmd = exe.run();
