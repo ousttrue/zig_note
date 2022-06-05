@@ -16,7 +16,7 @@ pub const ShaderCompile = struct {
         gl.deleteShader(self.shader);
     }
 
-    pub fn compileOrError(self: *Self, errorBuffer: []u8, src: []const u8) ?[]const u8 {
+    pub fn compileOrError(self: *Self, error_buffer: []u8, src: []const u8) ?[]const u8 {
         const len = [1]c_int{@intCast(c_int, src.len)};
         const sources: [1][*c]const u8 = .{&src[0]};
         gl.shaderSource(self.shader, 1, &sources, &len);
@@ -28,8 +28,8 @@ pub const ShaderCompile = struct {
         }
         // error message
         var size: [1]gl.GLsizei = undefined;
-        gl.getShaderInfoLog(self.shader, @intCast(c_int, errorBuffer.len), &size, @ptrCast([*c]gl.GLchar, &errorBuffer[0]));
-        return errorBuffer[0..@intCast(usize, size[0])];
+        gl.getShaderInfoLog(self.shader, @intCast(c_int, error_buffer.len), &size, @ptrCast([*c]gl.GLchar, &error_buffer[0]));
+        return error_buffer[0..@intCast(usize, size[0])];
     }
 };
 
@@ -69,27 +69,52 @@ pub const ShaderProgram = struct {
     const Self = @This();
 
     handle: gl.GLuint,
+    location_map: std.StringHashMap(c_int),
 
-    pub fn init() Self {
+    pub fn init(allocator: std.mem.Allocator) Self {
         return .{
             .handle = gl.createProgram(),
+            .location_map = std.StringHashMap(c_int).init(allocator),
         };
     }
 
     pub fn deinit(self: *Self) void {
+        self.location_map.deinit();
         gl.deleteProgram(self.handle);
     }
 
-    pub fn use(self: *const Self) void {
+    pub fn use(self: *Self) void {
         gl.useProgram(self.handle);
     }
 
-    pub fn unuse(self: *const Self) void {
+    pub fn unuse(self: *Self) void {
         _ = self;
         gl.useProgram(0);
     }
 
-    pub fn linkOrError(self: *Self, errorBuffer: []u8, vs: ShaderCompile, fs: ShaderCompile) ?[]const u8 {
+    pub fn getLocation(self: *Self, name: []const u8) ?c_int {
+        if (self.location_map.get(name)) |location| {
+            return location;
+        }
+        const location = gl.getUniformLocation(self.handle, &name[0]);
+        if (location < 0) {
+            return null;
+        }
+        self.location_map.put(name, location) catch @panic("put");
+        return location;
+    }
+
+    pub fn _setMat4(_: *Self, location: u32, transpose: bool, value: *const f32) void {
+        gl.uniformMatrix4fv(location, 1, if (transpose) gl.TRUE else gl.FALSE, value);
+    }
+
+    pub fn setMat4(self: *Self, name: []const u8, value: [16]f32) void {
+        if (self.getLocation(name)) |location| {
+            gl.uniformMatrix4fv(location, 1, gl.FALSE, &value);
+        }
+    }
+
+    pub fn linkOrError(self: *Self, error_buffer: []u8, vs: ShaderCompile, fs: ShaderCompile) ?[]const u8 {
         gl.attachShader(self.handle, vs.shader);
         gl.attachShader(self.handle, fs.shader);
         gl.linkProgram(self.handle);
@@ -101,25 +126,25 @@ pub const ShaderProgram = struct {
 
         // error message
         var size: [1]gl.GLsizei = undefined;
-        gl.getProgramInfoLog(self.handle, @intCast(c_int, errorBuffer.len), &size, @ptrCast([*c]gl.GLchar, &errorBuffer[0]));
-        return errorBuffer[0..@intCast(usize, size[0])];
+        gl.getProgramInfoLog(self.handle, @intCast(c_int, error_buffer.len), &size, @ptrCast([*c]gl.GLchar, &error_buffer[0]));
+        return error_buffer[0..@intCast(usize, size[0])];
     }
 
-    pub fn load(self: *Self, errorBuffer: []u8, vs_src: []const u8, fs_src: []const u8) ?[]const u8 {
+    pub fn load(self: *Self, error_buffer: []u8, vs_src: []const u8, fs_src: []const u8) ?[]const u8 {
         var vs = ShaderCompile.init(gl.VERTEX_SHADER);
         defer vs.deinit();
-        if (vs.compileOrError(errorBuffer, vs_src)) |errorMessage| {
-            return errorMessage;
+        if (vs.compileOrError(error_buffer, vs_src)) |error_message| {
+            return error_message;
         }
 
         var fs = ShaderCompile.init(gl.FRAGMENT_SHADER);
         defer fs.deinit();
-        if (fs.compileOrError(errorBuffer, fs_src)) |errorMessage| {
-            return errorMessage;
+        if (fs.compileOrError(error_buffer, fs_src)) |error_message| {
+            return error_message;
         }
 
-        if (self.linkOrError(errorBuffer, vs, fs)) |errorMessage| {
-            return errorMessage;
+        if (self.linkOrError(error_buffer, vs, fs)) |error_message| {
+            return error_message;
         }
 
         return null;
