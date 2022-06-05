@@ -123,9 +123,9 @@ pub const FboManager = struct {
             gl.viewport(0, 0, width, height);
             gl.scissor(0, 0, width, height);
             gl.clearColor(color[0] * color[3], color[1] * color[3], color[2] * color[3], color[3]);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             gl.clearDepth(1.0);
             gl.depthFunc(gl.LESS);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             return @intToPtr(*anyopaque, fbo.texture.handle[0]);
         }
 

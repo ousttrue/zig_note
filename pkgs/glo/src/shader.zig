@@ -104,13 +104,13 @@ pub const ShaderProgram = struct {
         return location;
     }
 
-    pub fn _setMat4(_: *Self, location: u32, transpose: bool, value: *const f32) void {
+    pub fn _setMat4(_: *Self, location: c_int, transpose: bool, value: *const f32) void {
         gl.uniformMatrix4fv(location, 1, if (transpose) gl.TRUE else gl.FALSE, value);
     }
 
-    pub fn setMat4(self: *Self, name: []const u8, value: [16]f32) void {
+    pub fn setMat4(self: *Self, name: []const u8, value: *const f32) void {
         if (self.getLocation(name)) |location| {
-            gl.uniformMatrix4fv(location, 1, gl.FALSE, &value);
+            self._setMat4(location, false, value);
         }
     }
 

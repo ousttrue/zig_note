@@ -118,8 +118,10 @@ const FboDock = struct {
     pub fn show(self: *Self) void {
         imgui.PushStyleVar_2(@enumToInt(imgui.ImGuiStyleVar._WindowPadding), .{ .x = 0, .y = 0 });
         if (imgui.Begin("render target", .{ .p_open = &self.is_open, .flags = (@enumToInt(imgui.ImGuiWindowFlags._NoScrollbar) | @enumToInt(imgui.ImGuiWindowFlags._NoScrollWithMouse)) })) {
+            _ = imgui.InputFloat3("shift", &self.scene.camera.view.shift[0], .{});
             var pos = imgui.GetWindowPos();
-            pos.y += imgui.GetFrameHeight();
+            // pos.y += imgui.GetFrameHeight();
+            pos.y = 20;
             var size = imgui.GetContentRegionAvail();
             self.showFbo(pos.x, pos.y, size);
         }
