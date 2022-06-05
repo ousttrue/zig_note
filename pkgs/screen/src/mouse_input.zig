@@ -10,12 +10,3 @@ pub const MouseInput = struct {
     is_hover: bool,
     wheel: i32,
 };
-
-pub const MouseEvent = struct {
-    const Self = @This();
-
-    pub fn process(self: *Self, mouseInput: MouseInput) void {
-        _ = self;
-        _ = mouseInput;
-    }
-};
