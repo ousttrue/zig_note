@@ -90,7 +90,9 @@ const View = struct {
         // const pitch = zlm.Mat4.createAngleAxis(zlm.Vec3.new(1, 0, 0), self.pitch);
         // const shift = zlm.Mat4.createTranslation(self.shift);
         // return shift.mul(pitch.mul(yaw));
-        return zigla.Mat4.translate(self.shift[0], self.shift[1], self.shift[2]);
+        const r = self.rotation.toMat4();
+        const t = zigla.Mat4.translate(self.shift[0], self.shift[1], self.shift[2]);
+        return r.mul(t);
     }
 };
 
@@ -99,12 +101,12 @@ const Camera = struct {
 
     projection: Projection = .{},
     view: View = .{},
-    mvp: [16]f32 = .{
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1,
-    },
+    // mvp: [16]f32 = .{
+    //     1, 0, 0, 0,
+    //     0, 1, 0, 0,
+    //     0, 0, 1, 0,
+    //     0, 0, 0, 1,
+    // },
 
     pub fn update(self: *Self, mouse_input: screen.MouseInput) void {
         if (mouse_input.is_active or mouse_input.is_hover) {
@@ -139,8 +141,9 @@ test {
 
 pub fn getArcballVector(mouse_input: screen.MouseInput) zigla.Vec3 {
     // https://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Arcball
-    var P = zigla.Vec3.init(@intToFloat(f32, mouse_input.x) / @intToFloat(f32, mouse_input.width) * 2 - 1.0, @intToFloat(f32, mouse_input.y) / @intToFloat(f32, mouse_input.height) * 2 - 1.0, 0);
-    P.y = -P.y;
+    const x = @intToFloat(f32, mouse_input.x) / @intToFloat(f32, mouse_input.width) * 2 - 1.0; // -1 ~ +1
+    const y = @intToFloat(f32, mouse_input.y) / @intToFloat(f32, mouse_input.height) * 2 - 1.0; // -1 ~ +1
+    var P = zigla.Vec3.init(x, -y, 0);
     const OP_squared = P.x * P.x + P.y * P.y;
     if (OP_squared <= 1) {
         P.z = std.math.sqrt(1 - OP_squared); // Pythagoras
@@ -155,13 +158,15 @@ const ArcBall = struct {
 
     view: *View,
     projection: *Projection,
-    rotation: zigla.Quaternion = .{},
-    tmp_rotation: zigla.Quaternion = .{},
+    rotation: zigla.Quaternion,
+    tmp_rotation: zigla.Quaternion,
     last: ?screen.MouseInput = null,
     va: ?zigla.Vec3 = null,
 
     pub fn init(view: *View, projection: *Projection) Self {
         return .{
+            .rotation = .{},
+            .tmp_rotation = .{},
             .view = view,
             .projection = projection,
         };
@@ -179,15 +184,14 @@ const ArcBall = struct {
 
     pub fn drag(self: *Self, mouse_input: screen.MouseInput, _: i32, _: i32) void {
         if (self.last) |last| {
-            if (mouse_input.x == last.x and mouse_input.y == last.y) {
-                return;
+            if (mouse_input.x != last.x or mouse_input.y != last.y) {
+                const va = self.va orelse unreachable;
+                const vb = getArcballVector(mouse_input);
+                const angle = std.math.acos(std.math.min(1.0, va.dot(vb))) * 2;
+                const axis = va.cross(vb);
+                self.tmp_rotation = zigla.Quaternion.angleAxis(angle, axis);
+                self.update();
             }
-            const va = self.va orelse return;
-            const vb = getArcballVector(mouse_input);
-            const angle = std.math.acos(std.math.min(1.0, va.dot(vb))) * 2;
-            const axis = va.cross(vb);
-            self.tmp_rotation = zigla.Quaternion.angleAxis(angle, axis);
-            self.update();
         }
         self.last = mouse_input;
     }
@@ -204,28 +208,27 @@ pub const Scene = struct {
 
     allocator: std.mem.Allocator,
     camera: Camera = .{},
-    arc: *ArcBall,
+    arc: ArcBall = undefined,
     shader: ?glo.ShaderProgram = null,
     vao: ?glo.Vao = null,
 
-    pub fn init(allocator: std.mem.Allocator, mouse_event: *screen.MouseEvent) Self {
-        var arc = allocator.create(ArcBall) catch @panic("create");
-        var scene = Scene{
+    pub fn init(allocator: std.mem.Allocator, mouse_event: *screen.MouseEvent) *Self {
+        var scene = allocator.create(Scene) catch @panic("create");
+        scene.* = Scene{
             .allocator = allocator,
-            .arc = arc,
         };
-        arc.* = ArcBall.init(&scene.camera.view, &scene.camera.projection);
+        scene.arc = ArcBall.init(&scene.camera.view, &scene.camera.projection);
         mouse_event.right_button.bind(.{
-            .begin = screen.mouse_event.BeginEndCallback.create(arc, "begin"),
-            .drag = screen.mouse_event.DragCallback.create(arc, "drag"),
-            .end = screen.mouse_event.BeginEndCallback.create(arc, "end"),
+            .begin = screen.mouse_event.BeginEndCallback.create(&scene.arc, "begin"),
+            .drag = screen.mouse_event.DragCallback.create(&scene.arc, "drag"),
+            .end = screen.mouse_event.BeginEndCallback.create(&scene.arc, "end"),
         });
 
         return scene;
     }
 
     pub fn deinit(self: *Self) void {
-        self.allocator.destroy(self.arc);
+        self.allocator.destroy(self);
     }
 
     pub fn load(self: *Self, path: []const u8) void {
@@ -275,7 +278,8 @@ pub const Scene = struct {
         if (self.shader) |*shader| {
             shader.use();
             defer shader.unuse();
-            shader.setMat4("uMVP", self.camera.getMVP().ptr());
+            const m = self.camera.getMVP();
+            shader.setMat4("uMVP", m.ptr());
             if (self.vao) |vao| {
                 vao.draw(3, .{});
             }

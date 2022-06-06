@@ -13,7 +13,7 @@ pub const Mat4 = struct {
 
     values: [16]f32,
 
-    pub fn ptr(self: *Self) *f32 {
+    pub fn ptr(self: *const Self) *const f32 {
         return &self.values[0];
     }
 
@@ -132,7 +132,7 @@ pub const Quaternion = struct {
     }
 
     pub fn normalize(self: *Self) Quaternion {
-        const sqnorm = self.x * self.x + self.y * self.y + self.z * self.z + self.w + self.w;
+        const sqnorm = self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w;
         const factor = 1 / sqnorm;
         return .{
             .x = self.x * factor,
@@ -152,5 +152,14 @@ pub const Quaternion = struct {
             .z = v.z,
             .w = self.w * rhs.w - lv.dot(rv),
         };
+    }
+
+    pub fn toMat4(self: *Self) Mat4 {
+        return .{ .values = .{
+            1 - 2 * self.y * self.y - 2 * self.z * self.z, 2 * self.x * self.y + 2 * self.w * self.z,     2 * self.x * self.z - 2 * self.w * self.y,     0,
+            2 * self.x * self.y - 2 * self.w * self.z,     1 - 2 * self.x * self.x - 2 * self.z * self.z, 2 * self.y * self.z + 2 * self.w * self.x,     0,
+            2 * self.x * self.z + 2 * self.w * self.y,     2 * self.y * self.z - 2 * self.w * self.x,     1 - 2 * self.x * self.x - 2 * self.y * self.y, 0,
+            0,                                             0,                                             0,                                             1,
+        } };
     }
 };

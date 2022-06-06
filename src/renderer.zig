@@ -85,7 +85,7 @@ const FboDock = struct {
     clearColor: [4]f32 = .{ 0, 0, 0, 1 },
     allocator: std.mem.Allocator,
     mouse_event: *screen.MouseEvent,
-    scene: Scene,
+    scene: *Scene,
 
     pub fn init(allocator: std.mem.Allocator) Self {
         var mouse_event = allocator.create(screen.MouseEvent) catch @panic("create");
@@ -125,9 +125,10 @@ const FboDock = struct {
         imgui.PushStyleVar_2(@enumToInt(imgui.ImGuiStyleVar._WindowPadding), .{ .x = 0, .y = 0 });
         if (imgui.Begin("render target", .{ .p_open = &self.is_open, .flags = (@enumToInt(imgui.ImGuiWindowFlags._NoScrollbar) | @enumToInt(imgui.ImGuiWindowFlags._NoScrollWithMouse)) })) {
             _ = imgui.InputFloat3("shift", &self.scene.camera.view.shift[0], .{});
+            _ = imgui.InputFloat4("rotation", &self.scene.camera.view.rotation.x, .{});
             var pos = imgui.GetWindowPos();
             // pos.y += imgui.GetFrameHeight();
-            pos.y = 20;
+            pos.y = 40;
             var size = imgui.GetContentRegionAvail();
             self.showFbo(pos.x, pos.y, size);
         }
