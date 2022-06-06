@@ -1,9 +1,60 @@
 const std = @import("std");
 const MouseInput = @import("./mouse_input.zig").MouseInput;
+const caller = @import("./caller.zig");
 
-const BeginEndCallback = fn (mouse_input: MouseInput) void;
-const DragCallback = fn (mouse_input: MouseInput, dx: i32, dy: i32) void;
-const WheelCallback = fn (wheel: i32) void;
+pub const BeginEndCallback = struct {
+    const Self = @This();
+    ptr: *anyopaque,
+    callback: fn (self: *anyopaque, mouse_input: MouseInput) void,
+    pub fn execute(self: *Self, mouse_input: MouseInput) void {
+        self.callback(self.ptr, mouse_input);
+    }
+    pub fn create(p: anytype, comptime name: []const u8) Self {
+        const T = @TypeOf(p.*);
+        return .{
+            .ptr = p,
+            .callback = caller.Caller1(T, name, .{MouseInput}).call,
+        };
+    }
+};
+
+pub const DragCallback = struct {
+    const Self = @This();
+    ptr: *anyopaque,
+    callback: fn (self: *anyopaque, mouse_input: MouseInput, dx: i32, dy: i32) void,
+    pub fn execute(self: *Self, mouse_input: MouseInput, dx: i32, dy: i32) void {
+        self.callback(self.ptr, mouse_input, dx, dy);
+    }
+    pub fn create(p: anytype, comptime f: anytype) Self {
+        const T = @TypeOf(p.*);
+        return .{
+            .ptr = p,
+            .callback = caller.Caller3(T, f, MouseInput, i32, i32).call,
+        };
+    }
+};
+
+pub const WheelCallback = struct {
+    const Self = @This();
+    ptr: *anyopaque,
+    callback: fn (self: *anyopaque, delta: i32) void,
+    pub fn execute(self: *Self, delta: i32) void {
+        self.callback(self.ptr, delta);
+    }
+    pub fn create(p: anytype, comptime name: []const u8) Self {
+        const T = @TypeOf(p.*);
+        return .{
+            .ptr = p,
+            .callback = caller.Caller1(T, name, .{i32}).call,
+        };
+    }
+};
+
+pub const DragInterface = struct {
+    begin: BeginEndCallback,
+    drag: DragCallback,
+    end: BeginEndCallback,
+};
 
 pub const MouseButtonEvent = struct {
     const Self = @This();
@@ -27,25 +78,31 @@ pub const MouseButtonEvent = struct {
         self.released.deinit();
     }
 
+    pub fn bind(self: *Self, dragHandler: DragInterface) void {
+        self.pressed.append(dragHandler.begin) catch @panic("append");
+        self.drag.append(dragHandler.drag) catch @panic("append");
+        self.released.append(dragHandler.end) catch @panic("append");
+    }
+
     pub fn process(self: *Self, current: MouseInput, current_down: bool, last_down: bool, dx: i32, dy: i32) void {
         if (current.is_hover) {
             if (current_down and !last_down) {
                 self.active = current;
-                for (self.pressed.items) |callback| {
-                    callback(current);
+                for (self.pressed.items) |*callback| {
+                    callback.execute(current);
                 }
             }
         }
 
         if (current.is_active and current_down) {
-            for (self.drag.items) |callback| {
-                callback(current, dx, dy);
+            for (self.drag.items) |*callback| {
+                callback.execute(current, dx, dy);
             }
         }
 
         if (self.active != null and !current_down) {
-            for (self.released.items) |callback| {
-                callback(current);
+            for (self.released.items) |*callback| {
+                callback.execute(current);
             }
             self.active = null;
         }
@@ -84,29 +141,14 @@ pub const MouseEvent = struct {
         self.right_button.process(current, current.middle_down, if (self.last_input) |last_input| last_input.right_down else false, dx, dy);
         if (current.is_active or current.is_hover) {
             if (current.wheel != 0) {
-                for (self.wheel.items) |callback| {
-                    callback(current.wheel);
+                for (self.wheel.items) |*callback| {
+                    callback.execute(current.wheel);
                 }
             }
         }
         self.last_input = current;
     }
 };
-
-// def bind_left_drag(self, drag_handler: DragInterface):
-//     self.left_pressed.append(drag_handler.begin)
-//     self.left_drag.append(drag_handler.drag)
-//     self.left_released.append(drag_handler.end)
-
-// def bind_right_drag(self, drag_handler: DragInterface):
-//     self.right_pressed.append(drag_handler.begin)
-//     self.right_drag.append(drag_handler.drag)
-//     self.right_released.append(drag_handler.end)
-
-// def bind_middle_drag(self, drag_handler: DragInterface):
-//     self.middle_pressed.append(drag_handler.begin)
-//     self.middle_drag.append(drag_handler.drag)
-//     self.middle_released.append(drag_handler.end)
 
 // def debug_draw(self):
 //     mouse_input = self.last_input

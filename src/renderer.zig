@@ -83,20 +83,25 @@ const FboDock = struct {
     bg: imgui.ImVec4 = .{ .x = 0, .y = 0, .z = 0, .w = 0 },
     tint: imgui.ImVec4 = .{ .x = 1, .y = 1, .z = 1, .w = 1 },
     clearColor: [4]f32 = .{ 0, 0, 0, 1 },
-    mouse_event: screen.MouseEvent,
+    allocator: std.mem.Allocator,
+    mouse_event: *screen.MouseEvent,
     scene: Scene,
 
     pub fn init(allocator: std.mem.Allocator) Self {
+        var mouse_event = allocator.create(screen.MouseEvent) catch @panic("create");
+        mouse_event.* = screen.MouseEvent.init(allocator);
         return .{
             .fbo = glo.FboManager{},
-            .scene = Scene.init(allocator),
-            .mouse_event = screen.MouseEvent.init(allocator),
+            .allocator = allocator,
+            .mouse_event = mouse_event,
+            .scene = Scene.init(allocator, mouse_event),
         };
     }
 
     pub fn deinit(self: *Self) void {
         self.scene.deinit();
         self.mouse_event.deinit();
+        self.allocator.destroy(self.mouse_event);
     }
 
     pub fn showFbo(self: *Self, x: f32, y: f32, size: imgui.ImVec2) void {
@@ -111,17 +116,6 @@ const FboDock = struct {
             const io = imgui.GetIO();
             const mouse_input = screen.MouseInput{ .x = @floatToInt(i32, io.MousePos.x - x), .y = @floatToInt(i32, io.MousePos.y - y), .width = @floatToInt(i32, size.x), .height = @floatToInt(i32, size.y), .left_down = io.MouseDown[0], .right_down = io.MouseDown[1], .middle_down = io.MouseDown[2], .is_active = imgui.IsItemActive(), .is_hover = imgui.IsItemHovered(.{}), .wheel = @floatToInt(i32, io.MouseWheel) };
             self.mouse_event.process(mouse_input);
-
-            // if (mouseInput.is_active) {
-            //     imgui.GetForegroundDrawList().?.AddLine(io.MouseClickedPos[0], io.MousePos, imgui.GetColorU32(@enumToInt(imgui.ImGuiCol._Button), .{}), .{ .thickness = 4.0 }); // Draw a line between the button and the mouse cursor
-            //     self.clearColor[0] = @intToFloat(f32, mouseInput.x) / @intToFloat(f32, mouseInput.width);
-            //     self.clearColor[1] = @intToFloat(f32, mouseInput.y) / @intToFloat(f32, mouseInput.height);
-            //     self.tint.x = 1.0;
-            // } else if (mouseInput.is_hover) {
-            //     self.tint.z = 1.0;
-            // } else {
-            //     self.tint.z = 0.5;
-            // }
 
             self.scene.render(mouse_input);
         }
@@ -214,7 +208,7 @@ pub const Renderer = struct {
         imgui.ImGui_ImplGlfw_NewFrame();
         imgui.NewFrame();
 
-        _ = dockspace.DockSpace("dockspace", 0);
+        _ = dockspace.dockspace("dockspace", 0);
         for (self.docks.items) |*dock| {
             dock.*.show();
         }

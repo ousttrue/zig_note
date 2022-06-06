@@ -152,11 +152,90 @@ const Projection = struct {
     }
 };
 
+const Vec3 = struct {
+    const Self = @This();
+    x: f32,
+    y: f32,
+    z: f32,
+    pub fn init(x: f32, y: f32, z: f32) Self {
+        return .{
+            .x = x,
+            .y = y,
+            .z = z,
+        };
+    }
+    pub fn dot(self: *const Self, rhs: Vec3) f32 {
+        return self.x * rhs.x + self.y * rhs.y + self.z + rhs.z;
+    }
+    pub fn mul(self: *const Self, scalar: f32) Vec3 {
+        return .{ .x = self.x * scalar, .y = self.y * scalar, .z = self.z * scalar };
+    }
+    pub fn add(self: *const Self, rhs: Vec3) Vec3 {
+        return .{ .x = self.x + rhs.x, .y = self.y + rhs.y, .z = self.z + rhs.z };
+    }
+
+    pub fn cross(self: *const Self, rhs: Vec3) Vec3 {
+        return .{
+            .x = self.y * rhs.z - self.z * rhs.y,
+            .y = self.z * rhs.x - self.x * rhs.z,
+            .z = self.x * rhs.y - self.y * rhs.x,
+        };
+    }
+    pub fn normalize(self: *const Self) Self {
+        const sqnorm = self.dot(self.*);
+        const len = std.math.sqrt(sqnorm);
+        const factor = 1.0 / len;
+        return .{ .x = self.x * factor, .y = self.y * factor, .z = self.z * factor };
+    }
+};
+
+pub const Quaternion = struct {
+    const Self = @This();
+    x: f32 = 0,
+    y: f32 = 0,
+    z: f32 = 0,
+    w: f32 = 1,
+
+    pub fn angleAxis(angle: f32, axis: Vec3) Quaternion {
+        const half = angle / 2;
+        const c = std.math.cos(half);
+        const s = std.math.sin(half);
+        return .{
+            .x = axis.x * s,
+            .y = axis.y * s,
+            .z = axis.z * s,
+            .w = c,
+        };
+    }
+
+    pub fn normalize(self: *Self) Quaternion {
+        const sqnorm = self.x * self.x + self.y * self.y + self.z * self.z + self.w + self.w;
+        const factor = 1 / sqnorm;
+        return .{
+            .x = self.x * factor,
+            .y = self.y * factor,
+            .z = self.z * factor,
+            .w = self.w * factor,
+        };
+    }
+
+    pub fn mul(self: *Self, rhs: Self) Quaternion {
+        const lv = Vec3{ .x = self.x, .y = self.y, .z = self.z };
+        const rv = Vec3{ .x = rhs.x, .y = rhs.y, .z = rhs.z };
+        const v = lv.mul(rhs.w).add(rv.mul(self.w)).add(lv.cross(rv));
+        return .{
+            .x = v.x,
+            .y = v.y,
+            .z = v.z,
+            .w = self.w * rhs.w - lv.dot(rv),
+        };
+    }
+};
+
 const View = struct {
     const Self = @This();
 
-    yaw: f32 = 0,
-    pitch: f32 = 0,
+    rotation: Quaternion = .{},
     shift: [3]f32 = .{ 0, 0, -5 },
 
     pub fn getMatrix(self: *Self) Mat4 {
@@ -206,18 +285,107 @@ const Camera = struct {
     }
 };
 
+test {
+    std.testing.expectEqual(14, Vec3.init(1, 2, 3).dot(Vec3.init(1, 2, 3)));
+    std.testing.expectEqual(Vec3.init(0, 0, 1), (Vec3.init(1, 0, 0).cross(Vec3.init(0, 1, 0))));
+}
+
+pub fn getArcballVector(mouse_input: screen.MouseInput) Vec3 {
+    // https://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Arcball
+    var P = Vec3.init(@intToFloat(f32, mouse_input.x) / @intToFloat(f32, mouse_input.width) * 2 - 1.0, @intToFloat(f32, mouse_input.y) / @intToFloat(f32, mouse_input.height) * 2 - 1.0, 0);
+    P.y = -P.y;
+    const OP_squared = P.x * P.x + P.y * P.y;
+    if (OP_squared <= 1) {
+        P.z = std.math.sqrt(1 - OP_squared); // Pythagoras
+    } else {
+        P = P.normalize(); // nearest point
+    }
+    return P;
+}
+
+const ArcBall = struct {
+    const Self = @This();
+
+    view: *View,
+    projection: *Projection,
+    rotation: Quaternion = .{},
+    tmp_rotation: Quaternion = .{},
+    x: ?i32 = null,
+    y: ?i32 = null,
+    va: ?Vec3 = null,
+
+    pub fn init(view: *View, projection: *Projection) Self {
+        return .{
+            .view = view,
+            .projection = projection,
+        };
+    }
+
+    pub fn update(self: *Self) void {
+        self.view.rotation = self.tmp_rotation.mul(self.rotation).normalize();
+    }
+
+    pub fn begin(self: *Self, mouse_input: screen.MouseInput) void {
+        self.rotation = self.view.rotation;
+        self.x = mouse_input.x;
+        self.y = mouse_input.y;
+        self.va = getArcballVector(mouse_input);
+    }
+
+    pub fn drag(self: *Self, mouse_input: screen.MouseInput, _: i32, _: i32) void {
+        if (mouse_input.x == self.x and mouse_input.y == self.y) {
+            return;
+        }
+        const va = self.va orelse return;
+        self.x = mouse_input.x;
+        self.y = mouse_input.y;
+        const vb = getArcballVector(mouse_input);
+        const angle = std.math.acos(std.math.min(1.0, va.dot(vb))) * 2;
+        const axis = va.cross(vb);
+        self.tmp_rotation = Quaternion.angleAxis(angle, axis);
+        self.update();
+    }
+
+    pub fn end(self: *Self, _: screen.MouseInput) void {
+        self.rotation = self.tmp_rotation.mul(self.rotation).normalize();
+        self.tmp_rotation = .{};
+        self.update();
+    }
+};
+
 pub const Scene = struct {
     const Self = @This();
 
     allocator: std.mem.Allocator,
+    camera: Camera = .{},
+    arc: *ArcBall,
     shader: ?glo.ShaderProgram = null,
     vao: ?glo.Vao = null,
-    camera: Camera = .{},
 
-    pub fn init(allocator: std.mem.Allocator) Self {
-        return .{
+    pub fn init(allocator: std.mem.Allocator, mouse_event: *screen.MouseEvent) Self {
+        var arc = allocator.create(ArcBall) catch @panic("create");
+        var scene = Scene{
             .allocator = allocator,
+            .arc = arc,
         };
+        arc.* = ArcBall.init(&scene.camera.view, &scene.camera.projection);
+        _ = mouse_event;
+        var begin = screen.mouse_event.BeginEndCallback.create(arc, "begin");
+        var drag = screen.mouse_event.DragCallback.create(arc, ArcBall.drag);
+        _ =begin;
+        _ =drag;
+        // mouse_event.right_button.bind(.{
+        //     .begin = ,
+        //     .drag = screen.mouse_event.DragCallback.create(arc, "drag"),
+        //     .end = screen.mouse_event.BeginEndCallback.create(arc, "end"),
+        // });
+
+        return scene;
+    }
+
+    pub fn deinit(self: *Self)void
+    {
+        self.allocator.destroy(self.arc);
     }
 
     pub fn load(self: *Self, path: []const u8) void {

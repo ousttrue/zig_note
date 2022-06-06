@@ -1,6 +1,9 @@
+const std = @import("std");
 const imgui = @import("imgui");
+const screen = @import("screen");
+const caller = screen.caller;
 
-pub fn DockSpace(name: [*:0]const u8, toolbar_size: f32) i32 {
+pub fn dockspace(name: [*:0]const u8, toolbar_size: f32) i32 {
     var io = imgui.GetIO();
     io.ConfigFlags |= @enumToInt(imgui.ImGuiConfigFlags._DockingEnable);
 
@@ -68,20 +71,11 @@ pub const Dock = struct {
         self.callback(self.ptr);
     }
 
-    pub fn create(p: anytype) Dock
-    {
-        const t = @TypeOf(p.*);
-        const T = struct {
-            fn call(src: * anyopaque) void
-            {
-                const comp_size = comptime @alignOf(*t);
-                var dst = @ptrCast(*t, @alignCast(comp_size, src));
-                t.show(dst);
-            }
-        };
+    pub fn create(p: anytype) Dock {
+        const T = @TypeOf(p.*);
         return .{
             .ptr = p,
-            .callback = T.call,
+            .callback = caller.Caller0(T, "show").call,
         };
     }
 };
