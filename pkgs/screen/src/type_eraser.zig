@@ -1,39 +1,47 @@
 const std = @import("std");
 
 pub fn TypeEraser(comptime T: type, comptime name: []const u8) type {
-    const f = @field(T, name);
-    const info = @typeInfo(@TypeOf(f));
+    const field = @field(T, name);
+    const info = @typeInfo(@TypeOf(field));
     const alignment = @typeInfo(*T).Pointer.alignment;
 
     switch (info) {
-        .Fn => |method| {
-            switch (method.args.len) {
+        .Fn => |f| {
+            switch (f.args.len) {
                 1 => {
                     return struct {
-                        pub fn call(ptr: *anyopaque) (method.return_type orelse void) {
-                            const self = @ptrCast(*T, @alignCast(alignment, ptr));
-                            return @call(.{}, f, .{self});
+                        pub fn call(ptr: *anyopaque) (f.return_type orelse void) {
+                            const self = @ptrCast(f.args[0].arg_type.?, @alignCast(alignment, ptr));
+                            return @call(.{}, field, .{self});
                         }
                     };
                 },
                 2 => {
                     return struct {
-                        pub fn call(ptr: *anyopaque, a0: method.args[1].arg_type.?) (method.return_type orelse void) {
-                            const self = @ptrCast(*T, @alignCast(alignment, ptr));
-                            return @call(.{}, f, .{self, a0});
+                        pub fn call(ptr: *anyopaque, a0: f.args[1].arg_type.?) (f.return_type orelse void) {
+                            const self = @ptrCast(f.args[0].arg_type.?, @alignCast(alignment, ptr));
+                            return @call(.{}, field, .{ self, a0 });
+                        }
+                    };
+                },
+                3 => {
+                    return struct {
+                        pub fn call(ptr: *anyopaque, a0: f.args[1].arg_type.?, a1: f.args[2].arg_type.?) (f.return_type orelse void) {
+                            const self = @ptrCast(f.args[0].arg_type.?, @alignCast(alignment, ptr));
+                            return @call(.{}, field, .{ self, a0, a1 });
                         }
                     };
                 },
                 4 => {
                     return struct {
-                        pub fn call(ptr: *anyopaque, a0: method.args[1].arg_type.?, a1: method.args[2].arg_type.?, a2: method.args[3].arg_type.?) (method.return_type orelse void) {
-                            const self = @ptrCast(*T, @alignCast(alignment, ptr));
-                            return @call(.{}, f, .{self, a0, a1, a2});
+                        pub fn call(ptr: *anyopaque, a0: f.args[1].arg_type.?, a1: f.args[2].arg_type.?, a2: f.args[3].arg_type.?) (f.return_type orelse void) {
+                            const self = @ptrCast(f.args[0].arg_type.?, @alignCast(alignment, ptr));
+                            return @call(.{}, field, .{ self, a0, a1, a2 });
                         }
                     };
                 },
                 else => {
-                    @compileError("not implemted: args.len > 0");
+                    @compileError("not implemted: args.len > 4");
                 },
             }
         },
