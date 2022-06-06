@@ -310,8 +310,7 @@ const ArcBall = struct {
     projection: *Projection,
     rotation: Quaternion = .{},
     tmp_rotation: Quaternion = .{},
-    x: ?i32 = null,
-    y: ?i32 = null,
+    last: ?screen.MouseInput = null,
     va: ?Vec3 = null,
 
     pub fn init(view: *View, projection: *Projection) Self {
@@ -327,23 +326,23 @@ const ArcBall = struct {
 
     pub fn begin(self: *Self, mouse_input: screen.MouseInput) void {
         self.rotation = self.view.rotation;
-        self.x = mouse_input.x;
-        self.y = mouse_input.y;
+        self.last = mouse_input;
         self.va = getArcballVector(mouse_input);
     }
 
     pub fn drag(self: *Self, mouse_input: screen.MouseInput, _: i32, _: i32) void {
-        if (mouse_input.x == self.x and mouse_input.y == self.y) {
-            return;
+        if (self.last) |last| {
+            if (mouse_input.x == last.x and mouse_input.y == last.y) {
+                return;
+            }
+            const va = self.va orelse return;
+            const vb = getArcballVector(mouse_input);
+            const angle = std.math.acos(std.math.min(1.0, va.dot(vb))) * 2;
+            const axis = va.cross(vb);
+            self.tmp_rotation = Quaternion.angleAxis(angle, axis);
+            self.update();
         }
-        const va = self.va orelse return;
-        self.x = mouse_input.x;
-        self.y = mouse_input.y;
-        const vb = getArcballVector(mouse_input);
-        const angle = std.math.acos(std.math.min(1.0, va.dot(vb))) * 2;
-        const axis = va.cross(vb);
-        self.tmp_rotation = Quaternion.angleAxis(angle, axis);
-        self.update();
+        self.last = mouse_input;
     }
 
     pub fn end(self: *Self, _: screen.MouseInput) void {
@@ -369,22 +368,16 @@ pub const Scene = struct {
             .arc = arc,
         };
         arc.* = ArcBall.init(&scene.camera.view, &scene.camera.projection);
-        _ = mouse_event;
-        var begin = screen.mouse_event.BeginEndCallback.create(arc, "begin");
-        var drag = screen.mouse_event.DragCallback.create(arc, ArcBall.drag);
-        _ =begin;
-        _ =drag;
-        // mouse_event.right_button.bind(.{
-        //     .begin = ,
-        //     .drag = screen.mouse_event.DragCallback.create(arc, "drag"),
-        //     .end = screen.mouse_event.BeginEndCallback.create(arc, "end"),
-        // });
+        mouse_event.right_button.bind(.{
+            .begin = screen.mouse_event.BeginEndCallback.create(arc, "begin"),
+            .drag = screen.mouse_event.DragCallback.create(arc, "drag"),
+            .end = screen.mouse_event.BeginEndCallback.create(arc, "end"),
+        });
 
         return scene;
     }
 
-    pub fn deinit(self: *Self)void
-    {
+    pub fn deinit(self: *Self) void {
         self.allocator.destroy(self.arc);
     }
 

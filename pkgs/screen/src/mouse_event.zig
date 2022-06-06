@@ -1,6 +1,6 @@
 const std = @import("std");
 const MouseInput = @import("./mouse_input.zig").MouseInput;
-const caller = @import("./caller.zig");
+const TypeEraser = @import("./type_eraser.zig").TypeEraser;
 
 pub const BeginEndCallback = struct {
     const Self = @This();
@@ -13,7 +13,7 @@ pub const BeginEndCallback = struct {
         const T = @TypeOf(p.*);
         return .{
             .ptr = p,
-            .callback = caller.Caller1(T, name, .{MouseInput}).call,
+            .callback = TypeEraser(T, name).call,
         };
     }
 };
@@ -25,11 +25,11 @@ pub const DragCallback = struct {
     pub fn execute(self: *Self, mouse_input: MouseInput, dx: i32, dy: i32) void {
         self.callback(self.ptr, mouse_input, dx, dy);
     }
-    pub fn create(p: anytype, comptime f: anytype) Self {
+    pub fn create(p: anytype, comptime name: []const u8) Self {
         const T = @TypeOf(p.*);
         return .{
             .ptr = p,
-            .callback = caller.Caller3(T, f, MouseInput, i32, i32).call,
+            .callback = TypeEraser(T, name).call,
         };
     }
 };
@@ -45,7 +45,7 @@ pub const WheelCallback = struct {
         const T = @TypeOf(p.*);
         return .{
             .ptr = p,
-            .callback = caller.Caller1(T, name, .{i32}).call,
+            .callback = TypeEraser(T, name, .{i32}).call,
         };
     }
 };
@@ -121,8 +121,8 @@ pub const MouseEvent = struct {
     pub fn init(allocator: std.mem.Allocator) Self {
         return .{
             .left_button = MouseButtonEvent.init(allocator),
-            .middle_button = MouseButtonEvent.init(allocator),
             .right_button = MouseButtonEvent.init(allocator),
+            .middle_button = MouseButtonEvent.init(allocator),
             .wheel = std.ArrayList(WheelCallback).init(allocator),
         };
     }
@@ -137,8 +137,8 @@ pub const MouseEvent = struct {
         const dx = if (self.last_input) |last_input| current.x - last_input.x else 0;
         const dy = if (self.last_input) |last_input| current.y - last_input.y else 0;
         self.left_button.process(current, current.left_down, if (self.last_input) |last_input| last_input.left_down else false, dx, dy);
-        self.middle_button.process(current, current.right_down, if (self.last_input) |last_input| last_input.middle_down else false, dx, dy);
-        self.right_button.process(current, current.middle_down, if (self.last_input) |last_input| last_input.right_down else false, dx, dy);
+        self.right_button.process(current, current.right_down, if (self.last_input) |last_input| last_input.right_down else false, dx, dy);
+        self.middle_button.process(current, current.middle_down, if (self.last_input) |last_input| last_input.middle_down else false, dx, dy);
         if (current.is_active or current.is_hover) {
             if (current.wheel != 0) {
                 for (self.wheel.items) |*callback| {

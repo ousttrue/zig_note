@@ -1,7 +1,7 @@
 const std = @import("std");
 const imgui = @import("imgui");
 const screen = @import("screen");
-const caller = screen.caller;
+const TypeEraser = screen.TypeEraser;
 
 pub fn dockspace(name: [*:0]const u8, toolbar_size: f32) i32 {
     var io = imgui.GetIO();
@@ -75,7 +75,7 @@ pub const Dock = struct {
         const T = @TypeOf(p.*);
         return .{
             .ptr = p,
-            .callback = caller.Caller0(T, "show").call,
+            .callback = TypeEraser(T, "show").call,
         };
     }
 };
