@@ -2,7 +2,7 @@ const std = @import("std");
 const nanovg = @import("nanovg");
 const nanovg_impl_opengl3 = @import("./nanovg_impl_opengl3.zig");
 
-fn get_system_font() []const u8 {
+fn get_system_font() [:0]const u8 {
     return "C:/Windows/Fonts/msgothic.ttc";
     // else:
     //     return pathlib.Path('/usr/share/fonts/liberation-fonts/LiberationMono-Regular.ttf')
@@ -12,11 +12,12 @@ pub const NanoVgRenderer = struct {
     const Self = @This();
 
     vg: *nanovg.NVGcontext,
-    font_name: []const u8,
-    font_path: []const u8,
+    font_name: [:0]const u8,
+    font_path: [:0]const u8,
     font_initialized: bool = false,
+    fontNormal: c_int = 0,
 
-    pub fn init(allocator: std.mem.Allocator, font_path: ?[]const u8, font_name: ?[]const u8) Self {
+    pub fn init(allocator: std.mem.Allocator, font_path: ?[:0]const u8, font_name: ?[:0]const u8) Self {
         var self = Self{
             .vg = nanovg.nvgCreate(@enumToInt(nanovg.NVGcreateFlags.NVG_ANTIALIAS) |
                 @enumToInt(nanovg.NVGcreateFlags.NVG_STENCIL_STROKES) |
@@ -30,23 +31,21 @@ pub const NanoVgRenderer = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        _ = self;
-        // nanovg_impl_opengl3.delete()
+        nanovg_impl_opengl3.delete();
+        self.nvgDestroy(self.vg);
     }
 
-    //     def init_font(self):
-    //         '''
-    //         must after nanovg.nvgBeginFrame
-    //         '''
-    //         if self.font_initialized:
-    //             return
-    //         self.fontNormal = nanovg.nvgCreateFont(
-    //             self.vg, self.font_name, self.font_path)
-    //         if self.fontNormal == -1:
-    //             raise RuntimeError("Could not add font italic.")
-    //         self.font_initialized = True
+    pub fn init_font(self: *Self) void {
+        // must after nanovg.nvgBeginFrame
+        if (self.font_initialized) {
+            return;
+        }
+        self.fontNormal = nanovg.nvgCreateFont(self.vg, self.font_name, self.font_path);
+        std.debug.assert(self.fontNormal != -1);
+        self.font_initialized = true;
+    }
 
-    pub fn beginFrame(self: *Self, width: f32, height: f32) ?*nanovg.NVGcontext {
+    pub fn begin(self: *Self, width: f32, height: f32) ?*nanovg.NVGcontext {
         if (width == 0 or height == 0) {
             return null;
         }
@@ -56,20 +55,12 @@ pub const NanoVgRenderer = struct {
         return self.vg;
     }
 
-    pub fn endFrame(self: *Self) void {
-        _ = self;
-        nanovg_impl_opengl3.render(nanovg.nvgGetDrawData(self.vg));
+    pub fn end(self: *Self) void {
+        if (nanovg.nvgGetDrawData(self.vg)) |data| {
+            nanovg_impl_opengl3.render(data);
+        }
     }
 };
-
-//     @contextlib.contextmanager
-//     def render(self, w, h):
-//         vg = self.begin_frame(w, h)
-//         try:
-//             if vg:
-//                 yield vg
-//         finally:
-//             self.end_frame()
 
 // def nvg_line_from_to(vg, x0, y0, x1, y1):
 //     nanovg.nvgSave(vg)

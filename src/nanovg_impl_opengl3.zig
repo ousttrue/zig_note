@@ -5,25 +5,24 @@ const nanovg = @import("nanovg");
 
 // P_PATH = ctypes.POINTER(nanovg.GLNVGpath)
 // P_CALL = ctypes.POINTER(nanovg.GLNVGcall)
+// FLAGS = 0
 
 const VS = @embedFile("./nanovg.vs");
 const FS = @embedFile("./nanovg.fs");
 
-// FLAGS = 0
-
 fn checkGlError() void {
     while (true) {
-        const err = gl.GetError();
+        const err = gl.getError();
         switch (err) {
-            .NO_ERROR => break,
+            gl.NO_ERROR => break,
             else => {
-                std.debug.print("Error {s}\n", @tagName(err));
+                std.debug.print("Error {}\n", .{err});
             },
         }
     }
 }
 
-fn convertBlendFuncFactor(factor: nanovg.NVGblendFactor) i32 {
+fn convertBlendFuncFactor(factor: nanovg.NVGblendFactor) u32 {
     return switch (factor) {
         .NVG_ZERO => gl.ZERO,
         .NVG_ONE => gl.ONE,
@@ -45,20 +44,20 @@ const GLNVGblend = struct {
     dstRGB: gl.GLenum = 0,
     srcAlpha: gl.GLenum = 0,
     dstAlpha: gl.GLenum = 0,
+
+    fn blendCompositeOperation(op: nanovg.NVGcompositeOperationState) GLNVGblend {
+        const blend = GLNVGblend{ .srcRGB = convertBlendFuncFactor(op.srcRGB), .dstRGB = convertBlendFuncFactor(op.dstRGB), .srcAlpha = convertBlendFuncFactor(op.srcAlpha), .dstAlpha = convertBlendFuncFactor(op.dstAlpha) };
+        if (blend.srcRGB == gl.INVALID_ENUM or blend.dstRGB == gl.INVALID_ENUM or blend.srcAlpha == gl.INVALID_ENUM or blend.dstAlpha == gl.INVALID_ENUM) {
+            return GLNVGblend{ .srcRGB = gl.ONE, .dstRGB = gl.ONE_MINUS_SRC_ALPHA, .srcAlpha = gl.ONE, .dstAlpha = gl.ONE_MINUS_SRC_ALPHA };
+        }
+        return blend;
+    }
 };
 
-fn blendCompositeOperation(op: nanovg.NVGcompositeOperationState) nanovg.GLNVGblend {
-    const blend = GLNVGblend{ convertBlendFuncFactor(op.srcRGB), convertBlendFuncFactor(op.dstRGB), convertBlendFuncFactor(op.srcAlpha), convertBlendFuncFactor(op.dstAlpha) };
-    if (blend.srcRGB == gl.INVALID_ENUM or blend.dstRGB == gl.INVALID_ENUM or blend.srcAlpha == gl.INVALID_ENUM or blend.dstAlpha == gl.INVALID_ENUM) {
-        return GLNVGblend{ gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA };
-    }
-    return blend;
-}
-
 const StencilFunc = struct {
-    func: c_int = gl.ALWAYS,
+    func: c_uint = gl.ALWAYS,
     ref: c_int = 0,
-    mask: c_int = 0xffffffff,
+    mask: c_uint = 0xffffffff,
 };
 
 const Texture = struct {
@@ -70,23 +69,32 @@ const Pipeline = struct {
     const Self = @This();
 
     shader: glo.ShaderProgram,
+    fragSize: usize = 0,
+    texture: glo.UniformLocation,
+    view: glo.UniformLocation,
+    frag: glo.UniformBlockIndex,
 
-    fn init() Self {
-        var shader = glo.ShaderProgram.load(VS, FS);
-        std.debug.assert(shader != null);
+    fn init(allocator: std.mem.Allocator) Self {
+        var shader = glo.ShaderProgram.init(allocator);
+
+        var error_buffer: [1024]u8 = undefined;
+        if (shader.load(&error_buffer, VS, FS)) |message| {
+            @panic(message);
+        }
 
         var self = Self{
             .shader = shader,
-            // .texture = glo.UniformLocation.create(self._shader.program, "tex"),
-            // .view = glo.UniformLocation.create(self._shader.program, "viewSize"),
+            .texture = glo.UniformLocation.init(shader.handle, "tex"),
+            .view = glo.UniformLocation.init(shader.handle, "viewSize"),
             // UBO
-            // .frag = glo.UniformBlockIndex.create(self._shader.program, "frag"),
+            .frag = glo.UniformBlockIndex.init(shader.handle, "frag"),
         };
 
-        //gl.uniformBlockBinding(self.shader.handle, self.frag.index, 0);
+        gl.uniformBlockBinding(shader.handle, self.frag.index, 0);
 
-        const _align = gl.GetIntegerv(gl.UNIFORM_BUFFER_OFFSET_ALIGNMENT);
-        self._fragSize = @sizeOf(nanovg.GLNVGfragUniforms) + _align - @sizeOf(nanovg.GLNVGfragUniforms) % _align;
+        var _align: gl.GLint = undefined;
+        gl.getIntegerv(gl.UNIFORM_BUFFER_OFFSET_ALIGNMENT, &_align);
+        self.fragSize = @sizeOf(nanovg.GLNVGfragUniforms) + @intCast(usize, _align) - @intCast(usize, @mod(@sizeOf(nanovg.GLNVGfragUniforms), _align));
 
         checkGlError();
 
@@ -94,7 +102,7 @@ const Pipeline = struct {
     }
 
     fn use(self: *Self) void {
-        self._shader.use();
+        self.shader.use();
     }
 };
 
@@ -108,31 +116,33 @@ fn gl_pixel_type(pixel_type: nanovg.NVGtexture) i32 {
 const Renderer = struct {
     const Self = @This();
 
+    allocator: std.mem.Allocator,
     next_id: c_int = 1,
-    _textures: std.AutoHashMap(c_int, Texture),
-    _pipeline: ?Pipeline = null,
-    _texure: u32 = 0,
-    _stencilMask: u32 = 0xffffffff,
-    _stencilFunc: StencilFunc = undefined,
+    textures: std.AutoHashMap(c_int, Texture),
+    pipeline: ?Pipeline = null,
+    texture: gl.GLuint = 0,
+    stencilMask: u32 = 0xffffffff,
+    stencilFunc: StencilFunc = undefined,
     // _srcRGB: = {}
     // _srcAlpha: = {}
     // _dstRGB: = {}
     // _dstAlpha: = {}
     // shader: = None
-    // _vertBuf: = 0
-    // _vertArr: = 0
-    _fragBuf: gl.GLuint = 0,
+    vertBuf: gl.GLuint = 0,
+    vertArr: gl.GLuint = 0,
+    fragBuf: gl.GLuint = 0,
     // cache
-    _blendFunc: GLNVGblend = .{},
+    blendFunc: GLNVGblend = .{},
 
     fn init(allocator: std.mem.Allocator) Self {
         return .{
-            ._textures = std.AutoHashMap(c_int, Texture).init(allocator),
+            .allocator = allocator,
+            .textures = std.AutoHashMap(c_int, Texture).init(allocator),
         };
     }
 
     fn deinit(self: *Self) void {
-        self._textures.deinit();
+        self.textures.deinit();
     }
 
     fn createTexture(self: *Self, image_type: nanovg.NVGtexture, w: i32, h: i32, flags: i32, data: ?*const u8) i32 {
@@ -141,12 +151,12 @@ const Renderer = struct {
 
         const resource = glo.Texture.init(w, h, gl_pixel_type(image_type), data);
         const info = nanovg.NVGtextureInfo{ ._id = id, ._handle = 0, ._width = w, ._height = h, ._type = @enumToInt(image_type), ._flags = flags };
-        self._textures.put(id, Texture{ .info = info, .resource = resource }) catch @panic("put");
+        self.textures.put(id, Texture{ .info = info, .resource = resource }) catch @panic("put");
         return id;
     }
 
     fn updateTexture(self: *Self, image: i32, x: c_int, y: c_int, w: c_int, h: c_int, data: *const u8) bool {
-        if (self._textures.get(image)) |*texture| {
+        if (self.textures.get(image)) |*texture| {
             texture.resource.update(x, y, w, h, data);
             return true;
         }
@@ -154,11 +164,11 @@ const Renderer = struct {
     }
 
     fn deleteTexture(self: *Self, image: i32) bool {
-        return self._textures.remove(image);
+        return self.textures.remove(image);
     }
 
     fn getTexture(self: *Self, image: i32) ?*nanovg.NVGtextureInfo {
-        if (self._textures.get(image)) |*texture| {
+        if (self.textures.get(image)) |*texture| {
             return &texture.info;
         } else {
             return null;
@@ -166,25 +176,25 @@ const Renderer = struct {
     }
 
     fn blendFuncSeparate(self: *Self, blend: GLNVGblend) void {
-        if (self._blendFunc != blend) {
-            self._blendFunc = blend;
+        if (!std.meta.eql(self.blendFunc, blend)) {
+            self.blendFunc = blend;
             gl.blendFuncSeparate(blend.srcRGB, blend.dstRGB, blend.srcAlpha, blend.dstAlpha);
         }
     }
 
-    fn setUniforms(self: *Self, uniformOffset: i32) void {
-        gl.bindBufferRange(gl.UNIFORM_BUFFER, 0, self._fragBuf, uniformOffset, @sizeOf(nanovg.GLNVGfragUniforms));
+    fn setUniforms(self: *Self, uniformOffset: usize) void {
+        gl.bindBufferRange(gl.UNIFORM_BUFFER, 0, self.fragBuf, uniformOffset, @sizeOf(nanovg.GLNVGfragUniforms));
     }
 
     fn bindTexture(self: *Self, image: i32) void {
         if (image == 0) {
-            gl.BindTexture(gl.TEXTURE_2D, 0);
-            self._texure = 0;
+            gl.bindTexture(gl.TEXTURE_2D, 0);
+            self.texture = 0;
         } else {
-            if (self._textures.get(image)) |*texture| {
-                if (self._texure != texture.resource.handle) {
+            if (self.textures.get(image)) |*texture| {
+                if (self.texture != texture.resource.handle) {
                     texture.resource.bind();
-                    self._texure = texture.resource.handle;
+                    self.texture = texture.resource.handle;
                 }
             } else {
                 unreachable;
@@ -192,152 +202,157 @@ const Renderer = struct {
         }
     }
 
-    fn setStencilMask(self: *Self, mask: i32) void {
-        if (self._stencilMask != mask) {
-            self._stencilMask = mask;
-            gl.StencilMask(mask);
+    fn setStencilMask(self: *Self, mask: u32) void {
+        if (self.stencilMask != mask) {
+            self.stencilMask = mask;
+            gl.stencilMask(mask);
         }
     }
 
     fn setStencilFunc(self: *Self, stencilFunc: StencilFunc) void {
-        if (self._stencilFunc != stencilFunc) {
-            self._stencilFunc = stencilFunc;
-            gl.StencilFunc(stencilFunc.func, stencilFunc.ref, stencilFunc.mask);
+        if (!std.meta.eql(self.stencilFunc, stencilFunc)) {
+            self.stencilFunc = stencilFunc;
+            gl.stencilFunc(stencilFunc.func, stencilFunc.ref, stencilFunc.mask);
         }
     }
 
-    fn fill(self: *Self, call: nanovg.GLNVGcall, pPath: [*c]const nanovg.GLNVGpath) void {
-        const paths = pPath[call.pathOffset .. call.pathOffset + call.pathCount];
+    fn fill(self: *Self, call: *const nanovg.GLNVGcall, pPath: [*]const nanovg.GLNVGpath) void {
+        const paths = pPath[@intCast(usize, call.pathOffset)..@intCast(usize, call.pathOffset + call.pathCount)];
 
         // Draw shapes
         gl.enable(gl.STENCIL_TEST);
-        self.stencilMask(0xff);
-        self.stencilFunc(StencilFunc(gl.ALWAYS, 0, 0xff));
+        self.setStencilMask(0xff);
+        self.setStencilFunc(StencilFunc{ .func = gl.ALWAYS, .ref = 0, .mask = 0xff });
         gl.colorMask(gl.FALSE, gl.FALSE, gl.FALSE, gl.FALSE);
 
         // set bindpoint for solid loc
-        self.setUniforms(call.uniformOffset);
-        self.bind_texture(0);
+        self.setUniforms(@intCast(usize, call.uniformOffset));
+        self.bindTexture(0);
 
         gl.stencilOpSeparate(gl.FRONT, gl.KEEP, gl.KEEP, gl.INCR_WRAP);
         gl.stencilOpSeparate(gl.BACK, gl.KEEP, gl.KEEP, gl.DECR_WRAP);
         gl.disable(gl.CULL_FACE);
         for (paths) |*path| {
-            gl.DrawArrays(gl.TRIANGLE_FAN, path.fillOffset, path.fillCount);
+            gl.drawArrays(gl.TRIANGLE_FAN, path.fillOffset, path.fillCount);
         }
-        gl.Enable(gl.CULL_FACE);
+        gl.enable(gl.CULL_FACE);
 
         // Draw anti-aliased pixels
-        gl.ColorMask(gl.TRUE, gl.TRUE, gl.TRUE, gl.TRUE);
+        gl.colorMask(gl.TRUE, gl.TRUE, gl.TRUE, gl.TRUE);
 
-        self.setUniforms(call.uniformOffset + self._pipeline._fragSize);
-        self.bind_texture(call.image);
+        self.setUniforms(@intCast(usize, call.uniformOffset) + self.pipeline.?.fragSize);
+        self.bindTexture(call.image);
 
         // Draw fill
-        self.stencilFunc(StencilFunc(gl.NOTEQUAL, 0x0, 0xff));
-        gl.StencilOp(gl.ZERO, gl.ZERO, gl.ZERO);
-        gl.DrawArrays(gl.TRIANGLE_STRIP, call.triangleOffset, call.triangleCount);
-
-        gl.Disable(gl.STENCIL_TEST);
+        self.setStencilFunc(StencilFunc{ .func = gl.NOTEQUAL, .ref = 0x0, .mask = 0xff });
+        gl.stencilOp(gl.ZERO, gl.ZERO, gl.ZERO);
+        gl.drawArrays(gl.TRIANGLE_STRIP, call.triangleOffset, call.triangleCount);
+        gl.disable(gl.STENCIL_TEST);
     }
 
-    fn convexFill(self: *Self, call: nanovg.GLNVGcall, pPaths: [*c]const nanovg.GLNVGpath) void {
-        const paths = pPaths[call.pathOffset .. call.pathOffset + call.pathCount];
+    fn convexFill(self: *Self, call: *nanovg.GLNVGcall, pPaths: [*c]const nanovg.GLNVGpath) void {
+        const paths = pPaths[@intCast(usize, call.pathOffset)..@intCast(usize, call.pathOffset + call.pathCount)];
 
-        self.setUniforms(call.uniformOffset);
-        self.bind_texture(call.image);
+        self.setUniforms(@intCast(usize, call.uniformOffset));
+        self.bindTexture(call.image);
 
         for (paths) |path| {
-            gl.DrawArrays(gl.TRIANGLE_FAN, path.fillOffset, path.fillCount);
+            gl.drawArrays(gl.TRIANGLE_FAN, path.fillOffset, path.fillCount);
             // Draw fringes
             if (path.strokeCount > 0) {
-                gl.DrawArrays(gl.TRIANGLE_STRIP, path.strokeOffset, path.strokeCount);
+                gl.drawArrays(gl.TRIANGLE_STRIP, path.strokeOffset, path.strokeCount);
             }
         }
     }
 
-    fn stroke(self: *Self, call: nanovg.GLNVGcall, pPaths: [*c]const nanovg.GLNVGpath) void {
-        const paths = pPaths[call.pathOffset .. call.pathOffset + call.pathCount];
-        self.setUniforms(call.uniformOffset);
-        self.bind_texture(call.image);
+    fn stroke(self: *Self, call: *nanovg.GLNVGcall, pPaths: [*c]const nanovg.GLNVGpath) void {
+        const paths = pPaths[@intCast(usize, call.pathOffset)..@intCast(usize, call.pathOffset + call.pathCount)];
+        self.setUniforms(@intCast(usize, call.uniformOffset));
+        self.bindTexture(call.image);
         // Draw Strokes
         for (paths) |path| {
-            gl.DrawArrays(gl.TRIANGLE_STRIP, path.strokeOffset, path.strokeCount);
+            gl.drawArrays(gl.TRIANGLE_STRIP, path.strokeOffset, path.strokeCount);
         }
     }
 
-    fn triangles(self: *Self, call: nanovg.GLNVGcall) void {
-        self.setUniforms(call.uniformOffset);
-        self.bind_texture(call.image);
-        gl.DrawArrays(gl.TRIANGLES, call.triangleOffset, call.triangleCount);
+    fn triangles(self: *Self, call: *nanovg.GLNVGcall) void {
+        self.setUniforms(@intCast(usize, call.uniformOffset));
+        self.bindTexture(call.image);
+        gl.drawArrays(gl.TRIANGLES, call.triangleOffset, call.triangleCount);
     }
 
     fn begin(self: *Self) void {
         _ = self;
-        gl.Enable(gl.CULL_FACE);
-        gl.CullFace(gl.BACK);
-        gl.FrontFace(gl.CCW);
-        gl.Enable(gl.BLEND);
-        gl.Disable(gl.DEPTH_TEST);
-        gl.Disable(gl.SCISSOR_TEST);
-        gl.ColorMask(gl.TRUE, gl.TRUE, gl.TRUE, gl.TRUE);
-        gl.StencilMask(0xffffffff);
-        gl.StencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
-        gl.StencilFunc(gl.ALWAYS, 0, 0xffffffff);
-        gl.BindTexture(gl.TEXTURE_2D, 0);
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.BACK);
+        gl.frontFace(gl.CCW);
+        gl.enable(gl.BLEND);
+        gl.disable(gl.DEPTH_TEST);
+        gl.disable(gl.SCISSOR_TEST);
+        gl.colorMask(gl.TRUE, gl.TRUE, gl.TRUE, gl.TRUE);
+        gl.stencilMask(0xffffffff);
+        gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
+        gl.stencilFunc(gl.ALWAYS, 0, 0xffffffff);
+        gl.bindTexture(gl.TEXTURE_2D, 0);
     }
 
     fn end(self: *Self) void {
         _ = self;
-        gl.DisableVertexAttribArray(0);
-        gl.DisableVertexAttribArray(1);
-        gl.BindVertexArray(0);
-        gl.Disable(gl.CULL_FACE);
-        gl.BindBuffer(gl.ARRAY_BUFFER, 0);
-        gl.UseProgram(0);
-        gl.BindTexture(gl.TEXTURE_2D, 0);
+        gl.disableVertexAttribArray(0);
+        gl.disableVertexAttribArray(1);
+        gl.bindVertexArray(0);
+        gl.disable(gl.CULL_FACE);
+        gl.bindBuffer(gl.ARRAY_BUFFER, 0);
+        gl.useProgram(0);
+        gl.bindTexture(gl.TEXTURE_2D, 0);
     }
 
-    fn render(self: *Self, data: [*c]const nanovg.NVGdrawData) void {
-        if (self._pipeline == null) {
-            self._pipeline = Pipeline{};
-            self._vertArr = gl.GenVertexArrays(1);
-            self._vertBuf = gl.GenBuffers(1);
-            self._fragBuf = gl.GenBuffers(1);
+    fn render(self: *Self, data: *const nanovg.NVGdrawData) void {
+        if(data.drawCount==0)
+        {
+            return;
+        }
+
+        if (self.pipeline == null) {
+            self.pipeline = Pipeline.init(self.allocator);
+            gl.genVertexArrays(1, &self.vertArr);
+            gl.genBuffers(1, &self.vertBuf);
+            gl.genBuffers(1, &self.fragBuf);
         }
 
         // Upload ubo for frag shaders
-        gl.BindBuffer(gl.UNIFORM_BUFFER, self._fragBuf);
-        gl.BufferData(gl.UNIFORM_BUFFER, data.uniformByteSize, data.pUniform, gl.STREAM_DRAW);
+        gl.bindBuffer(gl.UNIFORM_BUFFER, self.fragBuf);
+        gl.bufferData(gl.UNIFORM_BUFFER, data.uniformByteSize, data.pUniform, gl.STREAM_DRAW);
 
         // Upload vertex data
-        gl.BindVertexArray(self._vertArr);
-        gl.BindBuffer(gl.ARRAY_BUFFER, self._vertBuf);
-        gl.BufferData(gl.ARRAY_BUFFER, data.vertexCount * @sizeOf(nanovg.NVGvertex), data.pVertex, gl.STREAM_DRAW);
-        gl.EnableVertexAttribArray(0);
-        gl.EnableVertexAttribArray(1);
-        gl.VertexAttribPointer(0, 2, gl.FLOAT, gl.FALSE, @sizeOf(nanovg.NVGvertex), null);
-        gl.VertexAttribPointer(1, 2, gl.FLOAT, gl.FALSE, @sizeOf(nanovg.NVGvertex), @intToPtr(*anyopaque, 0 + 2 * @sizeOf(f32)));
+        gl.bindVertexArray(self.vertArr);
+        gl.bindBuffer(gl.ARRAY_BUFFER, self.vertBuf);
+        gl.bufferData(gl.ARRAY_BUFFER, data.vertexCount * @sizeOf(nanovg.NVGvertex), data.pVertex, gl.STREAM_DRAW);
+        gl.enableVertexAttribArray(0);
+        gl.enableVertexAttribArray(1);
+        gl.vertexAttribPointer(0, 2, gl.FLOAT, gl.FALSE, @sizeOf(nanovg.NVGvertex), null);
+        gl.vertexAttribPointer(1, 2, gl.FLOAT, gl.FALSE, @sizeOf(nanovg.NVGvertex), @intToPtr(*anyopaque, 0 + 2 * @sizeOf(f32)));
 
-        gl.BindBuffer(gl.UNIFORM_BUFFER, self._fragBuf);
+        gl.bindBuffer(gl.UNIFORM_BUFFER, self.fragBuf);
 
-        const calls = data.drawData[0..data.drawCount];
+        const calls = @ptrCast([*]nanovg.GLNVGcall, data.drawData.?)[0..data.drawCount];
         const p_path = data.pPath;
 
         // Set view and texture just once per frame.
-        self._pipeline.use();
-        self._pipeline.texture.set_int(0);
-        self._pipeline.view.set_float2(data.view);
-        gl.ActiveTexture(gl.TEXTURE0);
+        self.pipeline.?.use();
+        self.pipeline.?.texture.setInt(0);
+        self.pipeline.?.view.setFloat2(&data.view[0]);
+        gl.activeTexture(gl.TEXTURE0);
 
         for (calls) |*call| {
-            const blendFunc = blendCompositeOperation(call.blendFunc);
+            const blendFunc = GLNVGblend.blendCompositeOperation(call.blendFunc);
             self.blendFuncSeparate(blendFunc);
-            switch (call.type) {
-                .GLNVG_FILL => self.fill(call, p_path),
+            switch (@intToEnum(nanovg.GLNVGcallType, call.type)) {
+                .GLNVG_FILL => self.fill(call, @ptrCast([*]const nanovg.GLNVGpath, p_path)),
                 .GLNVG_CONVEXFILL => self.convexFill(call, p_path),
                 .GLNVG_STROKE => self.stroke(call, p_path),
                 .GLNVG_TRIANGLES => self.triangles(call),
+                else => {},
             }
         }
     }
@@ -384,7 +399,7 @@ pub fn deinit() void {
 }
 
 pub fn render(data: *nanovg.NVGdrawData) void {
-    g_renderer.begin();
-    defer g_renderer.end();
-    g_renderer.render(data);
+    g_renderer.?.begin();
+    defer g_renderer.?.end();
+    g_renderer.?.render(data);
 }

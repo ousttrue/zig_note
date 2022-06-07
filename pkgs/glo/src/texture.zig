@@ -7,10 +7,10 @@ pub const Texture = struct {
     height: c_int,
     // gl.GL_RGBA(32bit) or gl.GL_RED(8bit graysclale)
     pixelFormat: c_int,
-    handle: [1]gl.GLuint = .{0},
+    handle: gl.GLuint = 0,
 
     fn _init(self: *Self) void {
-        gl.genTextures(self.handle.len, &self.handle[0]);
+        gl.genTextures(1, &self.handle);
     }
 
     pub fn init(width: c_int, height: c_int, pixelFormat: c_int, data: ?*const u8) Texture {
@@ -33,8 +33,12 @@ pub const Texture = struct {
         return texture;
     }
 
+    pub fn deinit(self: *Self) void {
+        gl.deleteTextures(1, &self.handle);
+    }
+
     pub fn bind(self: *Self) void {
-        gl.bindTexture(gl.TEXTURE_2D, self.handle[0]);
+        gl.bindTexture(gl.TEXTURE_2D, self.handle);
     }
 
     pub fn unbind(_: *Self) void {

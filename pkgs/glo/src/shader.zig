@@ -200,3 +200,44 @@ pub const ShaderProgram = struct {
         return layouts;
     }
 };
+
+pub const UniformLocation = struct {
+    const Self = @This();
+    name: []const u8,
+    location: c_int,
+
+    pub fn init(program: c_uint, name: []const u8) Self {
+        const location = gl.getUniformLocation(program, &name[0]);
+        if (location == -1) {
+            std.log.debug("{s}: -1", .{name});
+        }
+        return .{
+            .name = name,
+            .location = location,
+        };
+    }
+
+    pub fn setInt(self: *Self, value: c_int) void {
+        gl.uniform1i(self.location, value);
+    }
+
+    pub fn setFloat2(self: *Self, value: *const f32) void {
+        gl.uniform2fv(self.location, 1, value);
+    }
+
+    pub fn setMat4(self: *Self, value: *const f32, __: struct { transpose: bool = false, count: c_int = 1 }) void {
+        gl.uniformMatrix4fv(self.location, __.count, if (__.transpose) gl.TRUE else gl.FALSE, value);
+    }
+};
+
+pub const UniformBlockIndex = struct {
+    const Self = @This();
+
+    name: []const u8,
+    index: c_uint,
+
+    pub fn init(program: c_uint, name: []const u8) Self {
+        const index = gl.getUniformBlockIndex(program, &name[0]);
+        return .{ .name = name, .index = index };
+    }
+};

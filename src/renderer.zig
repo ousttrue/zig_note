@@ -6,6 +6,7 @@ const Scene = @import("scene").Scene;
 const screen = @import("screen");
 const glo = @import("glo");
 const NanoVgRenderer = @import("./nanovg_renderer.zig").NanoVgRenderer;
+const nanovg = @import("nanovg");
 
 const DemoDock = struct {
     const Self = @This();
@@ -75,6 +76,28 @@ const AnotherDock = struct {
     }
 };
 
+fn draw_line(vg: *nanovg.NVGcontext, sx: f32, sy: f32, ex: f32, ey: f32, r: u8, g: u8, b: u8) void {
+    nanovg.nvgSave(vg);
+    nanovg.nvgStrokeWidth(vg, 1.0);
+    nanovg.nvgStrokeColor(vg, nanovg.nvgRGBA(r, g, b, 255));
+    nanovg.nvgFillColor(vg, nanovg.nvgRGBA(r, g, b, 255));
+
+    nanovg.nvgBeginPath(vg);
+    nanovg.nvgMoveTo(vg, sx, sy);
+    nanovg.nvgLineTo(vg, ex, ey);
+    nanovg.nvgStroke(vg);
+
+    nanovg.nvgBeginPath(vg);
+    nanovg.nvgCircle(vg, sx, sy, 4);
+    nanovg.nvgFill(vg);
+
+    nanovg.nvgBeginPath(vg);
+    nanovg.nvgCircle(vg, ex, ey, 4);
+    nanovg.nvgFill(vg);
+
+    nanovg.nvgRestore(vg);
+}
+
 const FboDock = struct {
     const Self = @This();
     name: [*:0]const u8 = "fbo",
@@ -101,15 +124,12 @@ const FboDock = struct {
     }
 
     pub fn deinit(self: *Self) void {
+        self.nvg.deinit();
         self.scene.delete();
         self.mouse_event.delete();
     }
 
     pub fn showFbo(self: *Self, x: f32, y: f32, size: imgui.ImVec2) void {
-        _ = self;
-        _ = x;
-        _ = y;
-        _ = size;
         // std.debug.assert(size != imgui.ImVec2{.x=0, .y=0});
         if (self.fbo.clear(@floatToInt(c_int, size.x), @floatToInt(c_int, size.y), self.clearColor)) |texture| {
             defer self.fbo.unbind();
@@ -119,17 +139,19 @@ const FboDock = struct {
             self.mouse_event.process(mouse_input);
 
             self.scene.render(mouse_input);
+
+            self.debugDraw(mouse_input);
         }
     }
 
     pub fn show(self: *Self) void {
         imgui.PushStyleVar_2(@enumToInt(imgui.ImGuiStyleVar._WindowPadding), .{ .x = 0, .y = 0 });
         if (imgui.Begin("render target", .{ .p_open = &self.is_open, .flags = (@enumToInt(imgui.ImGuiWindowFlags._NoScrollbar) | @enumToInt(imgui.ImGuiWindowFlags._NoScrollWithMouse)) })) {
-            _ = imgui.InputFloat3("shift", &self.scene.camera.view.shift[0], .{});
-            _ = imgui.InputFloat4("rotation", &self.scene.camera.view.rotation.x, .{});
             var pos = imgui.GetWindowPos();
-            // pos.y += imgui.GetFrameHeight();
-            pos.y = 40;
+            // _ = imgui.InputFloat3("shift", &self.scene.camera.view.shift[0], .{});
+            // _ = imgui.InputFloat4("rotation", &self.scene.camera.view.rotation.x, .{});
+            // pos.y = 40;
+            pos.y += imgui.GetFrameHeight();
             var size = imgui.GetContentRegionAvail();
             self.showFbo(pos.x, pos.y, size);
         }
@@ -138,45 +160,19 @@ const FboDock = struct {
     }
 
     pub fn debugDraw(self: *Self, mouse_input: screen.MouseInput) void {
-        _ = mouse_input;
-        if (self.nvg == null) {
-            self.nvg = NanoVgRenderer();
+        if (self.nvg.begin(@intToFloat(f32, mouse_input.width), @intToFloat(f32, mouse_input.height))) |vg| {
+            defer self.nvg.end();
+            if (self.mouse_event.left_button.active) |start| {
+                draw_line(vg, @intToFloat(f32, start.x), @intToFloat(f32, start.y), @intToFloat(f32, mouse_input.x), @intToFloat(f32, mouse_input.y), 255, 0, 0);
+            }
+            if (self.mouse_event.right_button.active) |start| {
+                draw_line(vg, @intToFloat(f32, start.x), @intToFloat(f32, start.y), @intToFloat(f32, mouse_input.x), @intToFloat(f32, mouse_input.y), 0, 255, 0);
+            }
+            if (self.mouse_event.middle_button.active) |start| {
+                draw_line(vg, @intToFloat(f32, start.x), @intToFloat(f32, start.y), @intToFloat(f32, mouse_input.x), @intToFloat(f32, mouse_input.y), 0, 0, 255);
+            }
         }
     }
-
-    //     def draw_line(vg, sx, sy, ex, ey, r, g, b):
-    //         nanovg.nvgSave(vg)
-    //         nanovg.nvgStrokeWidth(vg, 1.0)
-    //         nanovg.nvgStrokeColor(vg, nanovg.nvgRGBA(r, g, b, 255))
-    //         nanovg.nvgFillColor(vg, nanovg.nvgRGBA(r, g, b, 255))
-
-    //         nanovg.nvgBeginPath(vg)
-    //         nanovg.nvgMoveTo(vg, sx, sy)
-    //         nanovg.nvgLineTo(vg, ex, ey)
-    //         nanovg.nvgStroke(vg)
-
-    //         nanovg.nvgBeginPath(vg)
-    //         nanovg.nvgCircle(vg, sx, sy, 4)
-    //         nanovg.nvgFill(vg)
-
-    //         nanovg.nvgBeginPath(vg)
-    //         nanovg.nvgCircle(vg, ex, ey, 4)
-    //         nanovg.nvgFill(vg)
-
-    //         nanovg.nvgRestore(vg)
-
-    //     with self.nvg.render(mouse_input.width, mouse_input.height) as vg:
-    //         from pydear import nanovg
-    //         match self.left_active:
-    //             case (x, y):
-    //                 draw_line(vg, x, y, mouse_input.x, mouse_input.y, 255, 0, 0)
-    //         match self.middle_active:
-    //             case (x, y):
-    //                 draw_line(vg, x, y, mouse_input.x, mouse_input.y, 0, 255, 0)
-    //         match self.right_active:
-    //             case (x, y):
-    //                 draw_line(vg, x, y, mouse_input.x, mouse_input.y, 0, 0, 255)
-
 };
 
 pub const Renderer = struct {

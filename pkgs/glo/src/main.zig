@@ -6,5 +6,7 @@ const texture = @import("./texture.zig");
 pub const Texture = texture.Texture;
 pub const FboManager = fbo.FboManager;
 pub const ShaderProgram = shader.ShaderProgram;
+pub const UniformLocation = shader.UniformLocation;
+pub const UniformBlockIndex = shader.UniformBlockIndex;
 pub const Vbo = vao.Vbo;
 pub const Vao = vao.Vao;

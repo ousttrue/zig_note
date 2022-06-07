@@ -1,3 +1,4 @@
+const std = @import("std");
 const gl = @import("gl");
 const imgui = @import("imgui");
 const Texture = @import("./texture.zig").Texture;
@@ -15,7 +16,7 @@ pub const Fbo = struct {
             gl.genRenderbuffers(self.depth.len, &self.depth[0]);
         }
         self.bind();
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, self.texture.handle[0], 0);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, self.texture.handle, 0);
         const drawBuffers = [1]gl.GLuint{gl.COLOR_ATTACHMENT0};
         gl.drawBuffers(drawBuffers.len, &drawBuffers[0]);
         if (useDepth) {
@@ -76,6 +77,7 @@ pub const FboManager = struct {
         if (self.fbo == null) {
             self.fbo = Fbo.init(width, height, true);
         }
+        std.debug.assert(self.fbo.?.texture.handle != 0);
 
         if (self.fbo) |fbo| {
             fbo.bind();
@@ -85,7 +87,7 @@ pub const FboManager = struct {
             gl.clearDepth(1.0);
             gl.depthFunc(gl.LESS);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            return @intToPtr(*anyopaque, fbo.texture.handle[0]);
+            return @intToPtr(*anyopaque, fbo.texture.handle);
         }
 
         unreachable;
