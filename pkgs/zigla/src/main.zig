@@ -78,7 +78,7 @@ pub const Quaternion = struct {
         };
     }
 
-    pub fn normalize(self: *Self) Quaternion {
+    pub fn normalize(self: *const Self) Quaternion {
         const sqnorm = self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w;
         const factor = 1 / sqnorm;
         return .{
@@ -89,7 +89,7 @@ pub const Quaternion = struct {
         };
     }
 
-    pub fn mul(self: *Self, rhs: Self) Quaternion {
+    pub fn mul(self: *const Self, rhs: Self) Quaternion {
         const lv = Vec3{ .x = self.x, .y = self.y, .z = self.z };
         const rv = Vec3{ .x = rhs.x, .y = rhs.y, .z = rhs.z };
         const v = lv.mul(rhs.w).add(rv.mul(self.w)).add(lv.cross(rv));
@@ -101,6 +101,73 @@ pub const Quaternion = struct {
         };
     }
 };
+
+test "Quaternion" {
+    const q = Quaternion{};
+
+    try std.testing.expectEqual(q, q.mul(q));
+}
+
+pub const Mat3 = struct {
+    const Self = @This();
+
+    _00: f32 = 1,
+    _01: f32 = 0,
+    _02: f32 = 0,
+    _10: f32 = 0,
+    _11: f32 = 1,
+    _12: f32 = 0,
+    _20: f32 = 0,
+    _21: f32 = 0,
+    _22: f32 = 1,
+
+    pub fn init(
+        _00: f32,
+        _01: f32,
+        _02: f32,
+        _10: f32,
+        _11: f32,
+        _12: f32,
+        _20: f32,
+        _21: f32,
+        _22: f32,
+    ) Self {
+        return .{
+            ._00 = _00,
+            ._01 = _01,
+            ._02 = _02,
+            ._10 = _10,
+            ._11 = _11,
+            ._12 = _12,
+            ._20 = _20,
+            ._21 = _21,
+            ._22 = _22,
+        };
+    }
+
+    pub fn rotation(q: Quaternion) Mat3 {
+        return Self.init(
+            1 - 2 * q.y * q.y - 2 * q.z * q.z,
+            2 * q.x * q.y - 2 * q.w * q.z,
+            2 * q.z * q.x + 2 * q.w * q.y,
+            2 * q.x * q.y + 2 * q.w * q.z,
+            1 - 2 * q.z * q.z - 2 * q.x * q.x,
+            2 * q.y * q.z - 2 * q.w * q.x,
+            2 * q.z * q.x - 2 * q.w * q.y,
+            2 * q.y * q.z + 2 * q.w * q.x,
+            1 - 2 * q.x * q.x - 2 * q.y * q.y,
+        );
+    }
+
+    pub fn det(self: *const Self) f32 {
+        return (self._00 * self._11 * self._22 + self._01 * self._12 * self._20 + self._02 * self._10 + self._21) - (self._00 * self._12 * self._21 + self._01 * self._10 * self._22 + self._02 * self._11 * self._20);
+    }
+};
+
+test "Mat3" {
+    const m = Mat3{};
+    try std.testing.expectEqual(@as(f32, 1.0), m.det());
+}
 
 pub const Mat4 = struct {
     const Self = @This();
@@ -177,3 +244,5 @@ pub const Mat4 = struct {
         } };
     }
 };
+
+test "Mat4" {}
