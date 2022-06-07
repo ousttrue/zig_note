@@ -1,25 +1,36 @@
+const std = @import("std");
 const nanovg = @import("nanovg");
-const NanoVgRenderer = struct {
+const nanovg_impl_opengl3 = @import("./nanovg_impl_opengl3.zig");
+
+fn get_system_font() []const u8 {
+    return "C:/Windows/Fonts/msgothic.ttc";
+    // else:
+    //     return pathlib.Path('/usr/share/fonts/liberation-fonts/LiberationMono-Regular.ttf')
+}
+
+pub const NanoVgRenderer = struct {
     const Self = @This();
 
-    vg: [*c]nanovg.NVGcontext,
-    font_name: []const u8 = "nanovg_font",
-    font_path: []const u8 = "",
+    vg: *nanovg.NVGcontext,
+    font_name: []const u8,
+    font_path: []const u8,
     font_initialized: bool = false,
 
-    pub fn init(font_path: ?[]const u8, font_name: ?[]const u8) Self {
-        var self = Self{ .vg = nanovg.nvgCreate(nanovg.NVGcreateFlags.NVG_ANTIALIAS | nanovg.NVGcreateFlags.NVG_STENCIL_STROKES | nanovg.NVGcreateFlags.NVG_DEBUG) };
-        std.debug.assert(self.vg != null);
-        // nanovg_impl_opengl3.init(self.vg)
+    pub fn init(allocator: std.mem.Allocator, font_path: ?[]const u8, font_name: ?[]const u8) Self {
+        var self = Self{
+            .vg = nanovg.nvgCreate(@enumToInt(nanovg.NVGcreateFlags.NVG_ANTIALIAS) |
+                @enumToInt(nanovg.NVGcreateFlags.NVG_STENCIL_STROKES) |
+                @enumToInt(nanovg.NVGcreateFlags.NVG_DEBUG)).?,
+            .font_path = font_path orelse get_system_font(),
+            .font_name = font_name orelse "nanovg_font",
+        };
+        nanovg_impl_opengl3.init(allocator, self.vg);
 
-        // if not font_path or not font_path.exists():
-        //     font_path = get_system_font()
-
-        self.font_path = font_path;
-        self.font_name = font_name;
+        return self;
     }
 
     pub fn deinit(self: *Self) void {
+        _ = self;
         // nanovg_impl_opengl3.delete()
     }
 
@@ -46,7 +57,8 @@ const NanoVgRenderer = struct {
     }
 
     pub fn endFrame(self: *Self) void {
-        // nanovg_impl_opengl3.render(nanovg.nvgGetDrawData(self.vg))
+        _ = self;
+        nanovg_impl_opengl3.render(nanovg.nvgGetDrawData(self.vg));
     }
 };
 

@@ -28,21 +28,21 @@ pub fn addTo(exe: *LibExeObjStep, relativePath: []const u8) void {
     // exe.defineCMacro("_UNICODE", "1");
     // exe.addIncludeDir(concat(relativePath, "/pkgs/glfw/include"));
     // // exe.addIncludeDir(concat(relativePath, "/pkgs/glfw/src"));
-    // exe.addCSourceFiles(&.{
-    //     concat(relativePath, "/pkgs/glfw/src/context.c"),
-    //     concat(relativePath, "/pkgs/glfw/src/init.c"),
-    //     concat(relativePath, "/pkgs/glfw/src/input.c"),
-    //     concat(relativePath, "/pkgs/glfw/src/monitor.c"),
-    //     concat(relativePath, "/pkgs/glfw/src/platform.c"),
-    //     concat(relativePath, "/pkgs/glfw/src/vulkan.c"),
-    //     concat(relativePath, "/pkgs/glfw/src/window.c"),
-    //     concat(relativePath, "/pkgs/glfw/src/egl_context.c"),
-    //     concat(relativePath, "/pkgs/glfw/src/osmesa_context.c"),
-    //     concat(relativePath, "/pkgs/glfw/src/null_init.c"),
-    //     concat(relativePath, "/pkgs/glfw/src/null_monitor.c"),
-    //     concat(relativePath, "/pkgs/glfw/src/null_window.c"),
-    //     concat(relativePath, "/pkgs/glfw/src/null_joystick.c"),
-    // }, &.{});
+    exe.addCSourceFiles(&.{
+        concat(relativePath, "/pkgs/picovg/src/nanovg.cpp"),
+        //     concat(relativePath, "/pkgs/glfw/src/init.c"),
+        //     concat(relativePath, "/pkgs/glfw/src/input.c"),
+        //     concat(relativePath, "/pkgs/glfw/src/monitor.c"),
+        //     concat(relativePath, "/pkgs/glfw/src/platform.c"),
+        //     concat(relativePath, "/pkgs/glfw/src/vulkan.c"),
+        //     concat(relativePath, "/pkgs/glfw/src/window.c"),
+        //     concat(relativePath, "/pkgs/glfw/src/egl_context.c"),
+        //     concat(relativePath, "/pkgs/glfw/src/osmesa_context.c"),
+        //     concat(relativePath, "/pkgs/glfw/src/null_init.c"),
+        //     concat(relativePath, "/pkgs/glfw/src/null_monitor.c"),
+        //     concat(relativePath, "/pkgs/glfw/src/null_window.c"),
+        //     concat(relativePath, "/pkgs/glfw/src/null_joystick.c"),
+    }, &.{});
     // exe.addCSourceFiles(&.{
     //     concat(relativePath, "/pkgs/glfw/src/win32_module.c"),
     //     concat(relativePath, "/pkgs/glfw/src/win32_time.c"),

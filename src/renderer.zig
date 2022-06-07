@@ -5,6 +5,7 @@ const dockspace = @import("dockspace.zig");
 const Scene = @import("scene").Scene;
 const screen = @import("screen");
 const glo = @import("glo");
+const NanoVgRenderer = @import("./nanovg_renderer.zig").NanoVgRenderer;
 
 const DemoDock = struct {
     const Self = @This();
@@ -86,6 +87,7 @@ const FboDock = struct {
     allocator: std.mem.Allocator,
     mouse_event: *screen.MouseEvent,
     scene: *Scene,
+    nvg: NanoVgRenderer,
 
     pub fn init(allocator: std.mem.Allocator) Self {
         var mouse_event = screen.MouseEvent.new(allocator);
@@ -94,6 +96,7 @@ const FboDock = struct {
             .allocator = allocator,
             .mouse_event = mouse_event,
             .scene = Scene.new(allocator, mouse_event),
+            .nvg = NanoVgRenderer.init(allocator, null, null),
         };
     }
 
@@ -134,45 +137,45 @@ const FboDock = struct {
         imgui.PopStyleVar(.{});
     }
 
-    pub fn debugDraw(self: *Self, mouse_input: screen.MouseInput)void
-    {
-        if(self.nvg==null){
+    pub fn debugDraw(self: *Self, mouse_input: screen.MouseInput) void {
+        _ = mouse_input;
+        if (self.nvg == null) {
             self.nvg = NanoVgRenderer();
         }
     }
 
-//     def draw_line(vg, sx, sy, ex, ey, r, g, b):
-//         nanovg.nvgSave(vg)
-//         nanovg.nvgStrokeWidth(vg, 1.0)
-//         nanovg.nvgStrokeColor(vg, nanovg.nvgRGBA(r, g, b, 255))
-//         nanovg.nvgFillColor(vg, nanovg.nvgRGBA(r, g, b, 255))
+    //     def draw_line(vg, sx, sy, ex, ey, r, g, b):
+    //         nanovg.nvgSave(vg)
+    //         nanovg.nvgStrokeWidth(vg, 1.0)
+    //         nanovg.nvgStrokeColor(vg, nanovg.nvgRGBA(r, g, b, 255))
+    //         nanovg.nvgFillColor(vg, nanovg.nvgRGBA(r, g, b, 255))
 
-//         nanovg.nvgBeginPath(vg)
-//         nanovg.nvgMoveTo(vg, sx, sy)
-//         nanovg.nvgLineTo(vg, ex, ey)
-//         nanovg.nvgStroke(vg)
+    //         nanovg.nvgBeginPath(vg)
+    //         nanovg.nvgMoveTo(vg, sx, sy)
+    //         nanovg.nvgLineTo(vg, ex, ey)
+    //         nanovg.nvgStroke(vg)
 
-//         nanovg.nvgBeginPath(vg)
-//         nanovg.nvgCircle(vg, sx, sy, 4)
-//         nanovg.nvgFill(vg)
+    //         nanovg.nvgBeginPath(vg)
+    //         nanovg.nvgCircle(vg, sx, sy, 4)
+    //         nanovg.nvgFill(vg)
 
-//         nanovg.nvgBeginPath(vg)
-//         nanovg.nvgCircle(vg, ex, ey, 4)
-//         nanovg.nvgFill(vg)
+    //         nanovg.nvgBeginPath(vg)
+    //         nanovg.nvgCircle(vg, ex, ey, 4)
+    //         nanovg.nvgFill(vg)
 
-//         nanovg.nvgRestore(vg)
+    //         nanovg.nvgRestore(vg)
 
-//     with self.nvg.render(mouse_input.width, mouse_input.height) as vg:
-//         from pydear import nanovg
-//         match self.left_active:
-//             case (x, y):
-//                 draw_line(vg, x, y, mouse_input.x, mouse_input.y, 255, 0, 0)
-//         match self.middle_active:
-//             case (x, y):
-//                 draw_line(vg, x, y, mouse_input.x, mouse_input.y, 0, 255, 0)
-//         match self.right_active:
-//             case (x, y):
-//                 draw_line(vg, x, y, mouse_input.x, mouse_input.y, 0, 0, 255)
+    //     with self.nvg.render(mouse_input.width, mouse_input.height) as vg:
+    //         from pydear import nanovg
+    //         match self.left_active:
+    //             case (x, y):
+    //                 draw_line(vg, x, y, mouse_input.x, mouse_input.y, 255, 0, 0)
+    //         match self.middle_active:
+    //             case (x, y):
+    //                 draw_line(vg, x, y, mouse_input.x, mouse_input.y, 0, 255, 0)
+    //         match self.right_active:
+    //             case (x, y):
+    //                 draw_line(vg, x, y, mouse_input.x, mouse_input.y, 0, 0, 255)
 
 };
 

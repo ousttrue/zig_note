@@ -298,11 +298,11 @@ test "sizeof NVGtextureInfo" {
 pub const NVGparams = extern struct {
     userPtr: ?*anyopaque,
     edgeAntiAlias: c_int,
-    renderCreateTexture: ?*fn (params: ?*NVGparams, _type: c_int, w: c_int, h: c_int, imageFlags: c_int, data: ?*const u8) c_int,
-    renderDeleteTexture: ?*fn (params: ?*NVGparams, image: c_int) c_int,
-    renderUpdateTexture: ?*fn (params: ?*NVGparams, image: c_int, x: c_int, y: c_int, w: c_int, h: c_int, data: ?*const u8) c_int,
-    renderGetTexture: ?*fn (params: ?*NVGparams, image: c_int) ?*NVGtextureInfo,
-    renderUniformSize: ?*fn () c_int,
+    renderCreateTexture: ?*const fn (params: ?*NVGparams, _type: c_int, w: c_int, h: c_int, imageFlags: c_int, data: ?*const u8) c_int,
+    renderDeleteTexture: ?*const fn (params: ?*NVGparams, image: c_int) c_int,
+    renderUpdateTexture: ?*const fn (params: ?*NVGparams, image: c_int, x: c_int, y: c_int, w: c_int, h: c_int, data: ?*const u8) c_int,
+    renderGetTexture: ?*const fn (params: ?*NVGparams, image: c_int) ?*NVGtextureInfo,
+    renderUniformSize: ?*const fn () c_int,
     _flags: c_int,
     _draw: ?*anyopaque,
 };
