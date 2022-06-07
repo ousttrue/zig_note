@@ -26,6 +26,7 @@ const SOURCES = [_][]const u8{
     "/pkgs/imgui/backends/imgui_impl_glfw.cpp",
     "/pkgs/imgui/backends/imgui_impl_opengl3.cpp",
     "/src/imvec2_byvalue.cpp",
+    "/src/internal.cpp",
 };
 
 pub fn addTo(exe: *LibExeObjStep, relativePath: []const u8) void {

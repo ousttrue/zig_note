@@ -142,16 +142,7 @@ const FboDock = struct {
             });
 
             // active right & middle
-            if (imgui.GetCurrentContext()) |context| {
-                const rect = context.LastItemData.Rect;
-                _ = imgui.ButtonBehavior(
-                    rect,
-                    context.LastItemData.ID,
-                    null,
-                    null,
-                    .{ .flags = @enumToInt(imgui.ImGuiButtonFlags._MouseButtonMiddle) | @enumToInt(imgui.ImGuiButtonFlags._MouseButtonRight) },
-                );
-            }
+            imgui.Custom_ButtonBehaviorMiddleRight();
 
             const io = imgui.GetIO();
             const mouse_input = screen.MouseInput{
@@ -166,7 +157,7 @@ const FboDock = struct {
                 .is_hover = imgui.IsItemHovered(.{}),
                 .wheel = @floatToInt(i32, io.MouseWheel),
             };
-            std.debug.print("{}\n", .{mouse_input});
+            // std.debug.print("{}\n", .{mouse_input});
             self.mouse_event.process(mouse_input);
 
             self.scene.render(mouse_input);
