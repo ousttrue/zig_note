@@ -127,7 +127,6 @@ const Camera = struct {
         const v = self.view.getMatrix();
         _ = v;
         // return v;
-        // return p.mul(v);
         return p.mul(v);
         // return v.mul(p);
         // return p;
@@ -173,8 +172,8 @@ const ArcBall = struct {
     }
 
     pub fn update(self: *Self) void {
-        self.view.rotation = self.tmp_rotation.mul(self.rotation).normalize();
-        std.debug.print("{}\n", .{self.view.rotation});
+        // self.view.rotation = self.tmp_rotation.mul(self.rotation).normalize();
+        self.view.rotation = self.rotation.mul(self.tmp_rotation).normalize();
     }
 
     pub fn begin(self: *Self, mouse_input: screen.MouseInput) void {
@@ -188,8 +187,10 @@ const ArcBall = struct {
             if (mouse_input.x != last.x or mouse_input.y != last.y) {
                 const va = self.va orelse unreachable;
                 const vb = getArcballVector(mouse_input);
-                const angle = std.math.acos(std.math.min(1.0, va.dot(vb))) * 2;
+                const dot =va.dot(vb);
+                const angle = std.math.acos(std.math.min(1.0, dot)) * 2;
                 const axis = va.cross(vb);
+                std.log.debug("[{d:.2}, {d:.2}, {d:.2}], [{d:.2}, {d:.2}, {d:.2}][{d:.2}, {d:.2}, {d:.2}], {d:.2}, {d:.2}", .{ va.x, va.y, va.z, vb.x, vb.y, vb.z, axis.x, axis.y, axis.z, dot, angle });
                 self.tmp_rotation = zigla.Quaternion.angleAxis(angle, axis);
                 self.update();
             }

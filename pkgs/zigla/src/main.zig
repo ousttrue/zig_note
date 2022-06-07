@@ -21,7 +21,7 @@ pub const Vec3 = struct {
         };
     }
     pub fn dot(self: *const Self, rhs: Vec3) f32 {
-        return self.x * rhs.x + self.y * rhs.y + self.z + rhs.z;
+        return self.x * rhs.x + self.y * rhs.y + self.z * rhs.z;
     }
     pub fn mul(self: *const Self, scalar: f32) Vec3 {
         return .{ .x = self.x * scalar, .y = self.y * scalar, .z = self.z * scalar };
