@@ -133,6 +133,47 @@ const FboDock = struct {
         imgui.End();
         imgui.PopStyleVar(.{});
     }
+
+    pub fn debugDraw(self: *Self, mouse_input: screen.MouseInput)void
+    {
+        if(self.nvg==null){
+            self.nvg = NanoVgRenderer();
+        }
+    }
+
+//     def draw_line(vg, sx, sy, ex, ey, r, g, b):
+//         nanovg.nvgSave(vg)
+//         nanovg.nvgStrokeWidth(vg, 1.0)
+//         nanovg.nvgStrokeColor(vg, nanovg.nvgRGBA(r, g, b, 255))
+//         nanovg.nvgFillColor(vg, nanovg.nvgRGBA(r, g, b, 255))
+
+//         nanovg.nvgBeginPath(vg)
+//         nanovg.nvgMoveTo(vg, sx, sy)
+//         nanovg.nvgLineTo(vg, ex, ey)
+//         nanovg.nvgStroke(vg)
+
+//         nanovg.nvgBeginPath(vg)
+//         nanovg.nvgCircle(vg, sx, sy, 4)
+//         nanovg.nvgFill(vg)
+
+//         nanovg.nvgBeginPath(vg)
+//         nanovg.nvgCircle(vg, ex, ey, 4)
+//         nanovg.nvgFill(vg)
+
+//         nanovg.nvgRestore(vg)
+
+//     with self.nvg.render(mouse_input.width, mouse_input.height) as vg:
+//         from pydear import nanovg
+//         match self.left_active:
+//             case (x, y):
+//                 draw_line(vg, x, y, mouse_input.x, mouse_input.y, 255, 0, 0)
+//         match self.middle_active:
+//             case (x, y):
+//                 draw_line(vg, x, y, mouse_input.x, mouse_input.y, 0, 255, 0)
+//         match self.right_active:
+//             case (x, y):
+//                 draw_line(vg, x, y, mouse_input.x, mouse_input.y, 0, 0, 255)
+
 };
 
 pub const Renderer = struct {
