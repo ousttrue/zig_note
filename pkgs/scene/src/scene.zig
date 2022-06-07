@@ -212,7 +212,7 @@ pub const Scene = struct {
     shader: ?glo.ShaderProgram = null,
     vao: ?glo.Vao = null,
 
-    pub fn init(allocator: std.mem.Allocator, mouse_event: *screen.MouseEvent) *Self {
+    pub fn new(allocator: std.mem.Allocator, mouse_event: *screen.MouseEvent) *Self {
         var scene = allocator.create(Scene) catch @panic("create");
         scene.* = Scene{
             .allocator = allocator,
@@ -227,7 +227,7 @@ pub const Scene = struct {
         return scene;
     }
 
-    pub fn deinit(self: *Self) void {
+    pub fn delete(self: *Self) void {
         self.allocator.destroy(self);
     }
 

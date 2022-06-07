@@ -88,20 +88,18 @@ const FboDock = struct {
     scene: *Scene,
 
     pub fn init(allocator: std.mem.Allocator) Self {
-        var mouse_event = allocator.create(screen.MouseEvent) catch @panic("create");
-        mouse_event.* = screen.MouseEvent.init(allocator);
+        var mouse_event = screen.MouseEvent.new(allocator);
         return .{
             .fbo = glo.FboManager{},
             .allocator = allocator,
             .mouse_event = mouse_event,
-            .scene = Scene.init(allocator, mouse_event),
+            .scene = Scene.new(allocator, mouse_event),
         };
     }
 
     pub fn deinit(self: *Self) void {
-        self.scene.deinit();
-        self.mouse_event.deinit();
-        self.allocator.destroy(self.mouse_event);
+        self.scene.delete();
+        self.mouse_event.delete();
     }
 
     pub fn showFbo(self: *Self, x: f32, y: f32, size: imgui.ImVec2) void {

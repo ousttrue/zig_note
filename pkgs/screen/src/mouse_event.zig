@@ -112,6 +112,7 @@ pub const MouseButtonEvent = struct {
 pub const MouseEvent = struct {
     const Self = @This();
 
+    allocator: std.mem.Allocator,
     last_input: ?MouseInput = null,
     left_button: MouseButtonEvent,
     right_button: MouseButtonEvent,
@@ -120,6 +121,7 @@ pub const MouseEvent = struct {
 
     pub fn init(allocator: std.mem.Allocator) Self {
         return .{
+            .allocator = allocator,
             .left_button = MouseButtonEvent.init(allocator),
             .right_button = MouseButtonEvent.init(allocator),
             .middle_button = MouseButtonEvent.init(allocator),
@@ -131,6 +133,17 @@ pub const MouseEvent = struct {
         self.left_button.deinit();
         self.right_button.deinit();
         self.wheel.deinit();
+    }
+
+    pub fn new(allocator: std.mem.Allocator) *Self {
+        var ptr = allocator.create(Self) catch @panic("create");
+        ptr.* = Self.init(allocator);
+        return ptr;
+    }
+
+    pub fn delete(self: *Self) void {
+        self.deinit();
+        self.allocator.destroy(self);
     }
 
     pub fn process(self: *Self, current: MouseInput) void {
