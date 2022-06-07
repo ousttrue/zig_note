@@ -7,3 +7,6 @@
 [submodule "pkgs/zig-opengl"]
 	path = pkgs/zig-opengl
 	url = https://github.com/MasterQ32/zig-opengl.git
+[submodule "pkgs/nanovg/pkgs/picovg"]
+	path = pkgs/nanovg/pkgs/picovg
+	url = git@github.com:ousttrue/picovg.git
