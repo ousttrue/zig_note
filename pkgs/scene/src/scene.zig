@@ -90,7 +90,7 @@ const View = struct {
         // const pitch = zlm.Mat4.createAngleAxis(zlm.Vec3.new(1, 0, 0), self.pitch);
         // const shift = zlm.Mat4.createTranslation(self.shift);
         // return shift.mul(pitch.mul(yaw));
-        const r = self.rotation.toMat4();
+        const r = zigla.Mat4.rotation(self.rotation);
         const t = zigla.Mat4.translate(self.shift[0], self.shift[1], self.shift[2]);
         return r.mul(t);
     }
