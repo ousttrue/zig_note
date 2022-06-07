@@ -21,6 +21,14 @@ def generate_glfw():
     generator.generate(GLFW_ZIG)
 
 
+def generate_nanovg():
+    NANOVG_HEADER = WORKSPACE / 'pkgs/nanovg/pkgs/picovg/src/nanovg.h'
+    NANOVG_ZIG = WORKSPACE / 'pkgs/nanovg/src/main.zig'
+    LOGGER.debug(f'{NANOVG_HEADER.name} => {NANOVG_ZIG}')
+    generator = ZigGenerator(Header(NANOVG_HEADER))
+    generator.generate(NANOVG_ZIG)
+
+
 def generate_imgui():
     IMGUI_HEADER = WORKSPACE / 'pkgs/imgui/pkgs/imgui/imgui.h'
     IMGUI_HEADER_INTERNAL = WORKSPACE / 'pkgs/imgui/pkgs/imgui/imgui_internal.h'
@@ -83,6 +91,7 @@ def main():
     logging.basicConfig(level=logging.DEBUG)
     generate_glfw()
     generate_imgui()
+    generate_nanovg()
 
 
 if __name__ == '__main__':
