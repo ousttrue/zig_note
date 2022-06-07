@@ -4,8 +4,13 @@ const std = @import("std");
 // fn dot(lhs: Vector(4, f32), rhs: Vector(4, f32)) f32 {
 //     return @reduce(.Add, lhs * rhs);
 // }
-pub fn dot(lhs: [4]f32, rhs: [4]f32) f32 {
+pub fn dot4(lhs: [4]f32, rhs: [4]f32) f32 {
     return lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2] + lhs[3] * rhs[3];
+}
+
+test "dot4" {
+    const v1234: [4]f32 = .{ 1, 2, 3, 4 };
+    try std.testing.expectEqual(@as(f32, 30.0), dot4(v1234, v1234));
 }
 
 pub const Vec3 = struct {
@@ -44,6 +49,15 @@ pub const Vec3 = struct {
         return .{ .x = self.x * factor, .y = self.y * factor, .z = self.z * factor };
     }
 };
+
+test "Vec3" {
+    const v1 = Vec3.init(1, 2, 3);
+    try std.testing.expectEqual(@as(f32, 14.0), v1.dot(v1));
+    try std.testing.expectEqual(Vec3.init(2, 4, 6), v1.mul(2.0));
+    try std.testing.expectEqual(Vec3.init(2, 4, 6), v1.add(v1));
+    try std.testing.expectEqual(Vec3.init(0, 0, 1), Vec3.init(1, 0, 0).cross(Vec3.init(0, 1, 0)));
+    try std.testing.expectEqual(Vec3.init(1, 0, 0), Vec3.init(2, 0, 0).normalize());
+}
 
 pub const Quaternion = struct {
     const Self = @This();
@@ -147,10 +161,10 @@ pub const Mat4 = struct {
         const c2 = .{ rhs.values[2], rhs.values[6], rhs.values[10], rhs.values[14] };
         const c3 = .{ rhs.values[3], rhs.values[7], rhs.values[11], rhs.values[15] };
         return .{ .values = .{
-            dot(r0, c0), dot(r0, c1), dot(r0, c2), dot(r0, c3),
-            dot(r1, c0), dot(r1, c1), dot(r1, c2), dot(r1, c3),
-            dot(r2, c0), dot(r2, c1), dot(r2, c2), dot(r2, c3),
-            dot(r3, c0), dot(r3, c1), dot(r3, c2), dot(r3, c3),
+            dot4(r0, c0), dot4(r0, c1), dot4(r0, c2), dot4(r0, c3),
+            dot4(r1, c0), dot4(r1, c1), dot4(r1, c2), dot4(r1, c3),
+            dot4(r2, c0), dot4(r2, c1), dot4(r2, c2), dot4(r2, c3),
+            dot4(r3, c0), dot4(r3, c1), dot4(r3, c2), dot4(r3, c3),
         } };
     }
 

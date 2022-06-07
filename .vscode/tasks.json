@@ -17,6 +17,14 @@
             "problemMatcher": [
                 "$gcc"
             ]
-        }
+        },
+        {
+            "label": "test",
+            "type": "shell",
+            "command": "zig test pkgs/zigla/src/main.zig",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
     ]
 }
