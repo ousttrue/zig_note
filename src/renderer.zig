@@ -133,9 +133,40 @@ const FboDock = struct {
         // std.debug.assert(size != imgui.ImVec2{.x=0, .y=0});
         if (self.fbo.clear(@floatToInt(c_int, size.x), @floatToInt(c_int, size.y), self.clearColor)) |texture| {
             defer self.fbo.unbind();
-            _ = imgui.ImageButton(texture, size, .{ .uv0 = .{ .x = 0, .y = 1 }, .uv1 = .{ .x = 1, .y = 0 }, .frame_padding = 0, .bg_col = self.bg, .tint_col = self.tint });
+            _ = imgui.ImageButton(texture, size, .{
+                .uv0 = .{ .x = 0, .y = 1 },
+                .uv1 = .{ .x = 1, .y = 0 },
+                .frame_padding = 0,
+                .bg_col = self.bg,
+                .tint_col = self.tint,
+            });
+
+            // active right & middle
+            if (imgui.GetCurrentContext()) |context| {
+                const rect = context.LastItemData.Rect;
+                _ = imgui.ButtonBehavior(
+                    rect,
+                    context.LastItemData.ID,
+                    null,
+                    null,
+                    .{ .flags = @enumToInt(imgui.ImGuiButtonFlags._MouseButtonMiddle) | @enumToInt(imgui.ImGuiButtonFlags._MouseButtonRight) },
+                );
+            }
+
             const io = imgui.GetIO();
-            const mouse_input = screen.MouseInput{ .x = @floatToInt(i32, io.MousePos.x - x), .y = @floatToInt(i32, io.MousePos.y - y), .width = @floatToInt(i32, size.x), .height = @floatToInt(i32, size.y), .left_down = io.MouseDown[0], .right_down = io.MouseDown[1], .middle_down = io.MouseDown[2], .is_active = imgui.IsItemActive(), .is_hover = imgui.IsItemHovered(.{}), .wheel = @floatToInt(i32, io.MouseWheel) };
+            const mouse_input = screen.MouseInput{
+                .x = @floatToInt(i32, io.MousePos.x - x),
+                .y = @floatToInt(i32, io.MousePos.y - y),
+                .width = @floatToInt(i32, size.x),
+                .height = @floatToInt(i32, size.y),
+                .left_down = io.MouseDown[0],
+                .right_down = io.MouseDown[1],
+                .middle_down = io.MouseDown[2],
+                .is_active = imgui.IsItemActive(),
+                .is_hover = imgui.IsItemHovered(.{}),
+                .wheel = @floatToInt(i32, io.MouseWheel),
+            };
+            std.debug.print("{}\n", .{mouse_input});
             self.mouse_event.process(mouse_input);
 
             self.scene.render(mouse_input);

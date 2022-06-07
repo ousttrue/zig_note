@@ -174,6 +174,7 @@ const ArcBall = struct {
 
     pub fn update(self: *Self) void {
         self.view.rotation = self.tmp_rotation.mul(self.rotation).normalize();
+        std.debug.print("{}\n", .{self.view.rotation});
     }
 
     pub fn begin(self: *Self, mouse_input: screen.MouseInput) void {

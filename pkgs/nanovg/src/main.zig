@@ -94,9 +94,9 @@ pub const GLNVGshaderType = enum(c_int) {
 
 pub const NVGcontext = opaque {};
 pub const NVGcolor = extern struct {
-    _1080869267: extern union {
+    _1825018245: extern union {
         rgba: [4]f32,
-        _1096691997: extern struct {
+        _2453010058: extern struct {
             r: f32,
             g: f32,
             b: f32,
