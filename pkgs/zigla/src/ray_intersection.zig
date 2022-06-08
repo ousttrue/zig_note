@@ -30,18 +30,22 @@ fn isInside2D(p: la.Vec2, v0: la.Vec2, v1: la.Vec2, v2: la.Vec2) bool {
     return true;
 }
 
-pub const Triangle = struct {
+pub const Plain = struct {
     const Self = @This();
+    n: la.Vec3,
+    d: f32,
 
-    v0: la.Vec3,
-    v1: la.Vec3,
-    v2: la.Vec3,
+    pub fn triangle(v0: la.Vec3, v1: la.Vec3, v2: la.Vec3) Plain {
+        const n = (@"-"(v1, v0)).cross(@"-"(v2, v0)).normalized();
+        const d = -n.dot(v0);
+        return .{
+            .n = n,
+            .d = d,
+        };
+    }
 
     pub fn intersect(self: Self, ray: Ray) ?f32 {
-        const n = (@"-"(self.v1, self.v0)).cross(@"-"(self.v2, self.v0)).normalized();
-        const d = -n.dot(self.v0);
-
-        const l = la.Vec4.vec3(n, d);
+        const l = la.Vec4.vec3(self.n, self.d);
         const lv = l.dot(la.Vec4.vec3(ray.dir, 0));
         if (lv < 1e-5) {
             // parallel
@@ -50,6 +54,23 @@ pub const Triangle = struct {
 
         const lq = l.dot(la.Vec4.vec3(ray.origin, 1));
         const t = -lq / lv;
+        return t;
+    }
+};
+
+pub const Triangle = struct {
+    const Self = @This();
+
+    v0: la.Vec3,
+    v1: la.Vec3,
+    v2: la.Vec3,
+
+    pub fn intersect(self: Self, ray: Ray) ?f32 {
+        const l = Plain.triangle(self.v0, self.v1, self.v2);
+        const t = l.intersect(ray) orelse {
+            return null;
+        };
+
         const p = ray.position(t);
 
         if (p.x > p.y) {
