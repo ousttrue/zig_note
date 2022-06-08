@@ -2,15 +2,26 @@
 const std = @import("std");
 const Vector = std.meta.Vector;
 
-// TODO:
 //
-// R | 0
+// R | T
 // --+--
-// T | 1
+// 0 | 1
 //
-// に変える
 
 const typeinfo: std.builtin.TypeInfo = undefined;
+
+fn nearlyEqual(comptime epsilon: anytype, comptime n: usize, lhs: [n]@TypeOf(epsilon), rhs: [n]@TypeOf(epsilon)) bool {
+    for (lhs) |l, i| {
+        if (std.math.fabs(l - rhs[i]) > epsilon) {
+            std.debug.print("\n", .{});
+            std.debug.print("{any}\n",.{lhs});
+            std.debug.print("{any}\n",.{rhs});
+            std.debug.print("{}: {}, {}\n", .{i, l, rhs[i]});
+            return false;
+        }
+    }
+    return true;
+}
 
 fn Child(comptime t: type) type {
     return switch (@typeInfo(t)) {
@@ -153,16 +164,30 @@ pub const Mat3 = struct {
         };
     }
 
-    pub fn rows(_0: Vec3, _1: Vec3, _2: Vec3) Mat3 {
+    pub fn rows(_0: Vec3, _1: Vec3, _2: Vec3) Self {
         return .{ ._0 = _0, ._1 = _1, ._2 = _2 };
     }
 
-    pub fn rotation(q: Quaternion) Mat3 {
+    pub fn angleAxis(angle: f32, a: Vec3) Self {
+        const c = std.math.cos(angle);
+        const s = std.math.sin(angle);
+        return Self.rows(
+            Vec3.init(c + a.x * a.x * (1 - c), a.x * a.y * (1 - c) - a.z * s, a.x * a.z * (1 - c) + a.y * s),
+            Vec3.init(a.x * a.y * (1 - c) + a.z * s, c + a.y * a.y * (1 - c), a.y * a.z * (1 - c) - a.x * s),
+            Vec3.init(a.x * a.z * (1 - c) - a.y * s, a.y * a.z * (1 - c) + a.x * s, c + a.z * a.z * (1 - c)),
+        );
+    }
+
+    pub fn rotate(q: Quaternion) Mat3 {
         return Self.rows(
             Vec3.init(1 - 2 * q.y * q.y - 2 * q.z * q.z, 2 * q.x * q.y - 2 * q.w * q.z, 2 * q.z * q.x + 2 * q.w * q.y),
             Vec3.init(2 * q.x * q.y + 2 * q.w * q.z, 1 - 2 * q.z * q.z - 2 * q.x * q.x, 2 * q.y * q.z - 2 * q.w * q.x),
             Vec3.init(2 * q.z * q.x - 2 * q.w * q.y, 2 * q.y * q.z + 2 * q.w * q.x, 1 - 2 * q.x * q.x - 2 * q.y * q.y),
         );
+    }
+
+    pub fn array(self: *Self) [9]f32 {
+        return @ptrCast([*]f32, &self._0.x)[0..9].*;
     }
 
     pub fn det(self: Self) f32 {
@@ -173,6 +198,10 @@ pub const Mat3 = struct {
 test "Mat3" {
     const m = Mat3{};
     try std.testing.expectEqual(@as(f32, 1.0), m.det());
+    const axis = Vec3.init(1, 2, 3).normalize();
+    const angle = std.math.pi * 25.0 / 180.0;
+    const q = Quaternion.angleAxis(angle, axis);
+    try std.testing.expect(nearlyEqual(@as(f32, 1e-5), 9, Mat3.rotate(q).array(), Mat3.angleAxis(angle, axis).array()));
 }
 
 pub const Mat4 = struct {
@@ -239,8 +268,8 @@ pub const Mat4 = struct {
         );
     }
 
-    pub fn rotation(q: Quaternion) Mat4 {
-        return Self.mat3(Mat3.rotation(q));
+    pub fn rotate(q: Quaternion) Mat4 {
+        return Self.mat3(Mat3.rotate(q));
     }
 
     pub fn col0(self: Self) Vec4 {
