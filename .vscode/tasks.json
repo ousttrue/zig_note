@@ -19,9 +19,9 @@
             ]
         },
         {
-            "label": "test",
+            "label": "test zigla",
             "type": "shell",
-            "command": "zig test pkgs/zigla/src/main.zig",
+            "command": "zig test pkgs/zigla/src/tests.zig",
             "problemMatcher": [
                 "$gcc"
             ]
