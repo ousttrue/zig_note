@@ -45,7 +45,7 @@ pub const WheelCallback = struct {
         const T = @TypeOf(p.*);
         return .{
             .ptr = p,
-            .callback = TypeEraser(T, name, .{i32}).call,
+            .callback = TypeEraser(T, name).call,
         };
     }
 };

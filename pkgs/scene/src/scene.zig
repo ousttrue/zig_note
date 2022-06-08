@@ -63,20 +63,20 @@ const vertices: [3]Vertex = .{
 const Projection = struct {
     const Self = @This();
 
-    fov: f32 = std.math.pi * (60.0 / 180.0),
+    fovy: f32 = std.math.pi * (30.0 / 180.0),
     near: f32 = 0.1,
     far: f32 = 100.0,
-    aspect: f32 = 1.0,
+    width: u32 = 1,
+    height: u32 = 1,
 
     pub fn resize(self: *Self, width: u32, height: u32) void {
-        _ = self;
-        _ = width;
-        _ = height;
+        self.width = width;
+        self.height = height;
     }
 
     pub fn getMatrix(self: *Self) zigla.Mat4 {
         // return zlm.Mat4.createPerspective(self.fov, self.aspect, self.near, self.far);
-        return zigla.Mat4.perspective(self.fov, self.aspect, self.near, self.far);
+        return zigla.Mat4.perspective(self.fovy, @intToFloat(f32, self.width) / @intToFloat(f32, self.height), self.near, self.far);
     }
 };
 
@@ -84,15 +84,14 @@ const View = struct {
     const Self = @This();
 
     rotation: zigla.Quaternion = .{},
-    shift: [3]f32 = .{ 0, 0, -5 },
+    shift: zigla.Vec3 = zigla.Vec3.init(0, 0, -2),
 
     pub fn getMatrix(self: *Self) zigla.Mat4 {
         // const yaw = zlm.Mat4.createAngleAxis(zlm.Vec3.new(0, 1, 0), self.yaw);
         // const pitch = zlm.Mat4.createAngleAxis(zlm.Vec3.new(1, 0, 0), self.pitch);
         // const shift = zlm.Mat4.createTranslation(self.shift);
-        // return shift.mul(pitch.mul(yaw));
         const r = zigla.Mat4.rotate(self.rotation);
-        const t = zigla.Mat4.translate(self.shift[0], self.shift[1], self.shift[2]);
+        const t = zigla.Mat4.translate(self.shift);
         return @"*"(t, r);
     }
 };
@@ -102,35 +101,11 @@ const Camera = struct {
 
     projection: Projection = .{},
     view: View = .{},
-    // mvp: [16]f32 = .{
-    //     1, 0, 0, 0,
-    //     0, 1, 0, 0,
-    //     0, 0, 1, 0,
-    //     0, 0, 0, 1,
-    // },
-
-    pub fn update(self: *Self, mouse_input: screen.MouseInput) void {
-        if (mouse_input.is_active or mouse_input.is_hover) {
-            if (mouse_input.wheel < 0) {
-                self.view.shift[2] *= 1.1;
-            } else if (mouse_input.wheel > 0) {
-                self.view.shift[2] *= 0.9;
-            }
-        }
-        _ = self;
-        _ = mouse_input;
-    }
 
     pub fn getMVP(self: *Self) zigla.Mat4 {
-        // return self.mvp;
         const p = self.projection.getMatrix();
-        _ = p;
         const v = self.view.getMatrix();
-        _ = v;
-        // return v;
         return p.mul(v);
-        // return v.mul(p);
-        // return p;
     }
 };
 
@@ -192,7 +167,7 @@ const ArcBall = struct {
                 const dot = va.dot(vb);
                 const angle = std.math.acos(std.math.min(1.0, dot)) * 2;
                 const axis = va.cross(vb);
-                std.log.debug("[{d:.2}, {d:.2}, {d:.2}], [{d:.2}, {d:.2}, {d:.2}][{d:.2}, {d:.2}, {d:.2}], {d:.2}, {d:.2}", .{ va.x, va.y, va.z, vb.x, vb.y, vb.z, axis.x, axis.y, axis.z, dot, angle });
+                // std.log.debug("[{d:.2}, {d:.2}, {d:.2}], [{d:.2}, {d:.2}, {d:.2}][{d:.2}, {d:.2}, {d:.2}], {d:.2}, {d:.2}", .{ va.x, va.y, va.z, vb.x, vb.y, vb.z, axis.x, axis.y, axis.z, dot, angle });
                 self.tmp_rotation = zigla.Quaternion.angleAxis(angle, axis);
                 self.update();
             }
@@ -241,6 +216,42 @@ const TurnTable = struct {
     pub fn end(_: *Self, _: screen.MouseInput) void {}
 };
 
+const ScreenShift = struct {
+    const Self = @This();
+
+    view: *View,
+    projection: *Projection,
+
+    pub fn init(view: *View, projection: *Projection) Self {
+        return .{
+            .view = view,
+            .projection = projection,
+        };
+    }
+
+    pub fn reset(self: *Self, shift: zigla.Vec3) void {
+        self.view.shift = shift;
+    }
+
+    pub fn begin(_: *Self, _: screen.MouseInput) void {}
+
+    pub fn drag(self: *Self, _: screen.MouseInput, dx: i32, dy: i32) void {
+        const plane_height = std.math.tan(self.projection.fovy * 0.5) * std.math.fabs(self.view.shift.z) * 4;
+        self.view.shift.x += @intToFloat(f32, dx) / @intToFloat(f32, self.projection.height) * plane_height;
+        self.view.shift.y -= @intToFloat(f32, dy) / @intToFloat(f32, self.projection.height) * plane_height;
+    }
+
+    pub fn end(_: *Self, _: screen.MouseInput) void {}
+
+    pub fn wheel(self: *Self, d: i32) void {
+        if (d < 0) {
+            self.view.shift.z *= 1.1;
+        } else if (d > 0) {
+            self.view.shift.z *= 0.9;
+        }
+    }
+};
+
 pub const Scene = struct {
     const Self = @This();
 
@@ -248,6 +259,7 @@ pub const Scene = struct {
     camera: Camera = .{},
     cameraHandler: ArcBall = undefined,
     // cameraHandler: TurnTable = undefined,
+    shiftHandler: ScreenShift = undefined,
     shader: ?glo.ShaderProgram = null,
     vao: ?glo.Vao = null,
 
@@ -263,6 +275,13 @@ pub const Scene = struct {
             .drag = screen.mouse_event.DragCallback.create(&scene.cameraHandler, "drag"),
             .end = screen.mouse_event.BeginEndCallback.create(&scene.cameraHandler, "end"),
         });
+        scene.shiftHandler = ScreenShift.init(&scene.camera.view, &scene.camera.projection);
+        mouse_event.middle_button.bind(.{
+            .begin = screen.mouse_event.BeginEndCallback.create(&scene.shiftHandler, "begin"),
+            .drag = screen.mouse_event.DragCallback.create(&scene.shiftHandler, "drag"),
+            .end = screen.mouse_event.BeginEndCallback.create(&scene.shiftHandler, "end"),
+        });
+        mouse_event.wheel.append(screen.mouse_event.WheelCallback.create(&scene.shiftHandler, "wheel")) catch @panic("append");
 
         return scene;
     }
@@ -298,7 +317,8 @@ pub const Scene = struct {
     }
 
     pub fn render(self: *Self, mouse_input: screen.MouseInput) void {
-        self.camera.update(mouse_input);
+        self.camera.projection.width = mouse_input.width;
+        self.camera.projection.height = mouse_input.height;
 
         if (self.shader == null) {
             var error_buffer: [1024]u8 = undefined;

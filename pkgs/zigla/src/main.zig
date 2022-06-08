@@ -300,11 +300,11 @@ pub const Mat4 = struct {
         return frustum(b, t, l, r, n, f);
     }
 
-    pub fn translate(x: f32, y: f32, z: f32) Self {
+    pub fn translate(t: Vec3) Self {
         return Self.rows(
-            Vec4.init(1, 0, 0, x),
-            Vec4.init(0, 1, 0, y),
-            Vec4.init(0, 0, 1, z),
+            Vec4.init(1, 0, 0, t.x),
+            Vec4.init(0, 1, 0, t.y),
+            Vec4.init(0, 0, 1, t.z),
             Vec4.init(0, 0, 0, 1),
         );
     }
