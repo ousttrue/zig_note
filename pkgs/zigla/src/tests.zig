@@ -85,5 +85,6 @@ test "ray triangle" {
         .dir = Vec3.init(0, 0, 1),
     };
 
-    try std.testing.expectEqual(null, t.intersect(rayOut).?);
+    std.testing.log_level = std.log.Level.debug;
+    try std.testing.expect(t.intersect(rayOut)==null);
 }

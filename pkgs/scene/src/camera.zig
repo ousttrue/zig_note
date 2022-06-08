@@ -66,7 +66,7 @@ pub fn getArcballVector(mouse_input: screen.MouseInput) zigla.Vec3 {
     if (OP_squared <= 1) {
         P.z = std.math.sqrt(1 - OP_squared); // Pythagoras
     } else {
-        P = P.normalize(); // nearest point
+        P = P.normalized(); // nearest point
     }
     return P;
 }

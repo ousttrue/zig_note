@@ -1,6 +1,7 @@
 const std = @import("std");
 const la = @import("./linear_algebra.zig");
 const @"-" = la.@"-";
+const @"+" = la.@"+";
 
 pub const Ray = struct {
     const Self = @This();
@@ -9,17 +10,24 @@ pub const Ray = struct {
     dir: la.Vec3,
 
     pub fn position(self: Self, t: f32) la.Vec3 {
-        return @"+"(origin, dir.mul(t));
+        return @"+"(self.origin, self.dir.mul(t));
     }
 };
 
-fn insinde2Dimension(v0, v1, v2, p)
-{
-    const e = v1 - v0;
-    const f=  v2 - v0;
-    const g = p - v0;
-    const n = {-e.y, e.x};
+fn isFGSameSide(e: la.Vec2, f: la.Vec2, g: la.Vec2) bool {
+    const n = la.Vec2.init(-e.y, e.x);
     return n.dot(f) * n.dot(g) > 0;
+}
+
+fn isInside2D(p: la.Vec2, v0: la.Vec2, v1: la.Vec2, v2: la.Vec2) bool {
+    // v0 origin
+    if (!isFGSameSide(@"-"(v1, v0), @"-"(v2, v0), @"-"(p, v0))) return false;
+    // v1 origin
+    if (!isFGSameSide(@"-"(v2, v1), @"-"(v0, v1), @"-"(p, v1))) return false;
+    // v2 origin
+    if (!isFGSameSide(@"-"(v0, v2), @"-"(v1, v2), @"-"(p, v2))) return false;
+
+    return true;
 }
 
 pub const Triangle = struct {
@@ -38,36 +46,55 @@ pub const Triangle = struct {
         if (lv < 1e-5) {
             // parallel
             return null;
-        } else {
-            const lq = l.dot(la.Vec4.vec3(ray.origin, 1));
-            const t = -lq / lv;
-            const p = ray.position(t);
-
-            if(p.x>p.y){
-                if(p.x>p.z)
-                {
-                    // x
-                }
-                else{
-                    // z
-                }
-            }
-            else{
-                if(p.y>p.z)
-                {
-                    // y
-                }
-                else{
-                    // z
-                }
-            }
-
-            if (!isinside(v0, v1, v2, p)) return null;
-            if (!isinside(v1, v2, v0, p)) return null;
-            if (!isinside(v2, v0, v1, p)) return null;
-
-            return t;
         }
+
+        const lq = l.dot(la.Vec4.vec3(ray.origin, 1));
+        const t = -lq / lv;
+        const p = ray.position(t);
+
+        if (p.x > p.y) {
+            if (p.x > p.z) {
+                // drop x
+                const v0 = la.Vec2.init(self.v0.y, self.v0.z);
+                const v1 = la.Vec2.init(self.v1.y, self.v1.z);
+                const v2 = la.Vec2.init(self.v2.y, self.v2.z);
+                const pp = la.Vec2.init(p.y, p.z);
+                if (isInside2D(pp, v0, v1, v2)) {
+                    return t;
+                }
+            } else {
+                // drop z
+                const v0 = la.Vec2.init(self.v0.x, self.v0.y);
+                const v1 = la.Vec2.init(self.v1.x, self.v1.y);
+                const v2 = la.Vec2.init(self.v2.x, self.v2.y);
+                const pp = la.Vec2.init(p.x, p.y);
+                if (isInside2D(pp, v0, v1, v2)) {
+                    return t;
+                }
+            }
+        } else {
+            if (p.y > p.z) {
+                // drop y
+                const v0 = la.Vec2.init(self.v0.x, self.v0.z);
+                const v1 = la.Vec2.init(self.v1.x, self.v1.z);
+                const v2 = la.Vec2.init(self.v2.x, self.v2.z);
+                const pp = la.Vec2.init(p.x, p.z);
+                if (isInside2D(pp, v0, v1, v2)) {
+                    return t;
+                }
+            } else {
+                // drop z
+                const v0 = la.Vec2.init(self.v0.x, self.v0.y);
+                const v1 = la.Vec2.init(self.v1.x, self.v1.y);
+                const v2 = la.Vec2.init(self.v2.x, self.v2.y);
+                const pp = la.Vec2.init(p.x, p.y);
+                if (isInside2D(pp, v0, v1, v2)) {
+                    return t;
+                }
+            }
+        }
+
+        return null;
     }
 };
 

@@ -15,6 +15,21 @@ pub fn vdot3(lhs: Vector(3, f32), rhs: Vector(3, f32)) f32 {
     return @reduce(.Add, lhs * rhs);
 }
 
+pub const Vec2 = struct {
+    const Self = @This();
+    x: f32,
+    y: f32,
+    pub fn init(x: f32, y: f32) Self {
+        return .{ .x = x, .y = y };
+    }
+    pub fn dot(self: Self, rhs: Self) f32 {
+        return self.x * rhs.x + self.y * rhs.y;
+    }
+    pub fn sub(self: Self, rhs: Self) Vec2 {
+        return .{ .x = self.x - rhs.x, .y = self.y - rhs.y };
+    }
+};
+
 pub const Vec3 = struct {
     const Self = @This();
     x: f32,
@@ -23,16 +38,16 @@ pub const Vec3 = struct {
     pub fn init(x: f32, y: f32, z: f32) Self {
         return .{ .x = x, .y = y, .z = z };
     }
-    pub fn dot(self: Self, rhs: Vec3) f32 {
+    pub fn dot(self: Self, rhs: Self) f32 {
         return self.x * rhs.x + self.y * rhs.y + self.z * rhs.z;
     }
     pub fn mul(self: Self, scalar: f32) Vec3 {
         return .{ .x = self.x * scalar, .y = self.y * scalar, .z = self.z * scalar };
     }
-    pub fn add(self: Self, rhs: Vec3) Vec3 {
+    pub fn add(self: Self, rhs: Self) Vec3 {
         return .{ .x = self.x + rhs.x, .y = self.y + rhs.y, .z = self.z + rhs.z };
     }
-    pub fn sub(self: Self, rhs: Vec3) Vec3 {
+    pub fn sub(self: Self, rhs: Self) Vec3 {
         return .{ .x = self.x - rhs.x, .y = self.y - rhs.y, .z = self.z - rhs.z };
     }
 

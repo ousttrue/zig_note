@@ -21,7 +21,7 @@
         {
             "label": "test zigla",
             "type": "shell",
-            "command": "zig test pkgs/zigla/src/tests.zig",
+            "command": "zig test -Dlog pkgs/zigla/src/tests.zig",
             "problemMatcher": [
                 "$gcc"
             ]
