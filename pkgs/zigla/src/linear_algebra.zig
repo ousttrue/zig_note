@@ -32,6 +32,9 @@ pub const Vec3 = struct {
     pub fn add(self: Self, rhs: Vec3) Vec3 {
         return .{ .x = self.x + rhs.x, .y = self.y + rhs.y, .z = self.z + rhs.z };
     }
+    pub fn sub(self: Self, rhs: Vec3) Vec3 {
+        return .{ .x = self.x - rhs.x, .y = self.y - rhs.y, .z = self.z - rhs.z };
+    }
 
     pub fn cross(self: Self, rhs: Vec3) Vec3 {
         return .{
@@ -40,11 +43,18 @@ pub const Vec3 = struct {
             .z = self.x * rhs.y - self.y * rhs.x,
         };
     }
-    pub fn normalize(self: Self) Self {
-        const sqnorm = self.dot(self);
+    pub fn normalize(self: *Self) void {
+        const sqnorm = self.dot(self.*);
         const len = std.math.sqrt(sqnorm);
         const factor = 1.0 / len;
-        return .{ .x = self.x * factor, .y = self.y * factor, .z = self.z * factor };
+        self.x *= factor;
+        self.y *= factor;
+        self.z *= factor;
+    }
+    pub fn normalized(self: Self) Self {
+        var copy = self;
+        copy.normalize();
+        return copy;
     }
 };
 
@@ -311,7 +321,7 @@ pub fn @"+"(lhs: anytype, rhs: @TypeOf(lhs)) @TypeOf(lhs) {
     return lhs.add(rhs);
 }
 pub fn @"-"(lhs: anytype, rhs: @TypeOf(lhs)) @TypeOf(lhs) {
-    return lhs.add(rhs.negative());
+    return lhs.sub(rhs);
 }
 pub fn @"*"(lhs: anytype, rhs: @TypeOf(lhs)) @TypeOf(lhs) {
     return lhs.mul(rhs);

@@ -45,7 +45,7 @@ test "Vec3" {
     try std.testing.expectEqual(Vec3.init(2, 4, 6), v1.mul(2.0));
     try std.testing.expectEqual(Vec3.init(2, 4, 6), @"+"(v1, v1));
     try std.testing.expectEqual(Vec3.init(0, 0, 1), Vec3.init(1, 0, 0).cross(Vec3.init(0, 1, 0)));
-    try std.testing.expectEqual(Vec3.init(1, 0, 0), Vec3.init(2, 0, 0).normalize());
+    try std.testing.expectEqual(Vec3.init(1, 0, 0), Vec3.init(2, 0, 0).normalized());
 }
 
 test "Quaternion" {
@@ -57,7 +57,8 @@ test "Quaternion" {
 test "Mat3" {
     const m = Mat3{};
     try std.testing.expectEqual(@as(f32, 1.0), m.det());
-    const axis = Vec3.init(1, 2, 3).normalize();
+    var axis = Vec3.init(1, 2, 3);
+    axis.normalize();
     const angle = std.math.pi * 25.0 / 180.0;
     const q = Quaternion.angleAxis(angle, axis);
     try std.testing.expect(nearlyEqual(@as(f32, 1e-5), 9, Mat3.rotate(q).array(), Mat3.angleAxis(angle, axis).array()));
@@ -67,15 +68,22 @@ test "Mat4" {}
 
 test "ray triangle" {
     const ray = Ray{
-        .origin = Vec3.init(0, 0, 0),
-        .dir = Vec3.init(0, 0, -1),
+        .origin = Vec3.init(0, 0, -1),
+        .dir = Vec3.init(0, 0, 1),
     };
 
     const t = Triangle{
-        .v0 = Vec3.init(-1, -1, -1),
-        .v1 = Vec3.init(1, -1, -1),
-        .v2 = Vec3.init(0, 1, -1),
+        .v0 = Vec3.init(-1, -1, 0),
+        .v1 = Vec3.init(1, -1, 0),
+        .v2 = Vec3.init(0, 1, 0),
     };
 
     try std.testing.expectEqual(@as(f32, 1.0), t.intersect(ray).?);
+
+    const rayOut = Ray{
+        .origin = Vec3.init(10, 0, -1),
+        .dir = Vec3.init(0, 0, 1),
+    };
+
+    try std.testing.expectEqual(null, t.intersect(rayOut).?);
 }
