@@ -1,11 +1,31 @@
 // zig linear algebra
 const std = @import("std");
+const Vector = std.meta.Vector;
 
-// fn dot(lhs: Vector(4, f32), rhs: Vector(4, f32)) f32 {
-//     return @reduce(.Add, lhs * rhs);
-// }
-pub fn dot4(lhs: [4]f32, rhs: [4]f32) f32 {
-    return lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2] + lhs[3] * rhs[3];
+// TODO:
+//
+// R | 0
+// --+--
+// T | 1
+//
+// に変える
+
+const typeinfo: std.builtin.TypeInfo = undefined;
+
+fn Child(comptime t: type) type {
+    return switch (@typeInfo(t)) {
+        .Array => |a| a.child,
+        .Pointer => |p| p.child,
+        else => @compileError("not implemented"),
+    };
+}
+
+fn vdot4(lhs: Vector(4, f32), rhs: Vector(4, f32)) f32 {
+    return @reduce(.Add, lhs * rhs);
+}
+pub fn dot4(lhs: anytype, rhs: @TypeOf(lhs)) Child(@TypeOf(lhs)) {
+    // return lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2] + lhs[3] * rhs[3];
+    return vdot4(lhs[0..4].*, rhs[0..4].*);
 }
 
 test "dot4" {
@@ -19,34 +39,44 @@ pub const Vec3 = struct {
     y: f32,
     z: f32,
     pub fn init(x: f32, y: f32, z: f32) Self {
-        return .{
-            .x = x,
-            .y = y,
-            .z = z,
-        };
+        return .{ .x = x, .y = y, .z = z };
     }
-    pub fn dot(self: *const Self, rhs: Vec3) f32 {
+    pub fn dot(self: Self, rhs: Vec3) f32 {
         return self.x * rhs.x + self.y * rhs.y + self.z * rhs.z;
     }
-    pub fn mul(self: *const Self, scalar: f32) Vec3 {
+    pub fn mul(self: Self, scalar: f32) Vec3 {
         return .{ .x = self.x * scalar, .y = self.y * scalar, .z = self.z * scalar };
     }
-    pub fn add(self: *const Self, rhs: Vec3) Vec3 {
+    pub fn add(self: Self, rhs: Vec3) Vec3 {
         return .{ .x = self.x + rhs.x, .y = self.y + rhs.y, .z = self.z + rhs.z };
     }
 
-    pub fn cross(self: *const Self, rhs: Vec3) Vec3 {
+    pub fn cross(self: Self, rhs: Vec3) Vec3 {
         return .{
             .x = self.y * rhs.z - self.z * rhs.y,
             .y = self.z * rhs.x - self.x * rhs.z,
             .z = self.x * rhs.y - self.y * rhs.x,
         };
     }
-    pub fn normalize(self: *const Self) Self {
-        const sqnorm = self.dot(self.*);
+    pub fn normalize(self: Self) Self {
+        const sqnorm = self.dot(self);
         const len = std.math.sqrt(sqnorm);
         const factor = 1.0 / len;
         return .{ .x = self.x * factor, .y = self.y * factor, .z = self.z * factor };
+    }
+};
+
+pub const Vec4 = struct {
+    const Self = @This();
+    x: f32,
+    y: f32,
+    z: f32,
+    w: f32,
+    pub fn init(x: f32, y: f32, z: f32, w: f32) Self {
+        return .{ .x = x, .y = y, .z = z, .w = w };
+    }
+    pub fn vec3(v: Vec3, w: f32) Vec4 {
+        return .{ .x = v.x, .y = v.y, .z = v.z, .w = w };
     }
 };
 
@@ -54,7 +84,7 @@ test "Vec3" {
     const v1 = Vec3.init(1, 2, 3);
     try std.testing.expectEqual(@as(f32, 14.0), v1.dot(v1));
     try std.testing.expectEqual(Vec3.init(2, 4, 6), v1.mul(2.0));
-    try std.testing.expectEqual(Vec3.init(2, 4, 6), v1.add(v1));
+    try std.testing.expectEqual(Vec3.init(2, 4, 6), @"+"(v1, v1));
     try std.testing.expectEqual(Vec3.init(0, 0, 1), Vec3.init(1, 0, 0).cross(Vec3.init(0, 1, 0)));
     try std.testing.expectEqual(Vec3.init(1, 0, 0), Vec3.init(2, 0, 0).normalize());
 }
@@ -78,7 +108,7 @@ pub const Quaternion = struct {
         };
     }
 
-    pub fn normalize(self: *const Self) Quaternion {
+    pub fn normalize(self: Self) Quaternion {
         const sqnorm = self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w;
         const factor = 1 / sqnorm;
         return .{
@@ -89,7 +119,7 @@ pub const Quaternion = struct {
         };
     }
 
-    pub fn mul(self: *const Self, rhs: Self) Quaternion {
+    pub fn mul(self: Self, rhs: Self) Quaternion {
         const lv = Vec3{ .x = self.x, .y = self.y, .z = self.z };
         const rv = Vec3{ .x = rhs.x, .y = rhs.y, .z = rhs.z };
         const v = lv.mul(rhs.w).add(rv.mul(self.w)).add(lv.cross(rv));
@@ -111,56 +141,32 @@ test "Quaternion" {
 pub const Mat3 = struct {
     const Self = @This();
 
-    _00: f32 = 1,
-    _01: f32 = 0,
-    _02: f32 = 0,
-    _10: f32 = 0,
-    _11: f32 = 1,
-    _12: f32 = 0,
-    _20: f32 = 0,
-    _21: f32 = 0,
-    _22: f32 = 1,
+    _0: Vec3 = Vec3.init(1, 0, 0),
+    _1: Vec3 = Vec3.init(0, 1, 0),
+    _2: Vec3 = Vec3.init(0, 0, 1),
 
-    pub fn init(
-        _00: f32,
-        _01: f32,
-        _02: f32,
-        _10: f32,
-        _11: f32,
-        _12: f32,
-        _20: f32,
-        _21: f32,
-        _22: f32,
-    ) Self {
+    pub fn init(_00: f32, _01: f32, _02: f32, _10: f32, _11: f32, _12: f32, _20: f32, _21: f32, _22: f32) Self {
         return .{
-            ._00 = _00,
-            ._01 = _01,
-            ._02 = _02,
-            ._10 = _10,
-            ._11 = _11,
-            ._12 = _12,
-            ._20 = _20,
-            ._21 = _21,
-            ._22 = _22,
+            ._0 = Vec3.init(_00, _01, _02),
+            ._1 = Vec3.init(_10, _11, _12),
+            ._2 = Vec3.init(_20, _21, _22),
         };
     }
 
+    pub fn rows(_0: Vec3, _1: Vec3, _2: Vec3) Mat3 {
+        return .{ ._0 = _0, ._1 = _1, ._2 = _2 };
+    }
+
     pub fn rotation(q: Quaternion) Mat3 {
-        return Self.init(
-            1 - 2 * q.y * q.y - 2 * q.z * q.z,
-            2 * q.x * q.y - 2 * q.w * q.z,
-            2 * q.z * q.x + 2 * q.w * q.y,
-            2 * q.x * q.y + 2 * q.w * q.z,
-            1 - 2 * q.z * q.z - 2 * q.x * q.x,
-            2 * q.y * q.z - 2 * q.w * q.x,
-            2 * q.z * q.x - 2 * q.w * q.y,
-            2 * q.y * q.z + 2 * q.w * q.x,
-            1 - 2 * q.x * q.x - 2 * q.y * q.y,
+        return Self.rows(
+            Vec3.init(1 - 2 * q.y * q.y - 2 * q.z * q.z, 2 * q.x * q.y - 2 * q.w * q.z, 2 * q.z * q.x + 2 * q.w * q.y),
+            Vec3.init(2 * q.x * q.y + 2 * q.w * q.z, 1 - 2 * q.z * q.z - 2 * q.x * q.x, 2 * q.y * q.z - 2 * q.w * q.x),
+            Vec3.init(2 * q.z * q.x - 2 * q.w * q.y, 2 * q.y * q.z + 2 * q.w * q.x, 1 - 2 * q.x * q.x - 2 * q.y * q.y),
         );
     }
 
-    pub fn det(self: *const Self) f32 {
-        return (self._00 * self._11 * self._22 + self._01 * self._12 * self._20 + self._02 * self._10 + self._21) - (self._00 * self._12 * self._21 + self._01 * self._10 * self._22 + self._02 * self._11 * self._20);
+    pub fn det(self: Self) f32 {
+        return (self._0.x * self._1.y * self._2.z + self._0.y * self._1.z * self._2.x + self._0.z * self._1.x + self._2.y) - (self._0.x * self._1.z * self._2.y + self._0.y * self._1.x * self._2.z + self._0.z * self._1.y * self._2.x);
     }
 };
 
@@ -172,32 +178,38 @@ test "Mat3" {
 pub const Mat4 = struct {
     const Self = @This();
 
-    values: [16]f32,
+    // rows
+    _0: Vec4 = .{ 1, 0, 0, 0 },
+    _1: Vec4 = .{ 0, 1, 0, 0 },
+    _2: Vec4 = .{ 0, 0, 1, 0 },
+    _3: Vec4 = .{ 0, 0, 0, 1 },
 
-    pub fn ptr(self: *const Self) *const f32 {
-        return &self.values[0];
+    pub fn init(_00: f32, _01: f32, _02: f32, _03: f32, _10: f32, _11: f32, _12: f32, _13: f32, _20: f32, _21: f32, _22: f32, _23: f32, _30: f32, _31: f32, _32: f32, _33: f32) Mat4 {
+        return .{
+            ._0 = Vec4.init(_00, _01, _02, _03),
+            ._1 = Vec4.init(_10, _11, _12, _13),
+            ._2 = Vec4.init(_20, _21, _22, _23),
+            ._3 = Vec4.init(_30, _31, _32, _33),
+        };
+    }
+
+    pub fn rows(_0: Vec4, _1: Vec4, _2: Vec4, _3: Vec4) Mat4 {
+        return .{
+            ._0 = _0,
+            ._1 = _1,
+            ._2 = _2,
+            ._3 = _3,
+        };
     }
 
     pub fn frustum(b: f32, t: f32, l: f32, r: f32, n: f32, f: f32) Self {
         // set OpenGL perspective projection matrix
-        return .{ .values = .{
-            2 * n / (r - l),
-            0,
-            0,
-            0,
-            0,
-            2 * n / (t - b),
-            0,
-            0,
-            (r + l) / (r - l),
-            (t + b) / (t - b),
-            -(f + n) / (f - n),
-            -1,
-            0,
-            0,
-            -2 * f * n / (f - n),
-            0,
-        } };
+        return Self.rows(
+            Vec4.init(2 * n / (r - l), 0, 0, 0),
+            Vec4.init(0, 2 * n / (t - b), 0, 0),
+            Vec4.init((r + l) / (r - l), (t + b) / (t - b), -(f + n) / (f - n), -1),
+            Vec4.init(0, 0, -2 * f * n / (f - n), 0),
+        );
     }
 
     pub fn perspective(fov: f32, aspect: f32, n: f32, f: f32) Self {
@@ -210,39 +222,78 @@ pub const Mat4 = struct {
     }
 
     pub fn translate(x: f32, y: f32, z: f32) Self {
-        return .{ .values = .{
-            1, 0, 0, x,
-            0, 1, 0, y,
-            0, 0, 1, z,
-            0, 0, 0, 1,
-        } };
+        return Self.rows(
+            Vec4.init(1, 0, 0, x),
+            Vec4.init(0, 1, 0, y),
+            Vec4.init(0, 0, 1, z),
+            Vec4.init(0, 0, 0, 1),
+        );
     }
 
-    pub fn mul(self: Self, rhs: Self) Self {
-        const r0 = self.values[0..4].*;
-        const r1 = self.values[4..8].*;
-        const r2 = self.values[8..12].*;
-        const r3 = self.values[12..16].*;
-        const c0 = .{ rhs.values[0], rhs.values[4], rhs.values[8], rhs.values[12] };
-        const c1 = .{ rhs.values[1], rhs.values[5], rhs.values[9], rhs.values[13] };
-        const c2 = .{ rhs.values[2], rhs.values[6], rhs.values[10], rhs.values[14] };
-        const c3 = .{ rhs.values[3], rhs.values[7], rhs.values[11], rhs.values[15] };
-        return .{ .values = .{
-            dot4(r0, c0), dot4(r0, c1), dot4(r0, c2), dot4(r0, c3),
-            dot4(r1, c0), dot4(r1, c1), dot4(r1, c2), dot4(r1, c3),
-            dot4(r2, c0), dot4(r2, c1), dot4(r2, c2), dot4(r2, c3),
-            dot4(r3, c0), dot4(r3, c1), dot4(r3, c2), dot4(r3, c3),
-        } };
+    pub fn mat3(m: Mat3) Mat4 {
+        return Self.rows(
+            Vec4.vec3(m._0, 0),
+            Vec4.vec3(m._1, 0),
+            Vec4.vec3(m._2, 0),
+            Vec4.init(0, 0, 0, 1),
+        );
     }
 
     pub fn rotation(q: Quaternion) Mat4 {
-        return .{ .values = .{
-            1 - 2 * q.y * q.y - 2 * q.z * q.z, 2 * q.x * q.y - 2 * q.w * q.z,     2 * q.x * q.z + 2 * q.w * q.y,     0,
-            2 * q.x * q.y + 2 * q.w * q.z,     1 - 2 * q.x * q.x - 2 * q.z * q.z, 2 * q.y * q.z - 2 * q.w * q.x,     0,
-            2 * q.x * q.z - 2 * q.w * q.y,     2 * q.y * q.z + 2 * q.w * q.x,     1 - 2 * q.x * q.x - 2 * q.y * q.y, 0,
-            0,                                 0,                                 0,                                 1,
-        } };
+        return Self.mat3(Mat3.rotation(q));
+    }
+
+    pub fn col0(self: Self) Vec4 {
+        return Vec4.init(self._0.x, self._1.x, self._2.x, self._3.x);
+    }
+    pub fn col1(self: Self) Vec4 {
+        return Vec4.init(self._0.y, self._1.y, self._2.y, self._3.y);
+    }
+    pub fn col2(self: Self) Vec4 {
+        return Vec4.init(self._0.z, self._1.z, self._2.z, self._3.z);
+    }
+    pub fn col3(self: Self) Vec4 {
+        return Vec4.init(self._0.w, self._1.w, self._2.w, self._3.w);
+    }
+
+    pub fn mul(self: Self, rhs: Self) Self {
+        return Self.rows(
+            Vec4.init(
+                dot4(@ptrCast([*]const f32, &self._0.x), @ptrCast([*]const f32, &rhs.col0().x)),
+                dot4(@ptrCast([*]const f32, &self._0.x), @ptrCast([*]const f32, &rhs.col1().x)),
+                dot4(@ptrCast([*]const f32, &self._0.x), @ptrCast([*]const f32, &rhs.col2().x)),
+                dot4(@ptrCast([*]const f32, &self._0.x), @ptrCast([*]const f32, &rhs.col3().x)),
+            ),
+            Vec4.init(
+                dot4(@ptrCast([*]const f32, &self._1.x), @ptrCast([*]const f32, &rhs.col0().x)),
+                dot4(@ptrCast([*]const f32, &self._1.x), @ptrCast([*]const f32, &rhs.col1().x)),
+                dot4(@ptrCast([*]const f32, &self._1.x), @ptrCast([*]const f32, &rhs.col2().x)),
+                dot4(@ptrCast([*]const f32, &self._1.x), @ptrCast([*]const f32, &rhs.col3().x)),
+            ),
+            Vec4.init(
+                dot4(@ptrCast([*]const f32, &self._2.x), @ptrCast([*]const f32, &rhs.col0().x)),
+                dot4(@ptrCast([*]const f32, &self._2.x), @ptrCast([*]const f32, &rhs.col1().x)),
+                dot4(@ptrCast([*]const f32, &self._2.x), @ptrCast([*]const f32, &rhs.col2().x)),
+                dot4(@ptrCast([*]const f32, &self._2.x), @ptrCast([*]const f32, &rhs.col3().x)),
+            ),
+            Vec4.init(
+                dot4(@ptrCast([*]const f32, &self._3.x), @ptrCast([*]const f32, &rhs.col0().x)),
+                dot4(@ptrCast([*]const f32, &self._3.x), @ptrCast([*]const f32, &rhs.col1().x)),
+                dot4(@ptrCast([*]const f32, &self._3.x), @ptrCast([*]const f32, &rhs.col2().x)),
+                dot4(@ptrCast([*]const f32, &self._3.x), @ptrCast([*]const f32, &rhs.col3().x)),
+            ),
+        );
     }
 };
 
 test "Mat4" {}
+
+pub fn @"+"(lhs: anytype, rhs: @TypeOf(lhs)) @TypeOf(lhs) {
+    return lhs.add(rhs);
+}
+pub fn @"-"(lhs: anytype, rhs: @TypeOf(lhs)) @TypeOf(lhs) {
+    return lhs.add(rhs.negative());
+}
+pub fn @"*"(lhs: anytype, rhs: @TypeOf(lhs)) @TypeOf(lhs) {
+    return lhs.mul(rhs);
+}

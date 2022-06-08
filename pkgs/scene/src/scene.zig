@@ -281,7 +281,7 @@ pub const Scene = struct {
             shader.use();
             defer shader.unuse();
             const m = self.camera.getMVP();
-            shader.setMat4("uMVP", m.ptr());
+            shader.setMat4("uMVP", &m._0.x);
             if (self.vao) |vao| {
                 vao.draw(3, .{});
             }
