@@ -115,7 +115,7 @@ pub const Quaternion = struct {
     z: f32 = 0,
     w: f32 = 1,
 
-    pub fn angleAxis(angle: f32, axis: Vec3) Quaternion {
+    pub fn angleAxis(angle: f32, axis: Vec3) Self {
         const half = angle / 2;
         const c = std.math.cos(half);
         const s = std.math.sin(half);
@@ -127,18 +127,23 @@ pub const Quaternion = struct {
         };
     }
 
-    pub fn normalize(self: Self) Quaternion {
+    pub fn normalize(self: *Self) void {
         const sqnorm = self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w;
-        const factor = 1 / sqnorm;
-        return .{
-            .x = self.x * factor,
-            .y = self.y * factor,
-            .z = self.z * factor,
-            .w = self.w * factor,
-        };
+        const norm = std.math.sqrt(sqnorm);
+        const factor = 1 / norm;
+        self.x *= factor;
+        self.y *= factor;
+        self.z *= factor;
+        self.w *= factor;
     }
 
-    pub fn mul(self: Self, rhs: Self) Quaternion {
+    pub fn normalized(self: Self) Self {
+        var copy = self;
+        copy.normalize();
+        return copy;
+    }
+
+    pub fn mul(self: Self, rhs: Self) Self {
         const lv = Vec3{ .x = self.x, .y = self.y, .z = self.z };
         const rv = Vec3{ .x = rhs.x, .y = rhs.y, .z = rhs.z };
         const v = lv.mul(rhs.w).add(rv.mul(self.w)).add(lv.cross(rv));
@@ -279,10 +284,10 @@ pub const Mat4 = struct {
     pub fn frustum(b: f32, t: f32, l: f32, r: f32, n: f32, f: f32) Self {
         // set OpenGL perspective projection matrix
         return Self.rows(
-            Vec4.init(2 * n / (r - l), 0, 0, 0),
-            Vec4.init(0, 2 * n / (t - b), 0, 0),
-            Vec4.init((r + l) / (r - l), (t + b) / (t - b), -(f + n) / (f - n), -1),
-            Vec4.init(0, 0, -2 * f * n / (f - n), 0),
+            Vec4.init(2 * n / (r - l), 0, (r + l) / (r - l), 0),
+            Vec4.init(0, 2 * n / (t - b), (t + b) / (t - b), 0),
+            Vec4.init(0, 0, -(f + n) / (f - n), -2 * f * n / (f - n)),
+            Vec4.init(0, 0, -1, 0),
         );
     }
 

@@ -83,7 +83,7 @@ const Projection = struct {
 const View = struct {
     const Self = @This();
 
-    rotation: zigla.Mat3 = .{},
+    rotation: zigla.Quaternion = .{},
     shift: [3]f32 = .{ 0, 0, -5 },
 
     pub fn getMatrix(self: *Self) zigla.Mat4 {
@@ -91,9 +91,9 @@ const View = struct {
         // const pitch = zlm.Mat4.createAngleAxis(zlm.Vec3.new(1, 0, 0), self.pitch);
         // const shift = zlm.Mat4.createTranslation(self.shift);
         // return shift.mul(pitch.mul(yaw));
-        const r = zigla.Mat4.mat3(self.rotation);
+        const r = zigla.Mat4.rotate(self.rotation);
         const t = zigla.Mat4.translate(self.shift[0], self.shift[1], self.shift[2]);
-        return r.mul(t);
+        return @"*"(t, r);
     }
 };
 
@@ -158,8 +158,8 @@ const ArcBall = struct {
 
     view: *View,
     projection: *Projection,
-    rotation: zigla.Mat3,
-    tmp_rotation: zigla.Mat3,
+    rotation: zigla.Quaternion,
+    tmp_rotation: zigla.Quaternion,
     last: ?screen.MouseInput = null,
     va: ?zigla.Vec3 = null,
 
@@ -174,7 +174,7 @@ const ArcBall = struct {
 
     pub fn update(self: *Self) void {
         // self.view.rotation = self.tmp_rotation.mul(self.rotation).normalize();
-        self.view.rotation = self.rotation.mul(self.tmp_rotation);
+        self.view.rotation = @"*"(self.tmp_rotation, self.rotation);
         self.view.rotation.normalize();
     }
 
@@ -193,7 +193,7 @@ const ArcBall = struct {
                 const angle = std.math.acos(std.math.min(1.0, dot)) * 2;
                 const axis = va.cross(vb);
                 std.log.debug("[{d:.2}, {d:.2}, {d:.2}], [{d:.2}, {d:.2}, {d:.2}][{d:.2}, {d:.2}, {d:.2}], {d:.2}, {d:.2}", .{ va.x, va.y, va.z, vb.x, vb.y, vb.z, axis.x, axis.y, axis.z, dot, angle });
-                self.tmp_rotation = zigla.Mat3.angleAxis(angle, axis);
+                self.tmp_rotation = zigla.Quaternion.angleAxis(angle, axis);
                 self.update();
             }
         }
@@ -246,8 +246,8 @@ pub const Scene = struct {
 
     allocator: std.mem.Allocator,
     camera: Camera = .{},
-    // arc: ArcBall = undefined,
-    cameraHandler: TurnTable = undefined,
+    cameraHandler: ArcBall = undefined,
+    // cameraHandler: TurnTable = undefined,
     shader: ?glo.ShaderProgram = null,
     vao: ?glo.Vao = null,
 
@@ -256,8 +256,8 @@ pub const Scene = struct {
         scene.* = Scene{
             .allocator = allocator,
         };
-        // scene.arc = ArcBall.init(&scene.camera.view, &scene.camera.projection);
-        scene.cameraHandler = TurnTable.init(&scene.camera.view);
+        scene.cameraHandler = ArcBall.init(&scene.camera.view, &scene.camera.projection);
+        // scene.cameraHandler = TurnTable.init(&scene.camera.view);
         mouse_event.right_button.bind(.{
             .begin = screen.mouse_event.BeginEndCallback.create(&scene.cameraHandler, "begin"),
             .drag = screen.mouse_event.DragCallback.create(&scene.cameraHandler, "drag"),

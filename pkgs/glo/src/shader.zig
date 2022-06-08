@@ -110,7 +110,7 @@ pub const ShaderProgram = struct {
 
     pub fn setMat4(self: *Self, name: []const u8, value: *const f32) void {
         if (self.getLocation(name)) |location| {
-            self._setMat4(location, false, value);
+            self._setMat4(location, true, value);
         }
     }
 
