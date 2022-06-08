@@ -208,12 +208,46 @@ const ArcBall = struct {
     }
 };
 
+const TurnTable = struct {
+    const Self = @This();
+
+    view: *View,
+    yaw: f32 = 0.0,
+    pitch: f32 = 0.0,
+
+    pub fn init(view: *View) Self {
+        var self = Self{
+            .view = view,
+        };
+
+        self.update();
+        return self;
+    }
+
+    pub fn update(self: *Self) void {
+        const yaw = zigla.Mat3.angleAxis(self.yaw, zigla.Vec3.init(0, 1, 0));
+        const pitch = zigla.Mat3.angleAxis(self.pitch, zigla.Vec3.init(1, 0, 0));
+        self.view.rotation = @"*"(pitch, yaw);
+    }
+
+    pub fn begin(_: *Self, _: screen.MouseInput) void {}
+
+    pub fn drag(self: *Self, _: screen.MouseInput, dx: i32, dy: i32) void {
+        self.yaw += @intToFloat(f32, dx) * 0.01;
+        self.pitch += @intToFloat(f32, dy) * 0.01;
+        self.update();
+    }
+
+    pub fn end(_: *Self, _: screen.MouseInput) void {}
+};
+
 pub const Scene = struct {
     const Self = @This();
 
     allocator: std.mem.Allocator,
     camera: Camera = .{},
-    arc: ArcBall = undefined,
+    // arc: ArcBall = undefined,
+    cameraHandler: TurnTable = undefined,
     shader: ?glo.ShaderProgram = null,
     vao: ?glo.Vao = null,
 
@@ -222,11 +256,12 @@ pub const Scene = struct {
         scene.* = Scene{
             .allocator = allocator,
         };
-        scene.arc = ArcBall.init(&scene.camera.view, &scene.camera.projection);
+        // scene.arc = ArcBall.init(&scene.camera.view, &scene.camera.projection);
+        scene.cameraHandler = TurnTable.init(&scene.camera.view);
         mouse_event.right_button.bind(.{
-            .begin = screen.mouse_event.BeginEndCallback.create(&scene.arc, "begin"),
-            .drag = screen.mouse_event.DragCallback.create(&scene.arc, "drag"),
-            .end = screen.mouse_event.BeginEndCallback.create(&scene.arc, "end"),
+            .begin = screen.mouse_event.BeginEndCallback.create(&scene.cameraHandler, "begin"),
+            .drag = screen.mouse_event.DragCallback.create(&scene.cameraHandler, "drag"),
+            .end = screen.mouse_event.BeginEndCallback.create(&scene.cameraHandler, "end"),
         });
 
         return scene;
