@@ -14,9 +14,9 @@ fn nearlyEqual(comptime epsilon: anytype, comptime n: usize, lhs: [n]@TypeOf(eps
     for (lhs) |l, i| {
         if (std.math.fabs(l - rhs[i]) > epsilon) {
             std.debug.print("\n", .{});
-            std.debug.print("{any}\n",.{lhs});
-            std.debug.print("{any}\n",.{rhs});
-            std.debug.print("{}: {}, {}\n", .{i, l, rhs[i]});
+            std.debug.print("{any}\n", .{lhs});
+            std.debug.print("{any}\n", .{rhs});
+            std.debug.print("{}: {}, {}\n", .{ i, l, rhs[i] });
             return false;
         }
     }
@@ -34,14 +34,19 @@ fn Child(comptime t: type) type {
 fn vdot4(lhs: Vector(4, f32), rhs: Vector(4, f32)) f32 {
     return @reduce(.Add, lhs * rhs);
 }
-pub fn dot4(lhs: anytype, rhs: @TypeOf(lhs)) Child(@TypeOf(lhs)) {
-    // return lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2] + lhs[3] * rhs[3];
-    return vdot4(lhs[0..4].*, rhs[0..4].*);
+// pub fn dot4(lhs: anytype, rhs: @TypeOf(lhs)) Child(@TypeOf(lhs)) {
+//     // return lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2] + lhs[3] * rhs[3];
+//     return vdot4(lhs[0..4].*, rhs[0..4].*);
+// }
+fn vdot3(lhs: Vector(3, f32), rhs: Vector(3, f32)) f32 {
+    return @reduce(.Add, lhs * rhs);
 }
 
-test "dot4" {
+test "vdot" {
     const v1234: [4]f32 = .{ 1, 2, 3, 4 };
-    try std.testing.expectEqual(@as(f32, 30.0), dot4(v1234, v1234));
+    try std.testing.expectEqual(@as(f32, 30.0), vdot4(v1234, v1234));
+    const v123 = [_]f32{ 1, 2, 3 };
+    try std.testing.expectEqual(@as(f32, 14.0), vdot3(v123, v123));
 }
 
 pub const Vec3 = struct {
@@ -88,6 +93,9 @@ pub const Vec4 = struct {
     }
     pub fn vec3(v: Vec3, w: f32) Vec4 {
         return .{ .x = v.x, .y = v.y, .z = v.z, .w = w };
+    }
+    pub fn dot(self: Self, rhs: Vec4) f32 {
+        return self.x * rhs.x + self.y * rhs.y + self.z * rhs.z + self.w * rhs.w;
     }
 };
 
@@ -189,9 +197,46 @@ pub const Mat3 = struct {
     pub fn array(self: *Self) [9]f32 {
         return @ptrCast([*]f32, &self._0.x)[0..9].*;
     }
+    pub fn col0(self: Self) Vec3 {
+        return Vec3.init(self._0.x, self._1.x, self._2.x);
+    }
+    pub fn col1(self: Self) Vec3 {
+        return Vec3.init(self._0.y, self._1.y, self._2.y);
+    }
+    pub fn col2(self: Self) Vec3 {
+        return Vec3.init(self._0.z, self._1.z, self._2.z);
+    }
 
     pub fn det(self: Self) f32 {
         return (self._0.x * self._1.y * self._2.z + self._0.y * self._1.z * self._2.x + self._0.z * self._1.x + self._2.y) - (self._0.x * self._1.z * self._2.y + self._0.y * self._1.x * self._2.z + self._0.z * self._1.y * self._2.x);
+    }
+
+    pub fn normalized(self: Self) Self {
+        var copy = self;
+        copy.normalize();
+        return copy;
+    }
+
+    pub fn normalize(self: *Self) void {
+        const d = self.det();
+        const f = 1.0 / d;
+        self._0.x *= f;
+        self._0.y *= f;
+        self._0.z *= f;
+        self._1.x *= f;
+        self._1.y *= f;
+        self._1.z *= f;
+        self._2.x *= f;
+        self._2.y *= f;
+        self._2.z *= f;
+    }
+
+    pub fn mul(self: Self, rhs: Self) Self {
+        return Self.rows(
+            Vec3.init(self._0.dot(rhs.col0()), self._0.dot(rhs.col1()), self._0.dot(rhs.col2())),
+            Vec3.init(self._1.dot(rhs.col0()), self._1.dot(rhs.col1()), self._1.dot(rhs.col2())),
+            Vec3.init(self._2.dot(rhs.col0()), self._2.dot(rhs.col1()), self._2.dot(rhs.col2())),
+        );
     }
 };
 
@@ -288,28 +333,28 @@ pub const Mat4 = struct {
     pub fn mul(self: Self, rhs: Self) Self {
         return Self.rows(
             Vec4.init(
-                dot4(@ptrCast([*]const f32, &self._0.x), @ptrCast([*]const f32, &rhs.col0().x)),
-                dot4(@ptrCast([*]const f32, &self._0.x), @ptrCast([*]const f32, &rhs.col1().x)),
-                dot4(@ptrCast([*]const f32, &self._0.x), @ptrCast([*]const f32, &rhs.col2().x)),
-                dot4(@ptrCast([*]const f32, &self._0.x), @ptrCast([*]const f32, &rhs.col3().x)),
+                self._0.dot(rhs.col0()),
+                self._0.dot(rhs.col1()),
+                self._0.dot(rhs.col2()),
+                self._0.dot(rhs.col3()),
             ),
             Vec4.init(
-                dot4(@ptrCast([*]const f32, &self._1.x), @ptrCast([*]const f32, &rhs.col0().x)),
-                dot4(@ptrCast([*]const f32, &self._1.x), @ptrCast([*]const f32, &rhs.col1().x)),
-                dot4(@ptrCast([*]const f32, &self._1.x), @ptrCast([*]const f32, &rhs.col2().x)),
-                dot4(@ptrCast([*]const f32, &self._1.x), @ptrCast([*]const f32, &rhs.col3().x)),
+                self._1.dot(rhs.col0()),
+                self._1.dot(rhs.col1()),
+                self._1.dot(rhs.col2()),
+                self._1.dot(rhs.col3()),
             ),
             Vec4.init(
-                dot4(@ptrCast([*]const f32, &self._2.x), @ptrCast([*]const f32, &rhs.col0().x)),
-                dot4(@ptrCast([*]const f32, &self._2.x), @ptrCast([*]const f32, &rhs.col1().x)),
-                dot4(@ptrCast([*]const f32, &self._2.x), @ptrCast([*]const f32, &rhs.col2().x)),
-                dot4(@ptrCast([*]const f32, &self._2.x), @ptrCast([*]const f32, &rhs.col3().x)),
+                self._2.dot(rhs.col0()),
+                self._2.dot(rhs.col1()),
+                self._2.dot(rhs.col2()),
+                self._2.dot(rhs.col3()),
             ),
             Vec4.init(
-                dot4(@ptrCast([*]const f32, &self._3.x), @ptrCast([*]const f32, &rhs.col0().x)),
-                dot4(@ptrCast([*]const f32, &self._3.x), @ptrCast([*]const f32, &rhs.col1().x)),
-                dot4(@ptrCast([*]const f32, &self._3.x), @ptrCast([*]const f32, &rhs.col2().x)),
-                dot4(@ptrCast([*]const f32, &self._3.x), @ptrCast([*]const f32, &rhs.col3().x)),
+                self._3.dot(rhs.col0()),
+                self._3.dot(rhs.col1()),
+                self._3.dot(rhs.col2()),
+                self._3.dot(rhs.col3()),
             ),
         );
     }
