@@ -7,6 +7,7 @@ const screen = @import("screen");
 const glo = @import("glo");
 const NanoVgRenderer = @import("./nanovg_renderer.zig").NanoVgRenderer;
 const nanovg = @import("nanovg");
+const gizmo_vertexbuffer = @import("./gizmo_vertexbuffer.zig");
 
 const DemoDock = struct {
     const Self = @This();
