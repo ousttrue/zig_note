@@ -38,11 +38,23 @@ pub const Vec3 = struct {
     pub fn init(x: f32, y: f32, z: f32) Self {
         return .{ .x = x, .y = y, .z = z };
     }
+    pub fn scalar(n: f32) Self {
+        return .{ .x = n, .y = n, .z = n };
+    }
+    pub fn array(self: *Self) [3]f32 {
+        return (@ptrCast([*]f32, &self.x))[0..3].*;
+    }
+    pub fn const_array(self: *const Self) [3]f32 {
+        return (@ptrCast([*]const f32, &self.x))[0..3].*;
+    }
+    pub fn inverse(self: Self) Self {
+        return .{ .x = -self.x, .y = -self.y, .z = -self.z };
+    }
     pub fn dot(self: Self, rhs: Self) f32 {
         return self.x * rhs.x + self.y * rhs.y + self.z * rhs.z;
     }
-    pub fn mul(self: Self, scalar: f32) Vec3 {
-        return .{ .x = self.x * scalar, .y = self.y * scalar, .z = self.z * scalar };
+    pub fn mul(self: Self, n: f32) Vec3 {
+        return .{ .x = self.x * n, .y = self.y * n, .z = self.z * n };
     }
     pub fn add(self: Self, rhs: Self) Vec3 {
         return .{ .x = self.x + rhs.x, .y = self.y + rhs.y, .z = self.z + rhs.z };
@@ -123,6 +135,14 @@ pub const Quaternion = struct {
         var copy = self;
         copy.normalize();
         return copy;
+    }
+
+    pub fn inverse(self: Self) Self {
+        return .{ .x = -self.x, .y = -self.y, .z = -self.z, .w = self.w };
+    }
+
+    pub fn rotate(self: Self, v: Vec3) Vec3 {
+        return Mat3.rotate(self).mul(v);
     }
 
     pub fn mul(self: Self, rhs: Self) Self {
@@ -212,12 +232,23 @@ pub const Mat3 = struct {
         self._2.z *= f;
     }
 
-    pub fn mul(self: Self, rhs: Self) Self {
-        return Self.rows(
-            Vec3.init(self._0.dot(rhs.col0()), self._0.dot(rhs.col1()), self._0.dot(rhs.col2())),
-            Vec3.init(self._1.dot(rhs.col0()), self._1.dot(rhs.col1()), self._1.dot(rhs.col2())),
-            Vec3.init(self._2.dot(rhs.col0()), self._2.dot(rhs.col1()), self._2.dot(rhs.col2())),
-        );
+    pub fn mul(self: Self, rhs: anytype) @TypeOf(rhs) {
+        const T = @TypeOf(rhs);
+        if (T == Mat3) {
+            return Self.rows(
+                Vec3.init(self._0.dot(rhs.col0()), self._0.dot(rhs.col1()), self._0.dot(rhs.col2())),
+                Vec3.init(self._1.dot(rhs.col0()), self._1.dot(rhs.col1()), self._1.dot(rhs.col2())),
+                Vec3.init(self._2.dot(rhs.col0()), self._2.dot(rhs.col1()), self._2.dot(rhs.col2())),
+            );
+        } else if (T == Vec3) {
+            return Vec3.init(
+                self._0.dot(rhs),
+                self._1.dot(rhs),
+                self._2.dot(rhs),
+            );
+        } else {
+            @compileError("not implemented");
+        }
     }
 };
 

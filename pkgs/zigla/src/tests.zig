@@ -1,5 +1,6 @@
 const std = @import("std");
 const la = @import("./linear_algebra.zig");
+const rigidbody = @import("./rigidbody_transformation.zig");
 pub const @"*" = la.@"*";
 pub const @"+" = la.@"+";
 pub const Vec3 = la.Vec3;
@@ -86,5 +87,13 @@ test "ray triangle" {
     };
 
     std.testing.log_level = std.log.Level.debug;
-    try std.testing.expect(t.intersect(rayOut)==null);
+    try std.testing.expect(t.intersect(rayOut) == null);
+}
+
+test "RigidBody" {
+    const q = Quaternion.angleAxis(std.math.pi / 2.0, Vec3.init(1, 0, 0));
+    const t = Vec3.init(0, 0, 1);
+    const rb = rigidbody.RigidBodyTransformation{ .rotation = q, .translation = t };
+    const inv = rb.inverse();
+    try std.testing.expect(nearlyEqual(@as(f32, 1e-5), 3, Vec3.init(0, -1, 0).array(), inv.translation.const_array()));
 }
