@@ -119,27 +119,28 @@ pub const Triangle = struct {
     }
 };
 
-// class Quad(NamedTuple):
-//     t0: Triangle
-//     t1: Triangle
+pub const Quad = struct {
+    const Self = @This();
 
-//     @staticmethod
-//     def from_points(v0: zigla.Vec3, v1: zigla.Vec3, v2: zigla.Vec3, v3: zigla.Vec3) -> 'Quad':
-//         return Quad(
-//             Triangle(v0, v1, v2),
-//             Triangle(v2, v3, v0)
-//         )
+    t0: Triangle,
+    t1: Triangle,
 
-//     def intersect(self, ray: Ray) -> Optional[float]:
-//         h0 = self.t0.intersect(ray)
-//         if h0:
-//             h1 = self.t1.intersect(ray)
-//             if h1:
-//                 if h0 < h1:
-//                     return h0
-//                 else:
-//                     return h1
-//             else:
-//                 return h0
-//         else:
-//             return self.t1.intersect(ray)
+    pub fn from_points(v0: la.Vec3, v1: la.Vec3, v2: la.Vec3, v3: la.Vec3) Self {
+        return Quad{
+            .to = Triangle{ .v0 = v0, .v1 = v1, .v2 = v2 },
+            .t1 = Triangle{ .v0 = v2, .v1 = v3, .v2 = v0 },
+        };
+    }
+
+    pub fn intersect(self: Self, ray: Ray) ?f32 {
+        if (self.t0.intersect(ray)) |h0| {
+            if (self.t1.intersect(ray)) |h1| {
+                return if (h0 < h1) h0 else h1;
+            } else {
+                return h0;
+            }
+        } else {
+            return self.t1.intersect(ray);
+        }
+    }
+};
