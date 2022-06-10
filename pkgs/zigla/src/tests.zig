@@ -69,26 +69,45 @@ test "Mat3" {
 test "Mat4" {}
 
 test "ray triangle" {
-    const ray = Ray{
-        .origin = Vec3.init(0, 0, -1),
-        .dir = Vec3.init(0, 0, 1),
-    };
-
     const t = Triangle{
         .v0 = Vec3.init(-1, -1, 0),
         .v1 = Vec3.init(1, -1, 0),
         .v2 = Vec3.init(0, 1, 0),
     };
-
+    const ray = Ray{
+        .origin = Vec3.init(0, 0, -1),
+        .dir = Vec3.init(0, 0, 1),
+    };
     try std.testing.expectEqual(@as(f32, 1.0), t.intersect(ray).?);
+}
 
-    const rayOut = Ray{
+test "ray not hit" {
+    const t = Triangle{
+        .v0 = Vec3.init(-1, -1, 0),
+        .v1 = Vec3.init(1, -1, 0),
+        .v2 = Vec3.init(0, 1, 0),
+    };
+    const ray = Ray{
         .origin = Vec3.init(10, 0, -1),
         .dir = Vec3.init(0, 0, 1),
     };
+    try std.testing.expect(t.intersect(ray) == null);
+}
 
-    std.testing.log_level = std.log.Level.debug;
-    try std.testing.expect(t.intersect(rayOut) == null);
+test "ray negative" {
+    const t = Triangle{
+        .v0 = Vec3.init(-1, -1, 0),
+        .v1 = Vec3.init(1, -1, 0),
+        .v2 = Vec3.init(0, 1, 0),
+    };
+    const l = t.getPlain();
+    const ray = Ray{
+        .origin = Vec3.init(0, 0, 1),
+        .dir = Vec3.init(0, 0, -1),
+    };
+
+    try std.testing.expectEqual(@as(f32, 1.0), l.intersect(ray).?);
+    try std.testing.expectEqual(@as(f32, 1.0), t.intersect(ray).?);
 }
 
 test "RigidBody" {
@@ -101,13 +120,24 @@ test "RigidBody" {
 
 test "Shape" {
     const allocator = std.testing.allocator;
-    const cube = quad.createCube(allocator, 2, 3, 4);
+    const cube = quad.createCube(allocator, 2, 4, 6);
+    defer cube.deinit();
 
     const ray = Ray{
         .origin = Vec3.init(0, 0, 5),
         .dir = Vec3.init(0, 0, -1),
     };
 
-    const t = cube.intersect(ray);
-    try std.testing.expectEqual(@as(f32, 3.0), t.?);
+    const localRay = cube.localRay(ray);
+    try std.testing.expectEqual(Vec3.init(0, 0, 5), localRay.origin);
+    try std.testing.expectEqual(Vec3.init(0, 0, -1), localRay.dir);
+
+    const q0 = quad.Quad.from_points(Vec3.init(-1, 2, 3), Vec3.init(-1, -2, 3), Vec3.init(1, -2, 3), Vec3.init(1, 2, 3));
+    try std.testing.expectEqual(q0, cube.quads[0]);
+    try std.testing.expectEqual(@as(f32, 2.0), q0.t0.getPlain().intersect(ray).?);
+
+    // try std.testing.expectEqual(@as(f32, 1.0), cube.quads[0].intersect(ray).?);
+
+    // const t = cube.intersect(ray);
+    // try std.testing.expectEqual(@as(f32, 3.0), t.?);
 }

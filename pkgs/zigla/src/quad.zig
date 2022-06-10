@@ -55,7 +55,7 @@ pub const Shape = struct {
         };
     }
 
-    pub fn deinit(self: *Self) void {
+    pub fn deinit(self: *const Self) void {
         self.allocator.free(self.quads);
     }
 
@@ -67,17 +67,20 @@ pub const Shape = struct {
         self.state &= ~state;
     }
 
+    pub fn localRay(self: Self, ray: Ray) Ray {
+        const to_local = self.transformation.inverse();
+        return Ray{
+            .origin = to_local.transform(ray.origin),
+            .dir = to_local.rotation.rotate(ray.dir),
+        };
+    }
+
     pub fn intersect(self: Self, ray: Ray) ?f32 {
         if ((@enumToInt(self.state) & @enumToInt(ShapeState.HIDE)) != 0) {
             return null;
         }
 
-        const to_local = self.transformation.inverse();
-
-        const local_ray = Ray{
-            .origin = to_local.transform(ray.origin),
-            .dir = to_local.rotation.rotate(ray.dir),
-        };
+        const local_ray = self.localRay(ray);
 
         var closest: ?f32 = null;
         for (self.quads) |quad| {

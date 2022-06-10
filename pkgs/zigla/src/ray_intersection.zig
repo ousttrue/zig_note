@@ -14,22 +14,6 @@ pub const Ray = struct {
     }
 };
 
-fn isFGSameSide(e: la.Vec2, f: la.Vec2, g: la.Vec2) bool {
-    const n = la.Vec2.init(-e.y, e.x);
-    return n.dot(f) * n.dot(g) > 0;
-}
-
-fn isInside2D(p: la.Vec2, v0: la.Vec2, v1: la.Vec2, v2: la.Vec2) bool {
-    // v0 origin
-    if (!isFGSameSide(@"-"(v1, v0), @"-"(v2, v0), @"-"(p, v0))) return false;
-    // v1 origin
-    if (!isFGSameSide(@"-"(v2, v1), @"-"(v0, v1), @"-"(p, v1))) return false;
-    // v2 origin
-    if (!isFGSameSide(@"-"(v0, v2), @"-"(v1, v2), @"-"(p, v2))) return false;
-
-    return true;
-}
-
 pub const Plain = struct {
     const Self = @This();
     n: la.Vec3,
@@ -47,7 +31,7 @@ pub const Plain = struct {
     pub fn intersect(self: Self, ray: Ray) ?f32 {
         const l = la.Vec4.vec3(self.n, self.d);
         const lv = l.dot(la.Vec4.vec3(ray.dir, 0));
-        if (lv < 1e-5) {
+        if (std.math.fabs(lv) < 1e-5) {
             // parallel
             return null;
         }
@@ -58,6 +42,56 @@ pub const Plain = struct {
     }
 };
 
+fn isFGSameSide(e: la.Vec2, f: la.Vec2, g: la.Vec2) bool {
+    const n = la.Vec2.init(-e.y, e.x);
+    return n.dot(f) * n.dot(g) >= 0;
+}
+
+fn isInside2D(p: la.Vec2, v0: la.Vec2, v1: la.Vec2, v2: la.Vec2) bool {
+    // v0 origin
+    if (!isFGSameSide(@"-"(v1, v0), @"-"(v2, v0), @"-"(p, v0))) return false;
+    // v1 origin
+    if (!isFGSameSide(@"-"(v2, v1), @"-"(v0, v1), @"-"(p, v1))) return false;
+    // v2 origin
+    if (!isFGSameSide(@"-"(v0, v2), @"-"(v1, v2), @"-"(p, v2))) return false;
+
+    return true;
+}
+
+fn dropMaxAxis(v: la.Vec3, points: anytype) [1 + @typeInfo(@TypeOf(points)).Array.len]la.Vec2 {
+    var result: [1 + @typeInfo(@TypeOf(points)).Array.len]la.Vec2 = undefined;
+    if (v.x > v.y) {
+        if (v.x > v.z) {
+            // drop x
+            result[0] = la.Vec2.init(v.y, v.z);
+            for (points) |p, i| {
+                result[i + 1] = la.Vec2.init(p.y, p.z);
+            }
+        } else {
+            // drop z
+            result[0] = la.Vec2.init(v.x, v.y);
+            for (points) |p, i| {
+                result[i + 1] = la.Vec2.init(p.x, p.y);
+            }
+        }
+    } else {
+        if (v.y > v.z) {
+            // drop y
+            result[0] = la.Vec2.init(v.x, v.z);
+            for (points) |p, i| {
+                result[i + 1] = la.Vec2.init(p.x, p.z);
+            }
+        } else {
+            // drop z
+            result[0] = la.Vec2.init(v.x, v.y);
+            for (points) |p, i| {
+                result[i + 1] = la.Vec2.init(p.x, p.y);
+            }
+        }
+    }
+    return result;
+}
+
 pub const Triangle = struct {
     const Self = @This();
 
@@ -65,56 +99,19 @@ pub const Triangle = struct {
     v1: la.Vec3,
     v2: la.Vec3,
 
+    pub fn getPlain(self: Self) Plain {
+        return Plain.triangle(self.v0, self.v1, self.v2);
+    }
+
     pub fn intersect(self: Self, ray: Ray) ?f32 {
-        const l = Plain.triangle(self.v0, self.v1, self.v2);
+        const l = self.getPlain();
         const t = l.intersect(ray) orelse {
             return null;
         };
 
         const p = ray.position(t);
 
-        if (p.x > p.y) {
-            if (p.x > p.z) {
-                // drop x
-                const v0 = la.Vec2.init(self.v0.y, self.v0.z);
-                const v1 = la.Vec2.init(self.v1.y, self.v1.z);
-                const v2 = la.Vec2.init(self.v2.y, self.v2.z);
-                const pp = la.Vec2.init(p.y, p.z);
-                if (isInside2D(pp, v0, v1, v2)) {
-                    return t;
-                }
-            } else {
-                // drop z
-                const v0 = la.Vec2.init(self.v0.x, self.v0.y);
-                const v1 = la.Vec2.init(self.v1.x, self.v1.y);
-                const v2 = la.Vec2.init(self.v2.x, self.v2.y);
-                const pp = la.Vec2.init(p.x, p.y);
-                if (isInside2D(pp, v0, v1, v2)) {
-                    return t;
-                }
-            }
-        } else {
-            if (p.y > p.z) {
-                // drop y
-                const v0 = la.Vec2.init(self.v0.x, self.v0.z);
-                const v1 = la.Vec2.init(self.v1.x, self.v1.z);
-                const v2 = la.Vec2.init(self.v2.x, self.v2.z);
-                const pp = la.Vec2.init(p.x, p.z);
-                if (isInside2D(pp, v0, v1, v2)) {
-                    return t;
-                }
-            } else {
-                // drop z
-                const v0 = la.Vec2.init(self.v0.x, self.v0.y);
-                const v1 = la.Vec2.init(self.v1.x, self.v1.y);
-                const v2 = la.Vec2.init(self.v2.x, self.v2.y);
-                const pp = la.Vec2.init(p.x, p.y);
-                if (isInside2D(pp, v0, v1, v2)) {
-                    return t;
-                }
-            }
-        }
-
-        return null;
+        const p2d = dropMaxAxis(p, [_]la.Vec3{ self.v0, self.v1, self.v2 });        
+        return if (isInside2D(p2d[0], p2d[1], p2d[2], p2d[3])) t else null;
     }
 };
