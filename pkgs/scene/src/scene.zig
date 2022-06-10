@@ -135,7 +135,7 @@ pub const Scene = struct {
 
             var vbo = glo.Vbo.init();
             vbo.setVertices(vertices, false);
-            self.vao = glo.Vao.create(vbo, shader.createVertexLayout(self.allocator));
+            self.vao = glo.Vao.init(vbo, shader.createVertexLayout(self.allocator), null);
         }
 
         if (self.shader) |*shader| {

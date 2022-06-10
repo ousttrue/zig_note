@@ -31,6 +31,7 @@ pub const GizmoVertexBuffer = struct {
     skin: [200]zigla.Mat4 = undefined,
 
     shader: ?glo.Shader = null,
+    vao: ?glo.Vao = null,
 
     pub fn init(allocator: std.mem.Allocator) Self {
         return .{
@@ -90,45 +91,38 @@ pub const GizmoVertexBuffer = struct {
         }
     }
 
-    pub fn render(self: Self, camera: scene.Camera) void {
+    pub fn render(self: *Self, camera: scene.Camera) void {
         _ = camera;
         if (self.shader == null) {
-            var error_buffer = [1024]u8;
-            var shader = glo.Shader.init(self.allocator);
-            if (shader.load(error_buffer, VS, FS)) |message| {
-                std.log.err("{s}", message);
-                @panic("Shader.load");
-            }
+            var shader = glo.Shader.load(self.allocator, VS, FS) catch {
+                @panic(glo.getErrorMessage());
+            };
             self.shader = shader;
 
-            //         # uVP
-            //         vp = glo.UniformLocation.create(self.shader.program, "uVP")
+            // uVP
+            const vp = glo.UniformLocation.init(shader.handle, "uVP");
+            _ = vp;
+            // def set_vp():
+            //     vp.set_mat4(glm.value_ptr(self.view_projection))
+            // self.props.append(set_vp)
 
-            //         def set_vp():
-            //             vp.set_mat4(glm.value_ptr(self.view_projection))
-            //         self.props.append(set_vp)
+            // uBoneMatrices
+            const skin = glo.UniformLocation.init(shader.handle, "uBoneMatrices");
+            _ = skin;
 
-            //         # uBoneMatrices
-            //         skin = glo.UniformLocation.create(
-            //             self.shader.program, "uBoneMatrices")
+            // def set_skin():
+            //     skin.set_mat4(self.skin.ptr, count=len(self.skin))
+            // self.props.append(set_skin)
 
-            //         def set_skin():
-            //             skin.set_mat4(self.skin.ptr, count=len(self.skin))
-            //         self.props.append(set_skin)
+            // vao
+            const vertex_layout = shader.createVertexLayout(self.allocator);
+            _ = vertex_layout;
+            var vbo = glo.Vbo.init();
+            vbo.setVertices(self.vertices, true);
+            var ibo = glo.Ibo.init();
+            ibo.setIndices(self.indices, true);
+            self.vao = glo.Vao.init(vbo, vertex_layout, ibo);
 
-            //         # vao
-            //         vertex_layout = glo.VertexLayout.create_list(self.shader.program)
-            //         vbo = glo.Vbo()
-            //         vbo.set_vertices(self.vertices, is_dynamic=True)
-            //         ibo = glo.Ibo()
-            //         ibo.set_indices(self.indices, is_dynamic=True)
-            //         self.triangle_vao = glo.Vao(
-            //             vbo, vertex_layout, ibo)
-
-            //         line_vbo = glo.Vbo()
-            //         line_vbo.set_vertices(self.line_vertices, is_dynamic=True)
-            //         self.line_vao = glo.Vao(
-            //             line_vbo, vertex_layout)
         } else {
             //         assert self.triangle_vao
             //         self.triangle_vao.vbo.update(self.vertices)

@@ -10,5 +10,6 @@ pub const Shader = shader_program.Shader;
 pub const UniformLocation = shader_program.UniformLocation;
 pub const UniformBlockIndex = shader_program.UniformBlockIndex;
 pub const Vbo = vao.Vbo;
+pub const Ibo = vao.Ibo;
 pub const Vao = vao.Vao;
 pub const getErrorMessage = error_handling.getErrorMessage;

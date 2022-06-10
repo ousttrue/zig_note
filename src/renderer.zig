@@ -113,6 +113,8 @@ const FboDock = struct {
     scene: *Scene,
     nvg: NanoVgRenderer,
 
+    gizmo: gizmo_vertexbuffer.GizmoVertexBuffer,
+
     pub fn init(allocator: std.mem.Allocator) Self {
         var mouse_event = screen.MouseEvent.new(allocator);
         return .{
@@ -121,6 +123,7 @@ const FboDock = struct {
             .mouse_event = mouse_event,
             .scene = Scene.new(allocator, mouse_event),
             .nvg = NanoVgRenderer.init(allocator, null, null),
+            .gizmo = gizmo_vertexbuffer.GizmoVertexBuffer.init(allocator),
         };
     }
 
@@ -162,6 +165,7 @@ const FboDock = struct {
             self.mouse_event.process(mouse_input);
 
             self.scene.render(mouse_input);
+            self.gizmo.render(self.scene.camera);
 
             self.debugDraw(mouse_input);
         }
