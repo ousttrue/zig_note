@@ -7,4 +7,4 @@ pub const Quaternion = la.Quaternion;
 pub const Mat3 = la.Mat3;
 pub const Mat4 = la.Mat4;
 pub const ray_intersection = @import("./ray_intersection.zig");
-pub const shape = @import("./shape.zig");
+pub const quad = @import("./quad.zig");
