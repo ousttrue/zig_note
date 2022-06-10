@@ -1,5 +1,5 @@
 const gl = @import("gl");
-const shader = @import("./shader.zig");
+const shader_program = @import("./shader_program.zig");
 
 pub const Vbo = struct {
     const Self = @This();
@@ -95,7 +95,7 @@ pub const Vao = struct {
         gl.deleteVertexArrays(1, &self.vao);
     }
 
-    pub fn create(vbo: Vbo, layouts: []const shader.VertexLayout) Self {
+    pub fn create(vbo: Vbo, layouts: []const shader_program.VertexLayout) Self {
         var self = Self.init(vbo);
         self.bind();
         vbo.bind();

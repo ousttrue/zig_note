@@ -68,19 +68,16 @@ const Texture = struct {
 const Pipeline = struct {
     const Self = @This();
 
-    shader: glo.ShaderProgram,
+    shader: glo.Shader,
     fragSize: usize = 0,
     texture: glo.UniformLocation,
     view: glo.UniformLocation,
     frag: glo.UniformBlockIndex,
 
     fn init(allocator: std.mem.Allocator) Self {
-        var shader = glo.ShaderProgram.init(allocator);
-
-        var error_buffer: [1024]u8 = undefined;
-        if (shader.load(&error_buffer, VS, FS)) |message| {
-            @panic(message);
-        }
+        var shader = glo.Shader.load(allocator, VS, FS) catch {
+            @panic(glo.getErrorMessage());
+        };
 
         var self = Self{
             .shader = shader,

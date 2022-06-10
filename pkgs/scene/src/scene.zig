@@ -66,7 +66,7 @@ pub const Scene = struct {
     cameraHandler: camera.ArcBall = undefined,
     // cameraHandler: TurnTable = undefined,
     shiftHandler: camera.ScreenShift = undefined,
-    shader: ?glo.ShaderProgram = null,
+    shader: ?glo.Shader = null,
     vao: ?glo.Vao = null,
 
     pub fn new(allocator: std.mem.Allocator, mouse_event: *screen.MouseEvent) *Self {
@@ -127,18 +127,15 @@ pub const Scene = struct {
         self.camera.projection.height = mouse_input.height;
 
         if (self.shader == null) {
-            var error_buffer: [1024]u8 = undefined;
-            var shader = glo.ShaderProgram.init(self.allocator);
-            if (shader.load(error_buffer[0..error_buffer.len], vs, fs)) |error_message| {
-                std.debug.print("{s}\n", .{error_message});
-                shader.deinit();
-            } else {
-                self.shader = shader;
+            var shader = glo.Shader.load(self.allocator, vs, fs) catch {
+                std.debug.print("{s}\n", .{glo.getErrorMessage()});
+                @panic("load");
+            };
+            self.shader = shader;
 
-                var vbo = glo.Vbo.init();
-                vbo.setVertices(vertices, false);
-                self.vao = glo.Vao.create(vbo, shader.createVertexLayout(self.allocator));
-            }
+            var vbo = glo.Vbo.init();
+            vbo.setVertices(vertices, false);
+            self.vao = glo.Vao.create(vbo, shader.createVertexLayout(self.allocator));
         }
 
         if (self.shader) |*shader| {

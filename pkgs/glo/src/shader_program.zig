@@ -1,37 +1,42 @@
 const std = @import("std");
 const gl = @import("gl");
+const error_handling = @import("./error_handling.zig");
 
-pub const ShaderCompile = struct {
-    const Self = @This();
+pub fn compile(shader_type: gl.GLuint, src: []const u8) error_handling.ShaderError!gl.GLuint {
+    const handle = gl.createShader(shader_type);
+    errdefer gl.deleteShader(handle);
 
-    shader: gl.GLuint,
+    const len = [1]c_int{@intCast(c_int, src.len)};
+    const sources: [1][*c]const u8 = .{&src[0]};
+    gl.shaderSource(handle, 1, &sources, &len);
+    gl.compileShader(handle);
 
-    pub fn init(shader_type: gl.GLuint) Self {
-        return .{
-            .shader = gl.createShader(shader_type),
-        };
+    var status: [1]gl.GLint = undefined;
+    gl.getShaderiv(handle, gl.COMPILE_STATUS, &status);
+    if (status[0] == gl.TRUE) {
+        return handle;
     }
 
-    pub fn deinit(self: *Self) void {
-        gl.deleteShader(self.shader);
+    error_handling.loadCompileErrorMessage(handle);
+    return error_handling.ShaderError.CompileError;
+}
+
+pub fn link(vs: gl.GLuint, fs: gl.GLuint) error_handling.ShaderError!gl.GLuint {
+    const handle = gl.createProgram();
+    errdefer gl.deleteProgram(handle);
+
+    gl.attachShader(handle, vs);
+    gl.attachShader(handle, fs);
+    gl.linkProgram(handle);
+    var status: [1]gl.GLint = undefined;
+    gl.getProgramiv(handle, gl.LINK_STATUS, &status);
+    if (status[0] == gl.TRUE) {
+        return handle;
     }
 
-    pub fn compileOrError(self: *Self, error_buffer: []u8, src: []const u8) ?[]const u8 {
-        const len = [1]c_int{@intCast(c_int, src.len)};
-        const sources: [1][*c]const u8 = .{&src[0]};
-        gl.shaderSource(self.shader, 1, &sources, &len);
-        gl.compileShader(self.shader);
-        var status: [1]gl.GLint = undefined;
-        gl.getShaderiv(self.shader, gl.COMPILE_STATUS, &status);
-        if (status[0] == gl.TRUE) {
-            return null;
-        }
-        // error message
-        var size: [1]gl.GLsizei = undefined;
-        gl.getShaderInfoLog(self.shader, @intCast(c_int, error_buffer.len), &size, @ptrCast([*c]gl.GLchar, &error_buffer[0]));
-        return error_buffer[0..@intCast(usize, size[0])];
-    }
-};
+    error_handling.loadLinkErrorMessage(handle);
+    return error_handling.ShaderError.LinkError;
+}
 
 pub const AttributeLocation = struct {
     const Self = @This();
@@ -65,15 +70,28 @@ fn getLayout(layouts: []const VertexLayout, location: c_uint) ?VertexLayout {
     return null;
 }
 
-pub const ShaderProgram = struct {
+pub const Shader = struct {
     const Self = @This();
 
     handle: gl.GLuint,
     location_map: std.StringHashMap(c_int),
 
-    pub fn init(allocator: std.mem.Allocator) Self {
-        return .{
-            .handle = gl.createProgram(),
+    pub fn load(allocator: std.mem.Allocator, vs_src: []const u8, fs_src: []const u8) error_handling.ShaderError!Self {
+        var vs = compile(gl.VERTEX_SHADER, vs_src) catch {
+            @panic(error_handling.getErrorMessage());
+        };
+        defer gl.deleteShader(vs);
+
+        var fs = compile(gl.FRAGMENT_SHADER, fs_src) catch {
+            @panic(error_handling.getErrorMessage());
+        };
+        defer gl.deleteShader(fs);
+
+        const handle = link(vs, fs) catch {
+            @panic(error_handling.getErrorMessage());
+        };
+        return Shader{
+            .handle = handle,
             .location_map = std.StringHashMap(c_int).init(allocator),
         };
     }
@@ -112,42 +130,6 @@ pub const ShaderProgram = struct {
         if (self.getLocation(name)) |location| {
             self._setMat4(location, true, value);
         }
-    }
-
-    pub fn linkOrError(self: *Self, error_buffer: []u8, vs: ShaderCompile, fs: ShaderCompile) ?[]const u8 {
-        gl.attachShader(self.handle, vs.shader);
-        gl.attachShader(self.handle, fs.shader);
-        gl.linkProgram(self.handle);
-        var status: [1]gl.GLint = undefined;
-        gl.getProgramiv(self.handle, gl.LINK_STATUS, &status);
-        if (status[0] == gl.TRUE) {
-            return null;
-        }
-
-        // error message
-        var size: [1]gl.GLsizei = undefined;
-        gl.getProgramInfoLog(self.handle, @intCast(c_int, error_buffer.len), &size, @ptrCast([*c]gl.GLchar, &error_buffer[0]));
-        return error_buffer[0..@intCast(usize, size[0])];
-    }
-
-    pub fn load(self: *Self, error_buffer: []u8, vs_src: []const u8, fs_src: []const u8) ?[]const u8 {
-        var vs = ShaderCompile.init(gl.VERTEX_SHADER);
-        defer vs.deinit();
-        if (vs.compileOrError(error_buffer, vs_src)) |error_message| {
-            return error_message;
-        }
-
-        var fs = ShaderCompile.init(gl.FRAGMENT_SHADER);
-        defer fs.deinit();
-        if (fs.compileOrError(error_buffer, fs_src)) |error_message| {
-            return error_message;
-        }
-
-        if (self.linkOrError(error_buffer, vs, fs)) |error_message| {
-            return error_message;
-        }
-
-        return null;
     }
 
     pub fn createVertexLayout(self: *Self, allocator: std.mem.Allocator) []const VertexLayout {

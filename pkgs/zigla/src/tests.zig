@@ -12,7 +12,7 @@ pub const Mat4 = la.Mat4;
 const ray_intersection = @import("./ray_intersection.zig");
 pub const Ray = ray_intersection.Ray;
 pub const Triangle = ray_intersection.Triangle;
-pub const quad = @import("./quad.zig");
+pub const quad_shape = @import("./quad_shape.zig");
 
 fn nearlyEqual(comptime epsilon: anytype, comptime n: usize, lhs: [n]@TypeOf(epsilon), rhs: [n]@TypeOf(epsilon)) bool {
     for (lhs) |l, i| {
@@ -135,7 +135,7 @@ test "RigidBody" {
 
 test "Shape" {
     const allocator = std.testing.allocator;
-    const cube = quad.createCube(allocator, 2, 4, 6);
+    const cube = quad_shape.createCube(allocator, 2, 4, 6);
     defer cube.deinit();
 
     const ray = Ray{
@@ -147,7 +147,7 @@ test "Shape" {
     try std.testing.expectEqual(Vec3.init(0, 0, 5), localRay.origin);
     try std.testing.expectEqual(Vec3.init(0, 0, -1), localRay.dir);
 
-    const q0 = quad.Quad.from_points(Vec3.init(-1, 2, 3), Vec3.init(-1, -2, 3), Vec3.init(1, -2, 3), Vec3.init(1, 2, 3));
+    const q0 = quad_shape.Quad.from_points(Vec3.init(-1, 2, 3), Vec3.init(-1, -2, 3), Vec3.init(1, -2, 3), Vec3.init(1, 2, 3));
     try std.testing.expectEqual(q0, cube.quads[0]);
     try std.testing.expectEqual(@as(f32, 2.0), q0.t0.getPlain().intersect(ray).?);
 
