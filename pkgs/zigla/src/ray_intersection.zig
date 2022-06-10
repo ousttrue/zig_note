@@ -58,34 +58,30 @@ fn isInside2D(p: la.Vec2, v0: la.Vec2, v1: la.Vec2, v2: la.Vec2) bool {
     return true;
 }
 
-fn dropMaxAxis(v: la.Vec3, points: anytype) [1 + @typeInfo(@TypeOf(points)).Array.len]la.Vec2 {
-    var result: [1 + @typeInfo(@TypeOf(points)).Array.len]la.Vec2 = undefined;
-    if (v.x > v.y) {
-        if (v.x > v.z) {
+pub fn dropMaxAxis(n: la.Vec3, points: anytype) [@typeInfo(@TypeOf(points)).Array.len]la.Vec2 {
+    var result: [@typeInfo(@TypeOf(points)).Array.len]la.Vec2 = undefined;
+    if (n.x > n.y) {
+        if (n.x > n.z) {
             // drop x
-            result[0] = la.Vec2.init(v.y, v.z);
             for (points) |p, i| {
-                result[i + 1] = la.Vec2.init(p.y, p.z);
+                result[i] = la.Vec2.init(p.y, p.z);
             }
         } else {
             // drop z
-            result[0] = la.Vec2.init(v.x, v.y);
             for (points) |p, i| {
-                result[i + 1] = la.Vec2.init(p.x, p.y);
+                result[i] = la.Vec2.init(p.x, p.y);
             }
         }
     } else {
-        if (v.y > v.z) {
+        if (n.y > n.z) {
             // drop y
-            result[0] = la.Vec2.init(v.x, v.z);
             for (points) |p, i| {
-                result[i + 1] = la.Vec2.init(p.x, p.z);
+                result[i] = la.Vec2.init(p.x, p.z);
             }
         } else {
             // drop z
-            result[0] = la.Vec2.init(v.x, v.y);
             for (points) |p, i| {
-                result[i + 1] = la.Vec2.init(p.x, p.y);
+                result[i] = la.Vec2.init(p.x, p.y);
             }
         }
     }
@@ -111,7 +107,7 @@ pub const Triangle = struct {
 
         const p = ray.position(t);
 
-        const p2d = dropMaxAxis(p, [_]la.Vec3{ self.v0, self.v1, self.v2 });        
+        const p2d = dropMaxAxis(l.n, [_]la.Vec3{ p, self.v0, self.v1, self.v2 });
         return if (isInside2D(p2d[0], p2d[1], p2d[2], p2d[3])) t else null;
     }
 };

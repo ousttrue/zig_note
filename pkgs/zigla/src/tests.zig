@@ -3,6 +3,7 @@ const la = @import("./linear_algebra.zig");
 const rigidbody = @import("./rigidbody_transformation.zig");
 pub const @"*" = la.@"*";
 pub const @"+" = la.@"+";
+pub const Vec2 = la.Vec2;
 pub const Vec3 = la.Vec3;
 pub const Vec4 = la.Vec4;
 pub const Quaternion = la.Quaternion;
@@ -69,29 +70,43 @@ test "Mat3" {
 test "Mat4" {}
 
 test "ray triangle" {
+    const ray = Ray{
+        .origin = Vec3.init(0, 0, -1),
+        .dir = Vec3.init(0, 0, 1),
+    };
+
     const t = Triangle{
         .v0 = Vec3.init(-1, -1, 0),
         .v1 = Vec3.init(1, -1, 0),
         .v2 = Vec3.init(0, 1, 0),
-    };
-    const ray = Ray{
-        .origin = Vec3.init(0, 0, -1),
-        .dir = Vec3.init(0, 0, 1),
     };
     try std.testing.expectEqual(@as(f32, 1.0), t.intersect(ray).?);
 }
 
 test "ray not hit" {
-    const t = Triangle{
-        .v0 = Vec3.init(-1, -1, 0),
-        .v1 = Vec3.init(1, -1, 0),
-        .v2 = Vec3.init(0, 1, 0),
-    };
     const ray = Ray{
         .origin = Vec3.init(10, 0, -1),
         .dir = Vec3.init(0, 0, 1),
     };
-    try std.testing.expect(t.intersect(ray) == null);
+    const p0 = ray.position(3);
+    try std.testing.expectEqual(Vec3.init(10, 0, 2), p0);
+
+    const tri = Triangle{
+        .v0 = Vec3.init(-1, -1, 0),
+        .v1 = Vec3.init(1, -1, 0),
+        .v2 = Vec3.init(0, 1, 0),
+    };
+    const l = tri.getPlain();
+    const t = l.intersect(ray).?;
+    try std.testing.expectEqual(@as(f32, 1), t);
+    const p = ray.position(t);
+    try std.testing.expectEqual(Vec3.init(10, 0, 0), p);
+    const p2d = ray_intersection.dropMaxAxis(l.n, [_]la.Vec3{ p, tri.v0, tri.v1, tri.v2 });
+    try std.testing.expectEqual(Vec2.init(10, 0), p2d[0]);
+    try std.testing.expectEqual(Vec2.init(-1, -1), p2d[1]);
+    try std.testing.expectEqual(Vec2.init(1, -1), p2d[2]);
+    try std.testing.expectEqual(Vec2.init(0, 1), p2d[3]);
+    try std.testing.expect(tri.intersect(ray) == null);
 }
 
 test "ray negative" {
@@ -136,8 +151,8 @@ test "Shape" {
     try std.testing.expectEqual(q0, cube.quads[0]);
     try std.testing.expectEqual(@as(f32, 2.0), q0.t0.getPlain().intersect(ray).?);
 
-    // try std.testing.expectEqual(@as(f32, 1.0), cube.quads[0].intersect(ray).?);
+    try std.testing.expectEqual(@as(f32, 2.0), cube.quads[0].intersect(ray).?);
 
-    // const t = cube.intersect(ray);
-    // try std.testing.expectEqual(@as(f32, 3.0), t.?);
+    const t = cube.intersect(ray);
+    try std.testing.expectEqual(@as(f32, 2.0), t.?);
 }
