@@ -11,6 +11,7 @@ pub const Mat4 = la.Mat4;
 const ray_intersection = @import("./ray_intersection.zig");
 pub const Ray = ray_intersection.Ray;
 pub const Triangle = ray_intersection.Triangle;
+pub const quad = @import("./quad.zig");
 
 fn nearlyEqual(comptime epsilon: anytype, comptime n: usize, lhs: [n]@TypeOf(epsilon), rhs: [n]@TypeOf(epsilon)) bool {
     for (lhs) |l, i| {
@@ -96,4 +97,17 @@ test "RigidBody" {
     const rb = rigidbody.RigidBodyTransformation{ .rotation = q, .translation = t };
     const inv = rb.inverse();
     try std.testing.expect(nearlyEqual(@as(f32, 1e-5), 3, Vec3.init(0, -1, 0).array(), inv.translation.const_array()));
+}
+
+test "Shape" {
+    const allocator = std.testing.allocator;
+    const cube = quad.createCube(allocator, 2, 3, 4);
+
+    const ray = Ray{
+        .origin = Vec3.init(0, 0, 5),
+        .dir = Vec3.init(0, 0, -1),
+    };
+
+    const t = cube.intersect(ray);
+    try std.testing.expectEqual(@as(f32, 3.0), t.?);
 }

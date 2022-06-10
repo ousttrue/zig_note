@@ -20,4 +20,8 @@ pub const RigidBodyTransformation = struct {
             .translation = inv.rotate(self.translation.inverse()),
         };
     }
+
+    pub fn transform(self: Self, point: la.Vec3) la.Vec3 {
+        return self.rotation.rotate(point).add(self.translation);
+    }
 };
