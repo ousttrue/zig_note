@@ -145,16 +145,18 @@ pub const Shader = struct {
             var buffer: [1024]u8 = undefined;
             var length: c_int = undefined;
             var size: gl.GLsizei = undefined;
-            var _type: gl.GLenum = undefined;
-            gl.getActiveAttrib(self.handle, i, @intCast(gl.GLuint, buffer.len), &length, &size, &_type, &buffer[0]);
+            var gl_type: gl.GLenum = undefined;
+            gl.getActiveAttrib(self.handle, i, @intCast(gl.GLuint, buffer.len), &length, &size, &gl_type, &buffer[0]);
             // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGetActiveAttrib.xhtml
             std.debug.assert(size == 1);
             const name = buffer[0..@intCast(usize, length)];
             const attribute = AttributeLocation.create(self.handle, name);
-            const itemCount: c_int = switch (_type) {
-                gl.FLOAT_VEC3 => 3,
-                gl.FLOAT_VEC2 => 2,
+            const itemCount: c_int = switch (gl_type) {
+                gl.FLOAT_VEC2 => 2, // 0x8B50
+                gl.FLOAT_VEC3 => 3, // 0x8B51
+                gl.FLOAT_VEC4 => 4, // 0x8B52
                 else => {
+                    std.log.err("gl_type: 0x{x}", .{gl_type});
                     @panic("not implemented");
                 },
             };
