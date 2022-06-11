@@ -83,11 +83,12 @@ pub const Shape = struct {
     state: StateReference,
 
     pub fn init(quads: []const Quad, pMatrix: *la.Mat4, state: StateReference) Self {
-        return .{
+        var self =Self{
             .quads = quads,
             .matrix = pMatrix,
             .state = state,
         };
+        return self;
     }
 
     pub fn setPosition(self: *Self, p: la.Vec3) void {
@@ -96,10 +97,12 @@ pub const Shape = struct {
 
     pub fn localRay(self: Self, ray: Ray) Ray {
         const r = self.matrix.toMat3().transposed();
+        const dir = @"*"(r, ray.dir);
+
         const t = self.matrix._3.toVec3().inverse();
         return Ray{
             .origin = @"+"(@"*"(r, ray.origin), t),
-            .dir = @"*"(r, ray.dir),
+            .dir = dir,
         };
     }
 

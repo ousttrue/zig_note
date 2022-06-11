@@ -10,16 +10,22 @@ pub const Ray = struct {
     origin: la.Vec3,
     dir: la.Vec3,
 
-    pub fn createFromScreen(x: f32, y: f32, w: f32, h: f32, cameraTransform: la.Mat4, fov_y: f32, aspect: f32) Self {
-        const origin = cameraTransform._3;
+    pub fn createFromScreen(x: f32, y: f32, w: f32, h: f32, t: la.Vec3, r: la.Mat3, fov_y: f32, aspect: f32) Self {
         const half_fov = fov_y / 2.0;
-        const dir = @"*"(cameraTransform, la.Vec4.init(
-            (x / w * 2 - 1) * std.math.tan(half_fov) * (aspect),
-            -(y / h * 2 - 1) * std.math.tan(half_fov),
+
+        const xx = (x / w * 2 - 1);
+        const yy = -(y / h * 2 - 1);
+        // std.log.debug("({d:.2}, {d:.2}), ({d:.2}, {d:.2}), {d:.2}, {d:.2}", .{ x, y, w, h, xx, yy });
+
+        var dir = @"*"(r, la.Vec3.init(
+            xx * std.math.tan(half_fov) * (aspect),
+            yy * std.math.tan(half_fov),
             -1,
-            0,
         ));
-        return .{ .origin = origin.toVec3(), .dir = dir.toVec3() };
+        dir.normalize();
+
+        // std.log.debug("({d:.2}, {d:.2}, {d:.2})", .{ dir.x, dir.y, dir.z });
+        return .{ .origin = t, .dir = dir };
     }
 
     pub fn position(self: Self, t: f32) la.Vec3 {

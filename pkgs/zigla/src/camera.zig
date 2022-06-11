@@ -35,14 +35,14 @@ pub const View = struct {
     pub fn getViewMatrix(self: Self) la.Mat4 {
         const r = la.Mat4.rotate(self.rotation);
         const t = la.Mat4.translate(self.shift);
-        return @"*"(t, r);
+        return @"*"(r, t);
     }
 
     pub fn getTransformMatrix(self: Self) la.Mat4 {
         const inverse = self.rotation.inverse();
         const r = la.Mat4.rotate(inverse);
         const t = la.Mat4.translate(self.shift.inverse());
-        return @"*"(r, t);
+        return @"*"(t, r);
     }
 };
 
@@ -55,23 +55,20 @@ pub const Camera = struct {
     pub fn getViewProjectionMatrix(self: *const Self) la.Mat4 {
         const p = self.projection.getMatrix();
         const v = self.view.getViewMatrix();
-        return p.mul(v);
+        return @"*"(v, p);
     }
 
     pub fn getRay(self: Self, x: i32, y: i32) ray_intersection.Ray {
+        const inv = la.Mat3.rotate(self.view.rotation.inverse());
         return ray_intersection.Ray.createFromScreen(
             @intToFloat(f32, x),
             @intToFloat(f32, y),
             @intToFloat(f32, self.projection.width),
             @intToFloat(f32, self.projection.height),
-            self.view.getTransformMatrix(),
+            inv.mul(self.view.shift.inverse()),
+            inv,
             self.projection.fovy,
             self.projection.getAspectRatio(),
         );
     }
 };
-
-test {
-    std.testing.expectEqual(14, la.Vec3.init(1, 2, 3).dot(la.Vec3.init(1, 2, 3)));
-    std.testing.expectEqual(la.Vec3.init(0, 0, 1), (la.Vec3.init(1, 0, 0).cross(la.Vec3.init(0, 1, 0))));
-}

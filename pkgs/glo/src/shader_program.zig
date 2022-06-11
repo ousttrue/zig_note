@@ -128,7 +128,7 @@ pub const Shader = struct {
 
     pub fn setMat4(self: *Self, name: []const u8, value: *const f32) void {
         if (self.getLocation(name)) |location| {
-            self._setMat4(location, true, value);
+            self._setMat4(location, false, value);
         }
     }
 
@@ -209,7 +209,7 @@ pub const UniformLocation = struct {
         gl.uniform2fv(self.location, 1, value);
     }
 
-    pub fn setMat4(self: *const Self, value: *const f32, __: struct { transpose: bool = true, count: c_uint = 1 }) void {
+    pub fn setMat4(self: *const Self, value: *const f32, __: struct { transpose: bool = false, count: c_uint = 1 }) void {
         gl.uniformMatrix4fv(self.location, @intCast(c_int, __.count), if (__.transpose) gl.TRUE else gl.FALSE, value);
     }
 };

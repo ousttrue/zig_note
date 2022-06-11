@@ -13,6 +13,7 @@ const ray_intersection = @import("./ray_intersection.zig");
 pub const Ray = ray_intersection.Ray;
 pub const Triangle = ray_intersection.Triangle;
 pub const quad_shape = @import("./quad_shape.zig");
+pub const camera = @import("./camera.zig");
 
 fn nearlyEqual(comptime epsilon: anytype, comptime n: usize, lhs: [n]@TypeOf(epsilon), rhs: [n]@TypeOf(epsilon)) bool {
     for (lhs) |l, i| {
@@ -163,4 +164,33 @@ test "Shape" {
 
     const t = cube.intersect(ray);
     try std.testing.expectEqual(@as(f32, 2.0), t.?);
+}
+
+test "Camera" {
+    var c = camera.Camera{};
+    c.projection.resize(2, 2);
+
+    const m = c.view.getTransformMatrix();
+    try std.testing.expectEqual(Vec4.init(0, 0, 5, 1), m._3);
+
+    const ray = c.getRay(1, 1);
+    try std.testing.expectEqual(Vec3.init(0, 0, 5), ray.origin);
+    try std.testing.expectEqual(Vec3.init(0, 0, -1), ray.dir);
+
+
+    const allocator = std.testing.allocator;
+    const quads = quad_shape.createCube(allocator, 2, 4, 6);
+    defer allocator.free(quads);
+    var mat = Mat4{};
+    var s: [1]f32 = .{0};
+    var state = quad_shape.StateReference{
+        .state = &s,
+        .count = 1,
+        .stride = 0,
+    };
+    const cube = quad_shape.Shape.init(quads, &mat, state);
+
+    const localRay = cube.localRay(ray);
+    try std.testing.expectEqual(Vec3.init(0, 0, 5), localRay.origin);
+    try std.testing.expectEqual(Vec3.init(0, 0, -1), localRay.dir);
 }

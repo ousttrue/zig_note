@@ -3,9 +3,9 @@ const std = @import("std");
 const Vector = std.meta.Vector;
 
 //
-// R | T
+// R | 0
 // --+--
-// 0 | 1
+// T | 1
 //
 
 pub fn vdot4(lhs: Vector(4, f32), rhs: Vector(4, f32)) f32 {
@@ -301,10 +301,10 @@ pub const Mat4 = struct {
     pub fn frustum(b: f32, t: f32, l: f32, r: f32, n: f32, f: f32) Self {
         // set OpenGL perspective projection matrix
         return Self.rows(
-            Vec4.init(2 * n / (r - l), 0, (r + l) / (r - l), 0),
-            Vec4.init(0, 2 * n / (t - b), (t + b) / (t - b), 0),
-            Vec4.init(0, 0, -(f + n) / (f - n), -2 * f * n / (f - n)),
-            Vec4.init(0, 0, -1, 0),
+            Vec4.init(2 * n / (r - l), 0, 0, 0),
+            Vec4.init(0, 2 * n / (t - b), 0, 0),
+            Vec4.init((r + l) / (r - l), (t + b) / (t - b), -(f + n) / (f - n), -1),
+            Vec4.init(0, 0, -2 * f * n / (f - n), 0),
         );
     }
 
@@ -319,10 +319,10 @@ pub const Mat4 = struct {
 
     pub fn translate(t: Vec3) Self {
         return Self.rows(
-            Vec4.init(1, 0, 0, t.x),
-            Vec4.init(0, 1, 0, t.y),
-            Vec4.init(0, 0, 1, t.z),
-            Vec4.init(0, 0, 0, 1),
+            Vec4.init(1, 0, 0, 0),
+            Vec4.init(0, 1, 0, 0),
+            Vec4.init(0, 0, 1, 0),
+            Vec4.vec3(t, 1),
         );
     }
 

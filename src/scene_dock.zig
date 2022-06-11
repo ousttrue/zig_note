@@ -9,6 +9,8 @@ const NanoVgRenderer = @import("./nanovg_renderer.zig").NanoVgRenderer;
 const gizmo_vertexbuffer = @import("./gizmo_vertexbuffer.zig");
 const zigla = @import("zigla");
 
+const FLT_MAX: f32 = 3.402823466e+38;
+
 fn draw_line(vg: *nanovg.NVGcontext, sx: f32, sy: f32, ex: f32, ey: f32, r: u8, g: u8, b: u8) void {
     nanovg.nvgSave(vg);
     nanovg.nvgStrokeWidth(vg, 1.0);
@@ -115,14 +117,14 @@ pub const FboDock = struct {
 
     scene: *Scene,
     mouse_camera_handler: *MouseHandler,
-    gizmo: gizmo_vertexbuffer.GizmoVertexBuffer,
+    gizmo: *gizmo_vertexbuffer.GizmoVertexBuffer,
 
     pub fn init(allocator: std.mem.Allocator, camera: *zigla.Camera) Self {
         var self = Self{
             .fbo = glo.FboManager{},
             .allocator = allocator,
             .scene = Scene.new(allocator),
-            .gizmo = gizmo_vertexbuffer.GizmoVertexBuffer.init(allocator),
+            .gizmo = gizmo_vertexbuffer.GizmoVertexBuffer.new(allocator),
             .mouse_camera_handler = MouseHandler.new(allocator, camera),
         };
 
@@ -149,6 +151,7 @@ pub const FboDock = struct {
 
     pub fn deinit(self: *Self) void {
         self.mouse_camera_handler.delete();
+        self.gizmo.delete();
         self.scene.delete();
     }
 
@@ -168,23 +171,30 @@ pub const FboDock = struct {
             imgui.Custom_ButtonBehaviorMiddleRight();
 
             const io = imgui.GetIO();
-            const mouse_input = screen.MouseInput{
-                .x = @floatToInt(i32, io.MousePos.x - x),
-                .y = @floatToInt(i32, io.MousePos.y - y),
-                .width = @floatToInt(u32, size.x),
-                .height = @floatToInt(u32, size.y),
-                .left_down = io.MouseDown[0],
-                .right_down = io.MouseDown[1],
-                .middle_down = io.MouseDown[2],
-                .is_active = imgui.IsItemActive(),
-                .is_hover = imgui.IsItemHovered(.{}),
-                .wheel = @floatToInt(i32, io.MouseWheel),
-            };
-            // std.debug.print("{}\n", .{mouse_input});
-            const camera = self.mouse_camera_handler.process(mouse_input, true);
 
-            // self.scene.render(mouse_input);
-            self.gizmo.render(camera.getViewProjectionMatrix(), camera.getRay(mouse_input.x, mouse_input.y));
+            // disable mouse
+            // ImVec2(-FLT_MAX,-FLT_MAX)
+            if (io.MousePos.x == -FLT_MAX or io.MousePos.y == -FLT_MAX) {
+                // skip
+            } else {
+                const mouse_input = screen.MouseInput{
+                    .x = @floatToInt(i32, io.MousePos.x - x),
+                    .y = @floatToInt(i32, io.MousePos.y - y),
+                    .width = @floatToInt(u32, size.x),
+                    .height = @floatToInt(u32, size.y),
+                    .left_down = io.MouseDown[0],
+                    .right_down = io.MouseDown[1],
+                    .middle_down = io.MouseDown[2],
+                    .is_active = imgui.IsItemActive(),
+                    .is_hover = imgui.IsItemHovered(.{}),
+                    .wheel = @floatToInt(i32, io.MouseWheel),
+                };
+                // std.debug.print("{}\n", .{mouse_input});
+                const camera = self.mouse_camera_handler.process(mouse_input, true);
+
+                // self.scene.render(mouse_input);
+                self.gizmo.render(camera.getViewProjectionMatrix(), camera.getRay(mouse_input.x, mouse_input.y));
+            }
         }
     }
 

@@ -63,8 +63,9 @@ pub const GizmoVertexBuffer = struct {
     vao: ?glo.Vao = null,
     material: ?Material = null,
 
-    pub fn init(allocator: std.mem.Allocator) Self {
-        var self = Self{
+    pub fn new(allocator: std.mem.Allocator) *Self {
+        var self = allocator.create(Self) catch @panic("create");
+        self.* = Self{
             .allocator = allocator,
             .bone_vertex_map = std.AutoHashMap(u32, std.ArrayList(usize)).init(allocator),
         };
@@ -74,9 +75,10 @@ pub const GizmoVertexBuffer = struct {
         return self;
     }
 
-    pub fn deinit(self: *Self) void {
+    pub fn delete(self: *Self) void {
         self.material.deinit();
         self.bone_vertex_map.deinit();
+        self.allocator.destroy(self);
     }
 
     pub fn addVertex(self: *Self, joint: u32, position: zigla.Vec3, normal: zigla.Vec3, color: zigla.Vec4) u16 {
@@ -142,10 +144,16 @@ pub const GizmoVertexBuffer = struct {
 
         var shape = &self.shapes[shape_index];
         shape.* = quad_shape.Shape.init(quads, m, state);
+
         return shape;
     }
 
     pub fn render(self: *Self, camera_matrix: zigla.Mat4, ray: zigla.ray_intersection.Ray) void {
+        // clear
+        if (self.hover_shape) |hover_shape| {
+            hover_shape.state.removeState(zigla.quad_shape.ShapeState.HOVER);
+        }
+
         if (self.material == null) {
             var shader = glo.Shader.load(self.allocator, VS, FS) catch {
                 @panic(glo.getErrorMessage());
@@ -193,6 +201,7 @@ pub const GizmoVertexBuffer = struct {
             if (i >= self.shape_count) {
                 break;
             }
+
             if (shape.intersect(ray)) |distance| {
                 if (distance < hit_distance) {
                     hit_shape = shape;
@@ -202,11 +211,6 @@ pub const GizmoVertexBuffer = struct {
         }
 
         // update hover
-        if (hit_shape != self.hover_shape) {
-            if (self.hover_shape) |hover_shape| {
-                hover_shape.state.removeState(zigla.quad_shape.ShapeState.HOVER);
-            }
-        }
         self.hover_shape = hit_shape;
         if (self.hover_shape) |hover_shape| {
             hover_shape.state.addState(zigla.quad_shape.ShapeState.HOVER);
