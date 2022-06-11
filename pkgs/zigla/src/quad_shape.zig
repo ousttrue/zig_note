@@ -42,21 +42,20 @@ pub const ShapeState = enum(u32) {
 pub const Shape = struct {
     const Self = @This();
 
-    transformation: rigidbody.RigidBodyTransformation = .{},
-    s: la.Vec3 = la.Vec3.scalar(1),
-    state: ShapeState = .NONE,
-    allocator: std.mem.Allocator,
     quads: []const Quad,
+    matrix: *la.Mat4,
+    state: ShapeState,
 
-    pub fn init(allocator: std.mem.Allocator, quads: []const Quad) Self {
+    pub fn init(quads: []const Quad, m: *la.Mat4) Self {
         return .{
-            .allocator = allocator,
-            .quads = allocator.dupe(Quad, quads) catch @panic("dupe"),
+            .quads = quads,
+            .matrix = m,
+            .state = .NONE,
         };
     }
 
-    pub fn deinit(self: *const Self) void {
-        self.allocator.free(self.quads);
+    pub fn setPosition(self: *Self, p: la.Vec3) void {
+        self.matrix._3 = la.Vec4.vec3(p, 1);
     }
 
     pub fn addState(self: *Self, state: ShapeState) void {
@@ -104,7 +103,7 @@ pub const Shape = struct {
 /// +-+5 6 /
 /// 1 2   /
 /// --------> width
-pub fn createCube(allocator: std.mem.Allocator, width: f32, height: f32, depth: f32) Shape {
+pub fn createCube(allocator: std.mem.Allocator, width: f32, height: f32, depth: f32) []const Quad {
     const x = width / 2;
     const y = height / 2;
     const z = depth / 2;
@@ -116,12 +115,13 @@ pub fn createCube(allocator: std.mem.Allocator, width: f32, height: f32, depth: 
     const v5 = la.Vec3.init(-x, -y, -z);
     const v6 = la.Vec3.init(x, -y, -z);
     const v7 = la.Vec3.init(x, y, -z);
-    return Shape.init(allocator, &.{
+    const quads = allocator.dupe(Quad, &.{
         Quad.from_points(v0, v1, v2, v3),
         Quad.from_points(v3, v2, v6, v7),
         Quad.from_points(v7, v6, v5, v4),
         Quad.from_points(v4, v5, v1, v0),
         Quad.from_points(v4, v0, v3, v7),
         Quad.from_points(v1, v5, v6, v2),
-    });
+    }) catch @panic("dupe");
+    return quads;
 }

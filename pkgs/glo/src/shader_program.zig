@@ -209,8 +209,8 @@ pub const UniformLocation = struct {
         gl.uniform2fv(self.location, 1, value);
     }
 
-    pub fn setMat4(self: *const Self, value: *const f32, __: struct { transpose: bool = true, count: c_int = 1 }) void {
-        gl.uniformMatrix4fv(self.location, __.count, if (__.transpose) gl.TRUE else gl.FALSE, value);
+    pub fn setMat4(self: *const Self, value: *const f32, __: struct { transpose: bool = true, count: c_uint = 1 }) void {
+        gl.uniformMatrix4fv(self.location, @intCast(c_int, __.count), if (__.transpose) gl.TRUE else gl.FALSE, value);
     }
 };
 

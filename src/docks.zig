@@ -140,17 +140,18 @@ pub const FboDock = struct {
         };
 
         // gizmo shapes
-        // self.cubes: List[Shape] = []
-        var joint: u32 = 0;
         var i: i32 = -2;
         while (i < 3) : (i += 1) {
             var j: i32 = -2;
             while (j < 3) : (j += 1) {
-                var cube = zigla.quad_shape.createCube(allocator, 0.5, 0.5, 0.5);
-                // cube.position(i, j, 0);
-                self.gizmo.addShape(joint, cube);
-                joint += 1;
-                // self.cubes.append(cube)
+                var quads = zigla.quad_shape.createCube(allocator, 0.5, 0.5, 0.5);
+                const shape = self.gizmo.addShape(quads);
+                _ = shape;
+                shape.setPosition(zigla.Vec3.init(
+                    @intToFloat(f32, i),
+                    @intToFloat(f32, j),
+                    0,
+                ));
             }
         }
 
@@ -252,7 +253,19 @@ pub const CameraDock = struct {
         }
 
         if (imgui.Begin("camera", .{ .p_open = &self.is_open })) {
-            _ = imgui.InputFloat3("shift", &self.camera.view.shift.x, .{});
+            imgui.SetNextItemOpen(true, .{ .cond = @enumToInt(imgui.ImGuiCond._FirstUseEver) });
+            if (imgui.CollapsingHeader("projection", .{})) {
+                _ = imgui.InputInt("width", @ptrCast(*i32, &self.camera.projection.width), .{});
+                _ = imgui.InputInt("height", @ptrCast(*i32, &self.camera.projection.height), .{});
+                _ = imgui.InputFloat("fovy", &self.camera.projection.fovy, .{});
+                _ = imgui.InputFloat("near", &self.camera.projection.near, .{});
+                _ = imgui.InputFloat("far", &self.camera.projection.far, .{});
+            }
+            imgui.SetNextItemOpen(true, .{ .cond = @enumToInt(imgui.ImGuiCond._FirstUseEver) });
+            if (imgui.CollapsingHeader("view", .{})) {
+                _ = imgui.InputFloat3("shift", &self.camera.view.shift.x, .{});
+                _ = imgui.InputFloat4("rotation", &self.camera.view.rotation.x, .{});
+            }
         }
         imgui.End();
     }

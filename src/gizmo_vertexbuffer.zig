@@ -55,6 +55,9 @@ pub const GizmoVertexBuffer = struct {
     bone_vertex_map: std.AutoHashMap(u32, std.ArrayList(usize)),
     skin: [200]zigla.Mat4 = undefined,
 
+    shapes: [256]quad_shape.Shape = undefined,
+    shape_count: u32 = 0,
+
     vao: ?glo.Vao = null,
     material: ?Material = null,
 
@@ -115,10 +118,19 @@ pub const GizmoVertexBuffer = struct {
         self.addTriangle(joint, quad.t1, color);
     }
 
-    pub fn addShape(self: *Self, joint: u32, shape: quad_shape.Shape) void {
+    pub fn addShape(self: *Self, quads: []const quad_shape.Quad) *quad_shape.Shape {
+        const shape_index = self.shape_count;
+        self.shape_count += 1;
+        var shape = &self.shapes[shape_index];
+        var m = &self.skin[shape_index];
+        m.* = .{};
+        shape.* = quad_shape.Shape.init(quads, m);
+
         for (shape.quads) |quad| {
-            self.addQuad(joint, quad, white);
+            self.addQuad(shape_index, quad, white);
         }
+
+        return shape;
     }
 
     pub fn render(self: *Self, camera: scene.Camera) void {
@@ -153,7 +165,7 @@ pub const GizmoVertexBuffer = struct {
             const m = camera.getMatrix();
             material.uVP.setMat4(&m._0.x, .{});
 
-            material.uBoneMatrices.setMat4(&self.skin[0]._0.x, .{});
+            material.uBoneMatrices.setMat4(&self.skin[0]._0.x, .{ .transpose = false, .count = self.shape_count });
 
             gl.enable(gl.DEPTH_TEST);
             gl.enable(gl.CULL_FACE);
