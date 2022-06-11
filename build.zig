@@ -38,7 +38,7 @@ pub fn build(b: *std.build.Builder) void {
     nanovg.addTo(exe, "pkgs/nanovg");
     imgui.addTo(exe, "pkgs/imgui");
     const gloPkg = glo.addTo(allocator, exe, "pkgs/glo", &.{gl});
-    const screenPkg = screen.addTo(allocator, exe, "pkgs/screen", null);
+    const screenPkg = screen.addTo(allocator, exe, "pkgs/screen", &.{ziglaPkg});
     scene.addTo(allocator, exe, "pkgs/scene", &.{ screenPkg, gloPkg, ziglaPkg });
     exe.addPackage(gl);
 

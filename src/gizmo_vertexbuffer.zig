@@ -145,9 +145,7 @@ pub const GizmoVertexBuffer = struct {
         return shape;
     }
 
-    pub fn render(self: *Self, camera: *scene.Camera, mouse_input: screen.MouseInput) void {
-        camera.projection.resize(mouse_input.width, mouse_input.height);
-
+    pub fn render(self: *Self, camera_matrix: zigla.Mat4, ray: zigla.ray_intersection.Ray) void {
         if (self.material == null) {
             var shader = glo.Shader.load(self.allocator, VS, FS) catch {
                 @panic(glo.getErrorMessage());
@@ -176,8 +174,7 @@ pub const GizmoVertexBuffer = struct {
             defer material.shader.unuse();
 
             // update uniforms
-            const m = camera.getViewProjectionMatrix();
-            material.uVP.setMat4(&m._0.x, .{});
+            material.uVP.setMat4(&camera_matrix._0.x, .{});
 
             material.uBoneMatrices.setMat4(&self.skin[0]._0.x, .{ .transpose = false, .count = self.shape_count });
 
@@ -190,7 +187,6 @@ pub const GizmoVertexBuffer = struct {
         }
 
         // ray intersection
-        const ray = camera.getRay(mouse_input.x, mouse_input.y);
         var hit_shape: ?*zigla.quad_shape.Shape = null;
         var hit_distance: f32 = std.math.inf(f32);
         for (self.shapes) |*shape, i| {

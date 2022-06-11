@@ -11,38 +11,33 @@ pub const Renderer = struct {
     allocator: std.mem.Allocator,
     is_initialized: bool,
 
-    demo: docks.DemoDock = .{},
-    metrics: docks.MetricsDock = .{},
-    another: docks.AnotherDock = .{},
-    hello: docks.HelloDock = .{},
-    fbo: scene_dock.FboDock = .{},
+    metrics: docks.MetricsDock,
     camera: scene_dock.CameraDock,
+    fbo: scene_dock.FboDock,
 
     docks: std.ArrayList(dockspace.Dock),
 
-    pub fn init(allocator: std.mem.Allocator) !*Self {
-        var renderer = try allocator.create(Renderer);
-        renderer.allocator = allocator;
-        renderer.is_initialized = false;
-        renderer.another = .{};
-        renderer.demo = .{};
-        renderer.hello = .{
-            .show_another_window = &renderer.another.is_open,
-            .show_demo_window = &renderer.demo.is_open,
-        };
-        renderer.fbo = scene_dock.FboDock.init(allocator);
-        renderer.camera = scene_dock.CameraDock.init(&renderer.fbo.scene.camera);
-
-        renderer.docks = std.ArrayList(dockspace.Dock).init(allocator);
-        try renderer.docks.append(dockspace.Dock.create(&renderer.metrics));
-        try renderer.docks.append(dockspace.Dock.create(&renderer.fbo));
-        try renderer.docks.append(dockspace.Dock.create(&renderer.camera));
-
-        return renderer;
+    fn init(self: *Self, allocator: std.mem.Allocator) !void {
+        self.allocator = allocator;
+        self.is_initialized = false;
+        self.metrics = .{};
+        self.camera = .{};
+        self.fbo = scene_dock.FboDock.init(allocator, &self.camera.camera);
+        self.docks = std.ArrayList(dockspace.Dock).init(allocator);
+        try self.docks.append(dockspace.Dock.create(&self.metrics));
+        try self.docks.append(dockspace.Dock.create(&self.fbo));
+        try self.docks.append(dockspace.Dock.create(&self.camera));
     }
 
-    pub fn deinit(self: *Self) void {
+    pub fn new(allocator: std.mem.Allocator) !*Self {
+        var self = try allocator.create(Renderer);
+        try self.init(allocator);
+        return self;
+    }
+
+    pub fn delete(self: *Self) void {
         self.docks.deinit();
+        self.allocator.destroy(self);
     }
 
     fn initialize(self: *Self) void {
@@ -88,7 +83,7 @@ pub const Renderer = struct {
         gl.viewport(0, 0, width, height);
 
         // Render here
-        gl.clearColor(self.hello.clear_color.x * self.hello.clear_color.w, self.hello.clear_color.y * self.hello.clear_color.w, self.hello.clear_color.z * self.hello.clear_color.w, self.hello.clear_color.w);
+        // gl.clearColor(self.hello.clear_color.x * self.hello.clear_color.w, self.hello.clear_color.y * self.hello.clear_color.w, self.hello.clear_color.z * self.hello.clear_color.w, self.hello.clear_color.w);
         gl.clear(gl.COLOR_BUFFER_BIT);
         imgui.ImGui_ImplOpenGL3_RenderDrawData(imgui.GetDrawData());
     }

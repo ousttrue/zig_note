@@ -60,8 +60,8 @@ pub fn main() anyerror!void {
     _ = imgui.ImGui_ImplOpenGL3_Init(.{ .glsl_version = glsl_version });
     defer imgui.ImGui_ImplOpenGL3_Shutdown();
 
-    var renderer = try Renderer.init(std.testing.allocator);
-    defer renderer.deinit();
+    var renderer = try Renderer.new(std.testing.allocator);
+    defer renderer.delete();
 
     if (std.os.argv.len > 1) {
         const arg1 = try std.fmt.allocPrint(allocator, "{s}", .{std.os.argv[1]});

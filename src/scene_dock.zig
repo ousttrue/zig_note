@@ -31,6 +31,77 @@ fn draw_line(vg: *nanovg.NVGcontext, sx: f32, sy: f32, ex: f32, ey: f32, r: u8, 
     nanovg.nvgRestore(vg);
 }
 
+pub const MouseHandler = struct {
+    const Self = @This();
+
+    allocator: std.mem.Allocator,
+    camera: *zigla.Camera,
+    mouse_event: *screen.MouseEvent,
+    cameraHandler: screen.ArcBall,
+    // cameraHandler: TurnTable = undefined,
+    shiftHandler: screen.ScreenShift,
+    nvg: NanoVgRenderer,
+
+    pub fn new(allocator: std.mem.Allocator, camera: *zigla.Camera) *Self {
+        var mouse_event = screen.MouseEvent.new(allocator);
+        var self = allocator.create(Self) catch @panic("create");
+
+        self.allocator = allocator;
+        self.camera = camera;
+        self.mouse_event = mouse_event;
+        self.cameraHandler = screen.ArcBall.init(&self.camera.view, &self.camera.projection);
+        // scene.cameraHandler = camera.TurnTable.init(&scene.camera.view);
+        self.shiftHandler = screen.ScreenShift.init(&self.camera.view, &self.camera.projection);
+        self.nvg = NanoVgRenderer.init(allocator, null, null);
+
+        mouse_event.right_button.bind(.{
+            .begin = screen.mouse_event.BeginEndCallback.create(&self.cameraHandler, "begin"),
+            .drag = screen.mouse_event.DragCallback.create(&self.cameraHandler, "drag"),
+            .end = screen.mouse_event.BeginEndCallback.create(&self.cameraHandler, "end"),
+        });
+        mouse_event.middle_button.bind(.{
+            .begin = screen.mouse_event.BeginEndCallback.create(&self.shiftHandler, "begin"),
+            .drag = screen.mouse_event.DragCallback.create(&self.shiftHandler, "drag"),
+            .end = screen.mouse_event.BeginEndCallback.create(&self.shiftHandler, "end"),
+        });
+        mouse_event.wheel.append(screen.mouse_event.WheelCallback.create(&self.shiftHandler, "wheel")) catch @panic("append");
+
+        return self;
+    }
+
+    pub fn delete(self: *Self) void {
+        self.nvg.deinit();
+        self.mouse_event.delete();
+        self.allocator.destroy(self);
+    }
+
+    pub fn process(self: *Self, mouse_input: screen.MouseInput, debug_draw: bool) *zigla.Camera {
+        self.mouse_event.process(mouse_input);
+        self.camera.projection.resize(mouse_input.width, mouse_input.height);
+
+        if (debug_draw) {
+            self.debugDraw(mouse_input);
+        }
+
+        return self.camera;
+    }
+
+    pub fn debugDraw(self: *Self, mouse_input: screen.MouseInput) void {
+        if (self.nvg.begin(@intToFloat(f32, mouse_input.width), @intToFloat(f32, mouse_input.height))) |vg| {
+            defer self.nvg.end();
+            if (self.mouse_event.left_button.active) |start| {
+                draw_line(vg, @intToFloat(f32, start.x), @intToFloat(f32, start.y), @intToFloat(f32, mouse_input.x), @intToFloat(f32, mouse_input.y), 255, 0, 0);
+            }
+            if (self.mouse_event.right_button.active) |start| {
+                draw_line(vg, @intToFloat(f32, start.x), @intToFloat(f32, start.y), @intToFloat(f32, mouse_input.x), @intToFloat(f32, mouse_input.y), 0, 255, 0);
+            }
+            if (self.mouse_event.middle_button.active) |start| {
+                draw_line(vg, @intToFloat(f32, start.x), @intToFloat(f32, start.y), @intToFloat(f32, mouse_input.x), @intToFloat(f32, mouse_input.y), 0, 0, 255);
+            }
+        }
+    }
+};
+
 pub const FboDock = struct {
     const Self = @This();
     name: [*:0]const u8 = "fbo",
@@ -41,21 +112,18 @@ pub const FboDock = struct {
     tint: imgui.ImVec4 = .{ .x = 1, .y = 1, .z = 1, .w = 1 },
     clearColor: [4]f32 = .{ 0, 0, 0, 1 },
     allocator: std.mem.Allocator,
-    mouse_event: *screen.MouseEvent,
-    scene: *Scene,
-    nvg: NanoVgRenderer,
 
+    scene: *Scene,
+    mouse_camera_handler: *MouseHandler,
     gizmo: gizmo_vertexbuffer.GizmoVertexBuffer,
 
-    pub fn init(allocator: std.mem.Allocator) Self {
-        var mouse_event = screen.MouseEvent.new(allocator);
+    pub fn init(allocator: std.mem.Allocator, camera: *zigla.Camera) Self {
         var self = Self{
             .fbo = glo.FboManager{},
             .allocator = allocator,
-            .mouse_event = mouse_event,
-            .scene = Scene.new(allocator, mouse_event),
-            .nvg = NanoVgRenderer.init(allocator, null, null),
+            .scene = Scene.new(allocator),
             .gizmo = gizmo_vertexbuffer.GizmoVertexBuffer.init(allocator),
+            .mouse_camera_handler = MouseHandler.new(allocator, camera),
         };
 
         // gizmo shapes
@@ -71,16 +139,17 @@ pub const FboDock = struct {
                     @intToFloat(f32, j),
                     0,
                 ));
+                break;
             }
+            break;
         }
 
         return self;
     }
 
     pub fn deinit(self: *Self) void {
-        self.nvg.deinit();
+        self.mouse_camera_handler.delete();
         self.scene.delete();
-        self.mouse_event.delete();
     }
 
     pub fn showFbo(self: *Self, x: f32, y: f32, size: imgui.ImVec2) void {
@@ -112,12 +181,10 @@ pub const FboDock = struct {
                 .wheel = @floatToInt(i32, io.MouseWheel),
             };
             // std.debug.print("{}\n", .{mouse_input});
-            self.mouse_event.process(mouse_input);
+            const camera = self.mouse_camera_handler.process(mouse_input, true);
 
             // self.scene.render(mouse_input);
-            self.gizmo.render(&self.scene.camera, mouse_input);
-
-            self.debugDraw(mouse_input);
+            self.gizmo.render(camera.getViewProjectionMatrix(), camera.getRay(mouse_input.x, mouse_input.y));
         }
     }
 
@@ -135,21 +202,6 @@ pub const FboDock = struct {
         imgui.End();
         imgui.PopStyleVar(.{});
     }
-
-    pub fn debugDraw(self: *Self, mouse_input: screen.MouseInput) void {
-        if (self.nvg.begin(@intToFloat(f32, mouse_input.width), @intToFloat(f32, mouse_input.height))) |vg| {
-            defer self.nvg.end();
-            if (self.mouse_event.left_button.active) |start| {
-                draw_line(vg, @intToFloat(f32, start.x), @intToFloat(f32, start.y), @intToFloat(f32, mouse_input.x), @intToFloat(f32, mouse_input.y), 255, 0, 0);
-            }
-            if (self.mouse_event.right_button.active) |start| {
-                draw_line(vg, @intToFloat(f32, start.x), @intToFloat(f32, start.y), @intToFloat(f32, mouse_input.x), @intToFloat(f32, mouse_input.y), 0, 255, 0);
-            }
-            if (self.mouse_event.middle_button.active) |start| {
-                draw_line(vg, @intToFloat(f32, start.x), @intToFloat(f32, start.y), @intToFloat(f32, mouse_input.x), @intToFloat(f32, mouse_input.y), 0, 0, 255);
-            }
-        }
-    }
 };
 
 pub const CameraDock = struct {
@@ -157,13 +209,7 @@ pub const CameraDock = struct {
     name: [*:0]const u8 = "camera",
     is_open: bool = true,
 
-    camera: *scene.Camera,
-
-    pub fn init(camea: *scene.Camera) Self {
-        return Self{
-            .camera = camea,
-        };
-    }
+    camera: zigla.Camera = .{},
 
     pub fn show(self: *Self) void {
         if (!self.is_open) {

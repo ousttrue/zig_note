@@ -1,10 +1,9 @@
 const std = @import("std");
-const screen = @import("screen");
+const zigla = @import("zigla");
 const glo = @import("glo");
 const gltf = @import("./gltf.zig");
 const vs = @embedFile("./mvp.vs");
 const fs = @embedFile("./mvp.fs");
-const camera = @import("./camera.zig");
 
 fn readsource(allocator: std.mem.Allocator, arg: []const u8) ![:0]const u8 {
     var file = try std.fs.cwd().openFile(arg, .{});
@@ -62,33 +61,14 @@ pub const Scene = struct {
     const Self = @This();
 
     allocator: std.mem.Allocator,
-    camera: camera.Camera = .{},
-    cameraHandler: camera.ArcBall = undefined,
-    // cameraHandler: TurnTable = undefined,
-    shiftHandler: camera.ScreenShift = undefined,
     shader: ?glo.Shader = null,
     vao: ?glo.Vao = null,
 
-    pub fn new(allocator: std.mem.Allocator, mouse_event: *screen.MouseEvent) *Self {
+    pub fn new(allocator: std.mem.Allocator) *Self {
         var scene = allocator.create(Scene) catch @panic("create");
         scene.* = Scene{
             .allocator = allocator,
         };
-        scene.cameraHandler = camera.ArcBall.init(&scene.camera.view, &scene.camera.projection);
-        // scene.cameraHandler = camera.TurnTable.init(&scene.camera.view);
-        mouse_event.right_button.bind(.{
-            .begin = screen.mouse_event.BeginEndCallback.create(&scene.cameraHandler, "begin"),
-            .drag = screen.mouse_event.DragCallback.create(&scene.cameraHandler, "drag"),
-            .end = screen.mouse_event.BeginEndCallback.create(&scene.cameraHandler, "end"),
-        });
-        scene.shiftHandler = camera.ScreenShift.init(&scene.camera.view, &scene.camera.projection);
-        mouse_event.middle_button.bind(.{
-            .begin = screen.mouse_event.BeginEndCallback.create(&scene.shiftHandler, "begin"),
-            .drag = screen.mouse_event.DragCallback.create(&scene.shiftHandler, "drag"),
-            .end = screen.mouse_event.BeginEndCallback.create(&scene.shiftHandler, "end"),
-        });
-        mouse_event.wheel.append(screen.mouse_event.WheelCallback.create(&scene.shiftHandler, "wheel")) catch @panic("append");
-
         return scene;
     }
 
@@ -122,10 +102,7 @@ pub const Scene = struct {
         }
     }
 
-    pub fn render(self: *Self, mouse_input: screen.MouseInput) void {
-        self.camera.projection.width = mouse_input.width;
-        self.camera.projection.height = mouse_input.height;
-
+    pub fn render(self: *Self, camera_matrix: zigla.Mat4) void {
         if (self.shader == null) {
             var shader = glo.Shader.load(self.allocator, vs, fs) catch {
                 std.debug.print("{s}\n", .{glo.getErrorMessage()});
@@ -141,8 +118,8 @@ pub const Scene = struct {
         if (self.shader) |*shader| {
             shader.use();
             defer shader.unuse();
-            const m = self.camera.getMatrix();
-            shader.setMat4("uMVP", &m._0.x);
+
+            shader.setMat4("uMVP", &camera_matrix._0.x);
             if (self.vao) |vao| {
                 vao.draw(3, .{});
             }
