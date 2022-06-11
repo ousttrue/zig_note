@@ -196,8 +196,7 @@ pub const FboDock = struct {
             self.mouse_event.process(mouse_input);
 
             // self.scene.render(mouse_input);
-            self.scene.camera.projection.resize(mouse_input.width, mouse_input.height);
-            self.gizmo.render(self.scene.camera);
+            self.gizmo.render(&self.scene.camera, mouse_input);
 
             self.debugDraw(mouse_input);
         }

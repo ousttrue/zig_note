@@ -97,6 +97,9 @@ pub const Vec4 = struct {
     pub fn vec3(v: Vec3, w: f32) Vec4 {
         return .{ .x = v.x, .y = v.y, .z = v.z, .w = w };
     }
+    pub fn toVec3(self: Self) Vec3 {
+        return .{ .x = self.x, .y = self.y, .z = self.z };
+    }
     pub fn dot(self: Self, rhs: Vec4) f32 {
         return self.x * rhs.x + self.y * rhs.y + self.z * rhs.z + self.w * rhs.w;
     }
@@ -187,7 +190,7 @@ pub const Mat3 = struct {
         );
     }
 
-    pub fn rotate(q: Quaternion) Mat3 {
+    pub fn rotate(q: Quaternion) Self {
         return Self.rows(
             Vec3.init(1 - 2 * q.y * q.y - 2 * q.z * q.z, 2 * q.x * q.y - 2 * q.w * q.z, 2 * q.z * q.x + 2 * q.w * q.y),
             Vec3.init(2 * q.x * q.y + 2 * q.w * q.z, 1 - 2 * q.z * q.z - 2 * q.x * q.x, 2 * q.y * q.z - 2 * q.w * q.x),
@@ -206,6 +209,14 @@ pub const Mat3 = struct {
     }
     pub fn col2(self: Self) Vec3 {
         return Vec3.init(self._0.z, self._1.z, self._2.z);
+    }
+
+    pub fn transposed(self: *Self) Self {
+        return Mat3.rows(
+            self.col0(),
+            self.col1(),
+            self.col2(),
+        );
     }
 
     pub fn det(self: Self) f32 {
@@ -279,6 +290,14 @@ pub const Mat4 = struct {
         };
     }
 
+    pub fn toMat3(self: Self) Mat3 {
+        return Mat3.rows(
+            self._0.toVec3(),
+            self._1.toVec3(),
+            self._2.toVec3(),
+        );
+    }
+
     pub fn frustum(b: f32, t: f32, l: f32, r: f32, n: f32, f: f32) Self {
         // set OpenGL perspective projection matrix
         return Self.rows(
@@ -333,33 +352,45 @@ pub const Mat4 = struct {
         return Vec4.init(self._0.w, self._1.w, self._2.w, self._3.w);
     }
 
-    pub fn mul(self: Self, rhs: Self) Self {
-        return Self.rows(
-            Vec4.init(
-                self._0.dot(rhs.col0()),
-                self._0.dot(rhs.col1()),
-                self._0.dot(rhs.col2()),
-                self._0.dot(rhs.col3()),
-            ),
-            Vec4.init(
-                self._1.dot(rhs.col0()),
-                self._1.dot(rhs.col1()),
-                self._1.dot(rhs.col2()),
-                self._1.dot(rhs.col3()),
-            ),
-            Vec4.init(
-                self._2.dot(rhs.col0()),
-                self._2.dot(rhs.col1()),
-                self._2.dot(rhs.col2()),
-                self._2.dot(rhs.col3()),
-            ),
-            Vec4.init(
-                self._3.dot(rhs.col0()),
-                self._3.dot(rhs.col1()),
-                self._3.dot(rhs.col2()),
-                self._3.dot(rhs.col3()),
-            ),
-        );
+    pub fn mul(self: Self, rhs: anytype) @TypeOf(rhs) {
+        const T = @TypeOf(rhs);
+        if (T == Mat4) {
+            return Self.rows(
+                Vec4.init(
+                    self._0.dot(rhs.col0()),
+                    self._0.dot(rhs.col1()),
+                    self._0.dot(rhs.col2()),
+                    self._0.dot(rhs.col3()),
+                ),
+                Vec4.init(
+                    self._1.dot(rhs.col0()),
+                    self._1.dot(rhs.col1()),
+                    self._1.dot(rhs.col2()),
+                    self._1.dot(rhs.col3()),
+                ),
+                Vec4.init(
+                    self._2.dot(rhs.col0()),
+                    self._2.dot(rhs.col1()),
+                    self._2.dot(rhs.col2()),
+                    self._2.dot(rhs.col3()),
+                ),
+                Vec4.init(
+                    self._3.dot(rhs.col0()),
+                    self._3.dot(rhs.col1()),
+                    self._3.dot(rhs.col2()),
+                    self._3.dot(rhs.col3()),
+                ),
+            );
+        } else if (T == Vec4) {
+            return Vec4.init(
+                self._0.dot(rhs),
+                self._1.dot(rhs),
+                self._2.dot(rhs),
+                self._3.dot(rhs),
+            );
+        } else {
+            @compileError("not implemented");
+        }
     }
 };
 
@@ -369,6 +400,6 @@ pub fn @"+"(lhs: anytype, rhs: @TypeOf(lhs)) @TypeOf(lhs) {
 pub fn @"-"(lhs: anytype, rhs: @TypeOf(lhs)) @TypeOf(lhs) {
     return lhs.sub(rhs);
 }
-pub fn @"*"(lhs: anytype, rhs: @TypeOf(lhs)) @TypeOf(lhs) {
+pub fn @"*"(lhs: anytype, rhs: anytype) @TypeOf(rhs) {
     return lhs.mul(rhs);
 }

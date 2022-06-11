@@ -34,9 +34,14 @@ pub const Vbo = struct {
         self.unbind();
     }
 
-    pub fn update(self: *Self, vertices: []const u8, offset: u32) void {
+    pub fn update(self: *Self, vertices: anytype, __: struct { offset: u32 = 0 }) void {
+        const T = @TypeOf(vertices);
+        switch (@typeInfo(T)) {
+            .Array => {},
+            else => @compileError("not array"),
+        }
         self.bind();
-        gl.bufferSubData(gl.ARRAY_BUFFER, offset, vertices.len, vertices);
+        gl.bufferSubData(gl.ARRAY_BUFFER, __.offset, @sizeOf(T), &vertices);
         self.unbind();
     }
 };
@@ -78,14 +83,14 @@ pub const Ibo = struct {
         self.unbind();
     }
 
-    pub fn update(self: Self, indices: anytype, offset: u32) void {
+    pub fn update(self: Self, indices: anytype, __: struct { offset: u32 = 0 }) void {
         const T = @TypeOf(indices);
         switch (@typeInfo(T)) {
             .Array => {},
             else => @compileError("not array"),
         }
         self.bind();
-        gl.glBufferSubData(gl.GL_ELEMENT_ARRAY_BUFFER, offset, @sizeOf(T), &indices);
+        gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, __.offset, @sizeOf(T), &indices);
         self.unbind();
     }
 };

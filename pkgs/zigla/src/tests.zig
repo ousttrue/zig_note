@@ -135,8 +135,16 @@ test "RigidBody" {
 
 test "Shape" {
     const allocator = std.testing.allocator;
-    const cube = quad_shape.createCube(allocator, 2, 4, 6);
-    defer cube.deinit();
+    const quads = quad_shape.createCube(allocator, 2, 4, 6);
+    defer allocator.free(quads);
+    var m = Mat4{};
+    var s: [1]f32 = .{0};
+    var state = quad_shape.StateReference{
+        .state = &s,
+        .count = 1,
+        .stride = 0,
+    };
+    const cube = quad_shape.Shape.init(quads, &m, state);
 
     const ray = Ray{
         .origin = Vec3.init(0, 0, 5),

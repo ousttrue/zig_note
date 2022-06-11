@@ -2,12 +2,25 @@ const std = @import("std");
 const la = @import("./linear_algebra.zig");
 const @"-" = la.@"-";
 const @"+" = la.@"+";
+const @"*" = la.@"*";
 
 pub const Ray = struct {
     const Self = @This();
 
     origin: la.Vec3,
     dir: la.Vec3,
+
+    pub fn createFromScreen(x: f32, y: f32, w: f32, h: f32, cameraTransform: la.Mat4, fov_y: f32, aspect: f32) Self {
+        const origin = cameraTransform._3;
+        const half_fov = fov_y / 2.0;
+        const dir = @"*"(cameraTransform, la.Vec4.init(
+            (x / w * 2 - 1) * std.math.tan(half_fov) * (aspect),
+            -(y / h * 2 - 1) * std.math.tan(half_fov),
+            -1,
+            0,
+        ));
+        return .{ .origin = origin.toVec3(), .dir = dir.toVec3() };
+    }
 
     pub fn position(self: Self, t: f32) la.Vec3 {
         return @"+"(self.origin, self.dir.mul(t));

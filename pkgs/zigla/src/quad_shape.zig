@@ -4,6 +4,8 @@ const rigidbody = @import("./rigidbody_transformation.zig");
 const ray_intersection = @import("./ray_intersection.zig");
 const Ray = ray_intersection.Ray;
 const Triangle = ray_intersection.Triangle;
+const @"+" = la.@"+";
+const @"*" = la.@"*";
 
 pub const Quad = struct {
     const Self = @This();
@@ -39,18 +41,52 @@ pub const ShapeState = enum(u32) {
     HIDE = 0x08,
 };
 
+pub const StateReference = struct {
+    const Self = @This();
+
+    state: [*]f32,
+    stride: u32,
+    count: u32,
+
+    pub fn setState(self: *Self, fstate: ShapeState) void {
+        const new_state = @intToFloat(f32, @enumToInt(fstate));
+        var i: i32 = 0;
+        var p = self.state;
+        while (i < self.count) : ({
+            i += 1;
+            p += self.stride;
+        }) {
+            p.* = new_state;
+        }
+    }
+
+    pub fn addState(self: *Self, state: ShapeState) void {
+        const new_state = @intToEnum(ShapeState, @floatToInt(u32, self.state[0]) | @enumToInt(state));
+        self.setState(new_state);
+    }
+
+    pub fn removeState(self: *Self, state: ShapeState) void {
+        const new_state = @intToEnum(ShapeState, @floatToInt(u32, self.state[0]) & ~@enumToInt(state));
+        self.setState(new_state);
+    }
+
+    pub fn hasState(self: Self, state: ShapeState) bool {
+        return (@floatToInt(u32, self.state[0]) & @enumToInt(state)) != 0;
+    }
+};
+
 pub const Shape = struct {
     const Self = @This();
 
     quads: []const Quad,
     matrix: *la.Mat4,
-    state: ShapeState,
+    state: StateReference,
 
-    pub fn init(quads: []const Quad, m: *la.Mat4) Self {
+    pub fn init(quads: []const Quad, pMatrix: *la.Mat4, state: StateReference) Self {
         return .{
             .quads = quads,
-            .matrix = m,
-            .state = .NONE,
+            .matrix = pMatrix,
+            .state = state,
         };
     }
 
@@ -58,24 +94,17 @@ pub const Shape = struct {
         self.matrix._3 = la.Vec4.vec3(p, 1);
     }
 
-    pub fn addState(self: *Self, state: ShapeState) void {
-        self.state |= state;
-    }
-
-    pub fn removeState(self: *Self, state: ShapeState) void {
-        self.state &= ~state;
-    }
-
     pub fn localRay(self: Self, ray: Ray) Ray {
-        const to_local = self.transformation.inverse();
+        const r = self.matrix.toMat3().transposed();
+        const t = self.matrix._3.toVec3().inverse();
         return Ray{
-            .origin = to_local.transform(ray.origin),
-            .dir = to_local.rotation.rotate(ray.dir),
+            .origin = @"+"(@"*"(r, ray.origin), t),
+            .dir = @"*"(r, ray.dir),
         };
     }
 
-    pub fn intersect(self: Self, ray: Ray) ?f32 {
-        if ((@enumToInt(self.state) & @enumToInt(ShapeState.HIDE)) != 0) {
+    pub fn intersect(self: *const Self, ray: Ray) ?f32 {
+        if (self.state.hasState(ShapeState.HIDE)) {
             return null;
         }
 

@@ -4,6 +4,7 @@ const quad_shape = zigla.quad_shape;
 const scene = @import("scene");
 const glo = @import("glo");
 const gl = @import("gl");
+const screen = @import("screen");
 const @"-" = zigla.@"-";
 
 const VS = @embedFile("gizmo.vs");
@@ -57,6 +58,7 @@ pub const GizmoVertexBuffer = struct {
 
     shapes: [256]quad_shape.Shape = undefined,
     shape_count: u32 = 0,
+    hover_shape: ?*zigla.quad_shape.Shape = null,
 
     vao: ?glo.Vao = null,
     material: ?Material = null,
@@ -85,6 +87,7 @@ pub const GizmoVertexBuffer = struct {
             .joint = @intToFloat(f32, joint),
             .color = color,
             .normal = normal,
+            .state = 0,
         };
 
         var entry = self.bone_vertex_map.getOrPut(joint) catch @panic("getOrPut");
@@ -121,19 +124,30 @@ pub const GizmoVertexBuffer = struct {
     pub fn addShape(self: *Self, quads: []const quad_shape.Quad) *quad_shape.Shape {
         const shape_index = self.shape_count;
         self.shape_count += 1;
-        var shape = &self.shapes[shape_index];
         var m = &self.skin[shape_index];
         m.* = .{};
-        shape.* = quad_shape.Shape.init(quads, m);
 
-        for (shape.quads) |quad| {
+        const start = self.vertex_count;
+        for (quads) |quad| {
             self.addQuad(shape_index, quad, white);
         }
+        const end = self.vertex_count;
 
+        var state = quad_shape.StateReference{
+            .state = @ptrCast([*]f32, &self.vertices[start].state),
+            .stride = @sizeOf(Vertex) / @sizeOf(f32),
+            .count = end - start,
+        };
+        state.setState(quad_shape.ShapeState.NONE);
+
+        var shape = &self.shapes[shape_index];
+        shape.* = quad_shape.Shape.init(quads, m, state);
         return shape;
     }
 
-    pub fn render(self: *Self, camera: scene.Camera) void {
+    pub fn render(self: *Self, camera: *scene.Camera, mouse_input: screen.MouseInput) void {
+        camera.projection.resize(mouse_input.width, mouse_input.height);
+
         if (self.material == null) {
             var shader = glo.Shader.load(self.allocator, VS, FS) catch {
                 @panic(glo.getErrorMessage());
@@ -149,12 +163,12 @@ pub const GizmoVertexBuffer = struct {
             ibo.setIndices(self.indices, true);
             self.vao = glo.Vao.init(vbo, vertex_layout, ibo);
         } else {
-            //         assert self.triangle_vao
-            //         self.triangle_vao.vbo.update(self.vertices)
-            //         assert self.triangle_vao.ibo
-            //         self.triangle_vao.ibo.update(self.indices)
-            //         assert self.line_vao
-            //         self.line_vao.vbo.update(self.line_vertices)
+            if (self.vao) |*vao| {
+                vao.vbo.update(self.vertices, .{});
+                vao.ibo.?.update(self.indices, .{});
+            } else {
+                unreachable;
+            }
         }
 
         if (self.material) |material| {
@@ -162,7 +176,7 @@ pub const GizmoVertexBuffer = struct {
             defer material.shader.unuse();
 
             // update uniforms
-            const m = camera.getMatrix();
+            const m = camera.getViewProjectionMatrix();
             material.uVP.setMat4(&m._0.x, .{});
 
             material.uBoneMatrices.setMat4(&self.skin[0]._0.x, .{ .transpose = false, .count = self.shape_count });
@@ -173,6 +187,33 @@ pub const GizmoVertexBuffer = struct {
             if (self.vao) |vao| {
                 vao.draw(self.index_count, .{});
             }
+        }
+
+        // ray intersection
+        const ray = camera.getRay(mouse_input.x, mouse_input.y);
+        var hit_shape: ?*zigla.quad_shape.Shape = null;
+        var hit_distance: f32 = std.math.inf(f32);
+        for (self.shapes) |*shape, i| {
+            if (i >= self.shape_count) {
+                break;
+            }
+            if (shape.intersect(ray)) |distance| {
+                if (distance < hit_distance) {
+                    hit_shape = shape;
+                    hit_distance = distance;
+                }
+            }
+        }
+
+        // update hover
+        if (hit_shape != self.hover_shape) {
+            if (self.hover_shape) |hover_shape| {
+                hover_shape.state.removeState(zigla.quad_shape.ShapeState.HOVER);
+            }
+        }
+        self.hover_shape = hit_shape;
+        if (self.hover_shape) |hover_shape| {
+            hover_shape.state.addState(zigla.quad_shape.ShapeState.HOVER);
         }
     }
 };

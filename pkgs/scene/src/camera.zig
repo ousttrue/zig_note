@@ -17,9 +17,12 @@ pub const Projection = struct {
         self.height = height;
     }
 
+    pub fn getAspectRatio(self: Self) f32 {
+        return @intToFloat(f32, self.width) / @intToFloat(f32, self.height);
+    }
+
     pub fn getMatrix(self: *const Self) zigla.Mat4 {
-        // return zlm.Mat4.createPerspective(self.fov, self.aspect, self.near, self.far);
-        return zigla.Mat4.perspective(self.fovy, @intToFloat(f32, self.width) / @intToFloat(f32, self.height), self.near, self.far);
+        return zigla.Mat4.perspective(self.fovy, self.getAspectRatio(), self.near, self.far);
     }
 };
 
@@ -27,15 +30,19 @@ pub const View = struct {
     const Self = @This();
 
     rotation: zigla.Quaternion = .{},
-    shift: zigla.Vec3 = zigla.Vec3.init(0, 0, -2),
+    shift: zigla.Vec3 = zigla.Vec3.init(0, 0, -5),
 
-    pub fn getMatrix(self: *const Self) zigla.Mat4 {
-        // const yaw = zlm.Mat4.createAngleAxis(zlm.Vec3.new(0, 1, 0), self.yaw);
-        // const pitch = zlm.Mat4.createAngleAxis(zlm.Vec3.new(1, 0, 0), self.pitch);
-        // const shift = zlm.Mat4.createTranslation(self.shift);
+    pub fn getViewMatrix(self: Self) zigla.Mat4 {
         const r = zigla.Mat4.rotate(self.rotation);
         const t = zigla.Mat4.translate(self.shift);
         return @"*"(t, r);
+    }
+
+    pub fn getTransformMatrix(self: Self) zigla.Mat4 {
+        const inverse = self.rotation.inverse();
+        const r = zigla.Mat4.rotate(inverse);
+        const t = zigla.Mat4.translate(self.shift.inverse());
+        return @"*"(r, t);
     }
 };
 
@@ -45,10 +52,22 @@ pub const Camera = struct {
     projection: Projection = .{},
     view: View = .{},
 
-    pub fn getMatrix(self: *const Self) zigla.Mat4 {
+    pub fn getViewProjectionMatrix(self: *const Self) zigla.Mat4 {
         const p = self.projection.getMatrix();
-        const v = self.view.getMatrix();
+        const v = self.view.getViewMatrix();
         return p.mul(v);
+    }
+
+    pub fn getRay(self: Self, x: i32, y: i32) zigla.ray_intersection.Ray {
+        return zigla.ray_intersection.Ray.createFromScreen(
+            @intToFloat(f32, x),
+            @intToFloat(f32, y),
+            @intToFloat(f32, self.projection.width),
+            @intToFloat(f32, self.projection.height),
+            self.view.getTransformMatrix(),
+            self.projection.fovy,
+            self.projection.getAspectRatio(),
+        );
     }
 };
 
