@@ -6,7 +6,7 @@ const @"*" = la.@"*";
 pub const Projection = struct {
     const Self = @This();
 
-    fovy: f32 = std.math.pi * (30.0 / 180.0),
+    fovy: f32 = std.math.pi * (60.0 / 180.0),
     near: f32 = 0.1,
     far: f32 = 100.0,
     width: u32 = 1,
@@ -59,7 +59,7 @@ pub const Camera = struct {
     }
 
     pub fn getRay(self: Self, x: i32, y: i32) ray_intersection.Ray {
-        const inv = la.Mat3.rotate(self.view.rotation.inverse());
+        const inv = la.Mat3.rotate(self.view.rotation).transposed();
         return ray_intersection.Ray.createFromScreen(
             @intToFloat(f32, x),
             @intToFloat(f32, y),

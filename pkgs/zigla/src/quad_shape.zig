@@ -20,6 +20,13 @@ pub const Quad = struct {
         };
     }
 
+    pub fn transform(self: Self, m: la.Mat4) Self {
+        return Self{
+            .t0 = self.t0.transform(m),
+            .t1 = self.t1.transform(m),
+        };
+    }
+
     pub fn intersect(self: Self, ray: Ray) ?f32 {
         if (self.t0.intersect(ray)) |h0| {
             if (self.t1.intersect(ray)) |h1| {
@@ -83,7 +90,7 @@ pub const Shape = struct {
     state: StateReference,
 
     pub fn init(quads: []const Quad, pMatrix: *la.Mat4, state: StateReference) Self {
-        var self =Self{
+        var self = Self{
             .quads = quads,
             .matrix = pMatrix,
             .state = state,
@@ -96,13 +103,14 @@ pub const Shape = struct {
     }
 
     pub fn localRay(self: Self, ray: Ray) Ray {
-        const r = self.matrix.toMat3().transposed();
-        const dir = @"*"(r, ray.dir);
-
-        const t = self.matrix._3.toVec3().inverse();
+        var rb = rigidbody.RigidBodyTransformation{
+            .rotation = self.matrix.toMat3().toQuaternion(),
+            .translation = self.matrix._3.toVec3(),
+        };
+        rb = rb.inverse();
         return Ray{
-            .origin = @"+"(@"*"(r, ray.origin), t),
-            .dir = dir,
+            .origin = rb.transform(ray.origin),
+            .dir = rb.rotation.rotate(ray.dir),
         };
     }
 
@@ -111,17 +119,27 @@ pub const Shape = struct {
             return null;
         }
 
-        const local_ray = self.localRay(ray);
-
         var closest: ?f32 = null;
-        for (self.quads) |quad| {
-            if (quad.intersect(local_ray)) |hit| {
+
+        // const local_ray = self.localRay(ray);
+        // for (self.quads) |quad| {
+        //     if (quad.intersect(local_ray)) |hit| {
+        //         closest = if (closest) |closest_hit|
+        //             if (hit < closest_hit) hit else closest_hit
+        //         else
+        //             hit;
+        //     }
+        // }
+        for (self.quads) |quad_origin| {
+            const quad = quad_origin.transform(self.matrix.*);            
+            if (quad.intersect(ray)) |hit| {
                 closest = if (closest) |closest_hit|
                     if (hit < closest_hit) hit else closest_hit
                 else
                     hit;
             }
         }
+
         return closest;
     }
 };

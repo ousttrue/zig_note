@@ -70,7 +70,7 @@ test "Mat3" {
 
 test "Mat4" {}
 
-test "ray triangle" {
+test "ray triangle ccw" {
     const ray = Ray{
         .origin = Vec3.init(0, 0, -1),
         .dir = Vec3.init(0, 0, 1),
@@ -82,6 +82,20 @@ test "ray triangle" {
         .v2 = Vec3.init(0, 1, 0),
     };
     try std.testing.expectEqual(@as(f32, 1.0), t.intersect(ray).?);
+}
+
+test "ray triangle cw" {
+    const ray = Ray{
+        .origin = Vec3.init(0, 0, -1),
+        .dir = Vec3.init(0, 0, 1),
+    };
+
+    const t = Triangle{
+        .v0 = Vec3.init(1, 2, -3),
+        .v2 = Vec3.init(1, -2, -3),
+        .v1 = Vec3.init(-1, -2, -3),
+    };
+    try std.testing.expectEqual(@as(f32, -2.0), t.intersect(ray).?);
 }
 
 test "ray not hit" {
@@ -134,6 +148,18 @@ test "RigidBody" {
     try std.testing.expect(nearlyEqual(@as(f32, 1e-5), 3, Vec3.init(0, -1, 0).array(), inv.translation.const_array()));
 }
 
+test "Camera" {
+    var c = camera.Camera{};
+    c.projection.resize(2, 2);
+
+    const m = c.view.getTransformMatrix();
+    try std.testing.expectEqual(Vec4.init(0, 0, 5, 1), m._3);
+
+    const ray = c.getRay(1, 1);
+    try std.testing.expectEqual(Vec3.init(0, 0, 5), ray.origin);
+    try std.testing.expectEqual(Vec3.init(0, 0, -1), ray.dir);
+}
+
 test "Shape" {
     const allocator = std.testing.allocator;
     const quads = quad_shape.createCube(allocator, 2, 4, 6);
@@ -162,35 +188,62 @@ test "Shape" {
 
     try std.testing.expectEqual(@as(f32, 2.0), cube.quads[0].intersect(ray).?);
 
-    const t = cube.intersect(ray);
-    try std.testing.expectEqual(@as(f32, 2.0), t.?);
+    {
+        const t = cube.intersect(ray);
+        try std.testing.expectEqual(@as(f32, 2.0), t.?);
+    }
+
+    {
+        const out_ray = Ray{
+            .origin = Vec3.init(100, 0, 5),
+            .dir = Vec3.init(0, 0, -1),
+        };
+
+        const tq0 = cube.quads[0].intersect(out_ray);
+        try std.testing.expect(tq0 == null);
+        const tq1 = cube.quads[1].intersect(out_ray);
+        try std.testing.expect(tq1 == null);
+
+        const tri = cube.quads[2].t0;
+        _ = tri;
+
+        const tq20 = cube.quads[2].t0.intersect(out_ray);
+        // std.debug.print("({}) => ({})\n", .{ tq20, tri });
+        try std.testing.expect(tq20 == null);
+        const tq21 = cube.quads[2].t1.intersect(out_ray);
+        try std.testing.expect(tq21 == null);
+
+        const tq2 = cube.quads[2].intersect(out_ray);
+        try std.testing.expect(tq2 == null);
+        const tq3 = cube.quads[3].intersect(out_ray);
+        try std.testing.expect(tq3 == null);
+        const tq4 = cube.quads[4].intersect(out_ray);
+        try std.testing.expect(tq4 == null);
+        const tq5 = cube.quads[5].intersect(out_ray);
+        try std.testing.expect(tq5 == null);
+
+        const t = cube.intersect(out_ray);
+        try std.testing.expect(t == null);
+    }
 }
 
-test "Camera" {
-    var c = camera.Camera{};
-    c.projection.resize(2, 2);
-
-    const m = c.view.getTransformMatrix();
-    try std.testing.expectEqual(Vec4.init(0, 0, 5, 1), m._3);
-
-    const ray = c.getRay(1, 1);
-    try std.testing.expectEqual(Vec3.init(0, 0, 5), ray.origin);
-    try std.testing.expectEqual(Vec3.init(0, 0, -1), ray.dir);
-
-
-    const allocator = std.testing.allocator;
-    const quads = quad_shape.createCube(allocator, 2, 4, 6);
-    defer allocator.free(quads);
-    var mat = Mat4{};
-    var s: [1]f32 = .{0};
-    var state = quad_shape.StateReference{
-        .state = &s,
-        .count = 1,
-        .stride = 0,
+test "ray debug" {
+    const ray = Ray{
+        .origin = Vec3.init(100, 0, 5),
+        .dir = Vec3.init(0, 0, -1),
     };
-    const cube = quad_shape.Shape.init(quads, &mat, state);
+    const tri = Triangle{
+        .v0 = Vec3.init(1, 2, -3),
+        .v1 = Vec3.init(1, -2, -3),
+        .v2 = Vec3.init(-1, -2, -3),
+    };
 
-    const localRay = cube.localRay(ray);
-    try std.testing.expectEqual(Vec3.init(0, 0, 5), localRay.origin);
-    try std.testing.expectEqual(Vec3.init(0, 0, -1), localRay.dir);
+    const l = tri.getPlain();
+    const t = l.intersect(ray).?;
+    const p = ray.position(t);
+    const p2d = ray_intersection.dropMaxAxis(l.n, [_]la.Vec3{ p, tri.v0, tri.v1, tri.v2 });
+    _ = p2d;
+
+    try std.testing.expect(tri.intersect(ray) == null);
+    // std.debug.print("{any}\n", .{p2d});
 }

@@ -149,11 +149,6 @@ pub const GizmoVertexBuffer = struct {
     }
 
     pub fn render(self: *Self, camera_matrix: zigla.Mat4, ray: zigla.ray_intersection.Ray) void {
-        // clear
-        if (self.hover_shape) |hover_shape| {
-            hover_shape.state.removeState(zigla.quad_shape.ShapeState.HOVER);
-        }
-
         if (self.material == null) {
             var shader = glo.Shader.load(self.allocator, VS, FS) catch {
                 @panic(glo.getErrorMessage());
@@ -211,7 +206,13 @@ pub const GizmoVertexBuffer = struct {
         }
 
         // update hover
+        if (hit_shape != self.hover_shape) {
+            if (self.hover_shape) |hover_shape| {
+                hover_shape.state.removeState(zigla.quad_shape.ShapeState.HOVER);
+            }
+        }
         self.hover_shape = hit_shape;
+
         if (self.hover_shape) |hover_shape| {
             hover_shape.state.addState(zigla.quad_shape.ShapeState.HOVER);
         }

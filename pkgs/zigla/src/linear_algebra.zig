@@ -15,6 +15,13 @@ pub fn vdot3(lhs: Vector(3, f32), rhs: Vector(3, f32)) f32 {
     return @reduce(.Add, lhs * rhs);
 }
 
+fn sign(x: f32) f32 {
+    return if (x >= 0.0) 1.0 else -1.0;
+}
+fn norm(a: f32, b: f32, c: f32, d: f32) f32 {
+    return std.math.sqrt(a * a + b * b + c * c + d * d);
+}
+
 pub const Vec2 = struct {
     const Self = @This();
     x: f32,
@@ -103,6 +110,14 @@ pub const Vec4 = struct {
     pub fn dot(self: Self, rhs: Vec4) f32 {
         return self.x * rhs.x + self.y * rhs.y + self.z * rhs.z + self.w * rhs.w;
     }
+    pub fn mul(self: Self, rhs: Mat4) Self {
+        return Self.init(
+            self.dot(rhs.col0()),
+            self.dot(rhs.col0()),
+            self.dot(rhs.col0()),
+            self.dot(rhs.col0()),
+        );
+    }
 };
 
 pub const Quaternion = struct {
@@ -126,8 +141,7 @@ pub const Quaternion = struct {
 
     pub fn normalize(self: *Self) void {
         const sqnorm = self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w;
-        const norm = std.math.sqrt(sqnorm);
-        const factor = 1 / norm;
+        const factor = 1 / std.math.sqrt(sqnorm);
         self.x *= factor;
         self.y *= factor;
         self.z *= factor;
@@ -196,6 +210,51 @@ pub const Mat3 = struct {
             Vec3.init(2 * q.x * q.y + 2 * q.w * q.z, 1 - 2 * q.z * q.z - 2 * q.x * q.x, 2 * q.y * q.z - 2 * q.w * q.x),
             Vec3.init(2 * q.z * q.x - 2 * q.w * q.y, 2 * q.y * q.z + 2 * q.w * q.x, 1 - 2 * q.x * q.x - 2 * q.y * q.y),
         );
+    }
+
+    /// http://www.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/tech0052.html
+    pub fn toQuaternion(self: Self) Quaternion {
+        var q0 = (self._0.x + self._1.y + self._2.z + 1.0) / 4.0;
+        var q1 = (self._0.x - self._1.y - self._2.z + 1.0) / 4.0;
+        var q2 = (-self._0.x + self._1.y - self._2.z + 1.0) / 4.0;
+        var q3 = (-self._0.x - self._1.y + self._2.z + 1.0) / 4.0;
+        if (q0 < 0.0) q0 = 0.0;
+        if (q1 < 0.0) q1 = 0.0;
+        if (q2 < 0.0) q2 = 0.0;
+        if (q3 < 0.0) q3 = 0.0;
+        q0 = std.math.sqrt(q0);
+        q1 = std.math.sqrt(q1);
+        q2 = std.math.sqrt(q2);
+        q3 = std.math.sqrt(q3);
+        if (q0 >= q1 and q0 >= q2 and q0 >= q3) {
+            // q0 *= 1.0;
+            q1 *= sign(self._2.y - self._1.z);
+            q2 *= sign(self._0.z - self._2.x);
+            q3 *= sign(self._1.x - self._0.y);
+        } else if (q1 >= q0 and q1 >= q2 and q1 >= q3) {
+            q0 *= sign(self._2.y - self._1.z);
+            // q1 *= 1.0;
+            q2 *= sign(self._1.x + self._0.y);
+            q3 *= sign(self._0.z + self._2.x);
+        } else if (q2 >= q0 and q2 >= q1 and q2 >= q3) {
+            q0 *= sign(self._0.z - self._2.x);
+            q1 *= sign(self._1.x + self._0.y);
+            // q2 *= 1.0;
+            q3 *= sign(self._2.y + self._1.z);
+        } else if (q3 >= q0 and q3 >= q1 and q3 >= q2) {
+            q0 *= sign(self._1.x - self._0.y);
+            q1 *= sign(self._2.x + self._0.z);
+            q2 *= sign(self._2.y + self._1.z);
+            q3 *= 1.0;
+        } else {
+            unreachable;
+        }
+        const r = 1.0 / norm(q0, q1, q2, q3);
+        q0 *= r;
+        q1 *= r;
+        q2 *= r;
+        q3 *= r;
+        return Quaternion{ .x = q0, .y = q1, .z = q2, .w = q3 };
     }
 
     pub fn array(self: *Self) [9]f32 {
@@ -309,7 +368,7 @@ pub const Mat4 = struct {
     }
 
     pub fn perspective(fov: f32, aspect: f32, n: f32, f: f32) Self {
-        const scale = std.math.tan(fov) * n;
+        const scale = std.math.tan(fov / 2) * n;
         const r = aspect * scale;
         const l = -r;
         const t = scale;
@@ -350,6 +409,11 @@ pub const Mat4 = struct {
     }
     pub fn col3(self: Self) Vec4 {
         return Vec4.init(self._0.w, self._1.w, self._2.w, self._3.w);
+    }
+
+    pub fn apply(self: Self, v: Vec3, w: f32) Vec3 {
+        const v4 = Vec4.vec3(v, w).mul(self);
+        return v4.toVec3();
     }
 
     pub fn mul(self: Self, rhs: anytype) @TypeOf(rhs) {

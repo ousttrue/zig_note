@@ -22,7 +22,7 @@ pub const Ray = struct {
             yy * std.math.tan(half_fov),
             -1,
         ));
-        dir.normalize();
+        // dir.normalize();
 
         // std.log.debug("({d:.2}, {d:.2}, {d:.2})", .{ dir.x, dir.y, dir.z });
         return .{ .origin = t, .dir = dir };
@@ -61,6 +61,9 @@ pub const Plain = struct {
     }
 };
 
+/// e-f
+/// |/ g
+/// o
 fn isFGSameSide(e: la.Vec2, f: la.Vec2, g: la.Vec2) bool {
     const n = la.Vec2.init(-e.y, e.x);
     return n.dot(f) * n.dot(g) >= 0;
@@ -79,8 +82,13 @@ fn isInside2D(p: la.Vec2, v0: la.Vec2, v1: la.Vec2, v2: la.Vec2) bool {
 
 pub fn dropMaxAxis(n: la.Vec3, points: anytype) [@typeInfo(@TypeOf(points)).Array.len]la.Vec2 {
     var result: [@typeInfo(@TypeOf(points)).Array.len]la.Vec2 = undefined;
-    if (n.x > n.y) {
-        if (n.x > n.z) {
+
+    const x = std.math.fabs(n.x);
+    const y = std.math.fabs(n.y);
+    const z = std.math.fabs(n.z);
+
+    if (x > y) {
+        if (x > z) {
             // drop x
             for (points) |p, i| {
                 result[i] = la.Vec2.init(p.y, p.z);
@@ -92,7 +100,7 @@ pub fn dropMaxAxis(n: la.Vec3, points: anytype) [@typeInfo(@TypeOf(points)).Arra
             }
         }
     } else {
-        if (n.y > n.z) {
+        if (y > z) {
             // drop y
             for (points) |p, i| {
                 result[i] = la.Vec2.init(p.x, p.z);
@@ -116,6 +124,14 @@ pub const Triangle = struct {
 
     pub fn getPlain(self: Self) Plain {
         return Plain.triangle(self.v0, self.v1, self.v2);
+    }
+
+    pub fn transform(self: Self, m: la.Mat4) Self {
+        return .{
+            .v0 = m.apply(self.v0, 1),
+            .v1 = m.apply(self.v1, 1),
+            .v2 = m.apply(self.v2, 1),
+        };
     }
 
     pub fn intersect(self: Self, ray: Ray) ?f32 {

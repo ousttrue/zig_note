@@ -141,9 +141,7 @@ pub const FboDock = struct {
                     @intToFloat(f32, j),
                     0,
                 ));
-                break;
             }
-            break;
         }
 
         return self;
