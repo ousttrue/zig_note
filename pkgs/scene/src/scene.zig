@@ -141,7 +141,7 @@ pub const Scene = struct {
         if (self.shader) |*shader| {
             shader.use();
             defer shader.unuse();
-            const m = self.camera.getMVP();
+            const m = self.camera.getMatrix();
             shader.setMat4("uMVP", &m._0.x);
             if (self.vao) |vao| {
                 vao.draw(3, .{});

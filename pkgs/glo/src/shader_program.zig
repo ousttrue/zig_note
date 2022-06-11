@@ -11,9 +11,9 @@ pub fn compile(shader_type: gl.GLuint, src: []const u8) error_handling.ShaderErr
     gl.shaderSource(handle, 1, &sources, &len);
     gl.compileShader(handle);
 
-    var status: [1]gl.GLint = undefined;
+    var status: gl.GLint = undefined;
     gl.getShaderiv(handle, gl.COMPILE_STATUS, &status);
-    if (status[0] == gl.TRUE) {
+    if (status == gl.TRUE) {
         return handle;
     }
 
@@ -28,9 +28,9 @@ pub fn link(vs: gl.GLuint, fs: gl.GLuint) error_handling.ShaderError!gl.GLuint {
     gl.attachShader(handle, vs);
     gl.attachShader(handle, fs);
     gl.linkProgram(handle);
-    var status: [1]gl.GLint = undefined;
+    var status: gl.GLint = undefined;
     gl.getProgramiv(handle, gl.LINK_STATUS, &status);
-    if (status[0] == gl.TRUE) {
+    if (status == gl.TRUE) {
         return handle;
     }
 
@@ -101,11 +101,11 @@ pub const Shader = struct {
         gl.deleteProgram(self.handle);
     }
 
-    pub fn use(self: *Self) void {
+    pub fn use(self: *const Self) void {
         gl.useProgram(self.handle);
     }
 
-    pub fn unuse(self: *Self) void {
+    pub fn unuse(self: *const Self) void {
         _ = self;
         gl.useProgram(0);
     }
@@ -209,7 +209,7 @@ pub const UniformLocation = struct {
         gl.uniform2fv(self.location, 1, value);
     }
 
-    pub fn setMat4(self: *Self, value: *const f32, __: struct { transpose: bool = false, count: c_int = 1 }) void {
+    pub fn setMat4(self: *const Self, value: *const f32, __: struct { transpose: bool = true, count: c_int = 1 }) void {
         gl.uniformMatrix4fv(self.location, __.count, if (__.transpose) gl.TRUE else gl.FALSE, value);
     }
 };

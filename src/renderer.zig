@@ -8,6 +8,7 @@ const glo = @import("glo");
 const NanoVgRenderer = @import("./nanovg_renderer.zig").NanoVgRenderer;
 const nanovg = @import("nanovg");
 const gizmo_vertexbuffer = @import("./gizmo_vertexbuffer.zig");
+const zigla = @import("zigla");
 
 const DemoDock = struct {
     const Self = @This();
@@ -117,7 +118,7 @@ const FboDock = struct {
 
     pub fn init(allocator: std.mem.Allocator) Self {
         var mouse_event = screen.MouseEvent.new(allocator);
-        return .{
+        var self = Self{
             .fbo = glo.FboManager{},
             .allocator = allocator,
             .mouse_event = mouse_event,
@@ -125,6 +126,23 @@ const FboDock = struct {
             .nvg = NanoVgRenderer.init(allocator, null, null),
             .gizmo = gizmo_vertexbuffer.GizmoVertexBuffer.init(allocator),
         };
+
+        // gizmo shapes
+        // self.cubes: List[Shape] = []
+        var joint: u32 = 0;
+        var i: i32 = -2;
+        while (i < 3) : (i += 1) {
+            var j: i32 = -2;
+            while (j < 3) : (j += 1) {
+                var cube = zigla.quad_shape.createCube(allocator, 0.5, 0.5, 0.5);
+                // cube.position(i, j, 0);
+                self.gizmo.addShape(joint, cube);
+                joint += 1;
+                // self.cubes.append(cube)
+            }
+        }
+
+        return self;
     }
 
     pub fn deinit(self: *Self) void {
@@ -164,7 +182,7 @@ const FboDock = struct {
             // std.debug.print("{}\n", .{mouse_input});
             self.mouse_event.process(mouse_input);
 
-            self.scene.render(mouse_input);
+            // self.scene.render(mouse_input);
             self.gizmo.render(self.scene.camera);
 
             self.debugDraw(mouse_input);

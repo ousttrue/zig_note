@@ -17,7 +17,7 @@ pub const Projection = struct {
         self.height = height;
     }
 
-    pub fn getMatrix(self: *Self) zigla.Mat4 {
+    pub fn getMatrix(self: *const Self) zigla.Mat4 {
         // return zlm.Mat4.createPerspective(self.fov, self.aspect, self.near, self.far);
         return zigla.Mat4.perspective(self.fovy, @intToFloat(f32, self.width) / @intToFloat(f32, self.height), self.near, self.far);
     }
@@ -29,7 +29,7 @@ pub const View = struct {
     rotation: zigla.Quaternion = .{},
     shift: zigla.Vec3 = zigla.Vec3.init(0, 0, -2),
 
-    pub fn getMatrix(self: *Self) zigla.Mat4 {
+    pub fn getMatrix(self: *const Self) zigla.Mat4 {
         // const yaw = zlm.Mat4.createAngleAxis(zlm.Vec3.new(0, 1, 0), self.yaw);
         // const pitch = zlm.Mat4.createAngleAxis(zlm.Vec3.new(1, 0, 0), self.pitch);
         // const shift = zlm.Mat4.createTranslation(self.shift);
@@ -45,7 +45,7 @@ pub const Camera = struct {
     projection: Projection = .{},
     view: View = .{},
 
-    pub fn getMVP(self: *Self) zigla.Mat4 {
+    pub fn getMatrix(self: *const Self) zigla.Mat4 {
         const p = self.projection.getMatrix();
         const v = self.view.getMatrix();
         return p.mul(v);

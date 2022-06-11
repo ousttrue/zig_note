@@ -135,14 +135,14 @@ pub const Vao = struct {
         gl.bindVertexArray(0);
     }
 
-    pub fn draw(self: *const Self, count: i32, __default__: struct { offset: i32 = 0, topology: gl.GLenum = gl.TRIANGLES }) void {
+    pub fn draw(self: *const Self, count: u32, __default__: struct { offset: u32 = 0, topology: gl.GLenum = gl.TRIANGLES }) void {
         self.bind();
         defer self.unbind();
 
         if (self.ibo) |ibo_| {
-            gl.drawElements(__default__.topology, count, ibo_.format, @intToPtr(*const anyopaque, @intCast(usize, __default__.offset)));
+            gl.drawElements(__default__.topology, @intCast(i32, count), ibo_.format, @intToPtr(?*const anyopaque, @intCast(usize, __default__.offset)));
         } else {
-            gl.drawArrays(__default__.topology, __default__.offset, count);
+            gl.drawArrays(__default__.topology, @intCast(i32, __default__.offset), @intCast(i32, count));
         }
     }
 };
