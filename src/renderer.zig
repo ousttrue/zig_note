@@ -3,6 +3,7 @@ const gl = @import("gl");
 const imgui = @import("imgui");
 const dockspace = @import("dockspace.zig");
 const docks = @import("./docks.zig");
+const scene_dock = @import("./scene_dock.zig");
 
 pub const Renderer = struct {
     const Self = @This();
@@ -14,8 +15,8 @@ pub const Renderer = struct {
     metrics: docks.MetricsDock = .{},
     another: docks.AnotherDock = .{},
     hello: docks.HelloDock = .{},
-    fbo: docks.FboDock = .{},
-    camera: docks.CameraDock,
+    fbo: scene_dock.FboDock = .{},
+    camera: scene_dock.CameraDock,
 
     docks: std.ArrayList(dockspace.Dock),
 
@@ -29,8 +30,8 @@ pub const Renderer = struct {
             .show_another_window = &renderer.another.is_open,
             .show_demo_window = &renderer.demo.is_open,
         };
-        renderer.fbo = docks.FboDock.init(allocator);
-        renderer.camera = docks.CameraDock.init(&renderer.fbo.scene.camera);
+        renderer.fbo = scene_dock.FboDock.init(allocator);
+        renderer.camera = scene_dock.CameraDock.init(&renderer.fbo.scene.camera);
 
         renderer.docks = std.ArrayList(dockspace.Dock).init(allocator);
         try renderer.docks.append(dockspace.Dock.create(&renderer.metrics));
