@@ -122,7 +122,6 @@ pub const GizmoVertexBuffer = struct {
     }
 
     pub fn render(self: *Self, camera: scene.Camera) void {
-        _ = camera;
         if (self.material == null) {
             var shader = glo.Shader.load(self.allocator, VS, FS) catch {
                 @panic(glo.getErrorMessage());
