@@ -46,6 +46,7 @@ pub const ShapeState = enum(u32) {
     SELECT = 0x02,
     DRAG = 0x04,
     HIDE = 0x08,
+    _,
 };
 
 pub const StateReference = struct {
@@ -68,7 +69,8 @@ pub const StateReference = struct {
     }
 
     pub fn addState(self: *Self, state: ShapeState) void {
-        const new_state = @intToEnum(ShapeState, @floatToInt(u32, self.state[0]) | @enumToInt(state));
+        const value = @floatToInt(u32, self.state[0]) | @enumToInt(state);
+        const new_state = @intToEnum(ShapeState, value);
         self.setState(new_state);
     }
 
@@ -236,6 +238,6 @@ test "Shape" {
     //     try std.testing.expect(tq5 == null);
 
     //     const t = cube.intersect(out_ray);
-    //     try std.testing.expect(t == null);    
+    //     try std.testing.expect(t == null);
     // }
 }

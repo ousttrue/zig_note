@@ -7,6 +7,7 @@ const scene = @import("scene");
 const Scene = scene.Scene;
 const NanoVgRenderer = @import("./nanovg_renderer.zig").NanoVgRenderer;
 const gizmo_vertexbuffer = @import("./gizmo_vertexbuffer.zig");
+const gizmo_mouse_handler = @import("./gizmo_mouse_handler.zig");
 const zigla = @import("zigla");
 
 const FLT_MAX: f32 = 3.402823466e+38;
@@ -39,34 +40,39 @@ pub const MouseHandler = struct {
     allocator: std.mem.Allocator,
     camera: *zigla.Camera,
     mouse_event: *screen.MouseEvent,
-    cameraHandler: screen.ArcBall,
-    // cameraHandler: TurnTable = undefined,
-    shiftHandler: screen.ScreenShift,
+    left_button_handler: gizmo_mouse_handler.GizmoDragHandler,
+    right_button_handler: screen.ArcBall,
+    middle_button_handler: screen.ScreenShift,
     nvg: NanoVgRenderer,
 
-    pub fn new(allocator: std.mem.Allocator, camera: *zigla.Camera) *Self {
+    pub fn new(allocator: std.mem.Allocator, camera: *zigla.Camera, gizmo: *gizmo_vertexbuffer.GizmoVertexBuffer) *Self {
         var mouse_event = screen.MouseEvent.new(allocator);
         var self = allocator.create(Self) catch @panic("create");
 
         self.allocator = allocator;
         self.camera = camera;
         self.mouse_event = mouse_event;
-        self.cameraHandler = screen.ArcBall.init(&self.camera.view, &self.camera.projection);
-        // scene.cameraHandler = camera.TurnTable.init(&scene.camera.view);
-        self.shiftHandler = screen.ScreenShift.init(&self.camera.view, &self.camera.projection);
+        self.left_button_handler = gizmo_mouse_handler.GizmoDragHandler.init(gizmo);
+        self.right_button_handler = screen.ArcBall.init(&self.camera.view, &self.camera.projection);
+        self.middle_button_handler = screen.ScreenShift.init(&self.camera.view, &self.camera.projection);
         self.nvg = NanoVgRenderer.init(allocator, null, null);
 
+        mouse_event.left_button.bind(.{
+            .begin = screen.mouse_event.BeginEndCallback.create(&self.left_button_handler, "begin"),
+            .drag = screen.mouse_event.DragCallback.create(&self.left_button_handler, "drag"),
+            .end = screen.mouse_event.BeginEndCallback.create(&self.left_button_handler, "end"),
+        });
         mouse_event.right_button.bind(.{
-            .begin = screen.mouse_event.BeginEndCallback.create(&self.cameraHandler, "begin"),
-            .drag = screen.mouse_event.DragCallback.create(&self.cameraHandler, "drag"),
-            .end = screen.mouse_event.BeginEndCallback.create(&self.cameraHandler, "end"),
+            .begin = screen.mouse_event.BeginEndCallback.create(&self.right_button_handler, "begin"),
+            .drag = screen.mouse_event.DragCallback.create(&self.right_button_handler, "drag"),
+            .end = screen.mouse_event.BeginEndCallback.create(&self.right_button_handler, "end"),
         });
         mouse_event.middle_button.bind(.{
-            .begin = screen.mouse_event.BeginEndCallback.create(&self.shiftHandler, "begin"),
-            .drag = screen.mouse_event.DragCallback.create(&self.shiftHandler, "drag"),
-            .end = screen.mouse_event.BeginEndCallback.create(&self.shiftHandler, "end"),
+            .begin = screen.mouse_event.BeginEndCallback.create(&self.middle_button_handler, "begin"),
+            .drag = screen.mouse_event.DragCallback.create(&self.middle_button_handler, "drag"),
+            .end = screen.mouse_event.BeginEndCallback.create(&self.middle_button_handler, "end"),
         });
-        mouse_event.wheel.append(screen.mouse_event.WheelCallback.create(&self.shiftHandler, "wheel")) catch @panic("append");
+        mouse_event.wheel.append(screen.mouse_event.WheelCallback.create(&self.middle_button_handler, "wheel")) catch @panic("append");
 
         return self;
     }
@@ -115,9 +121,9 @@ pub const FboDock = struct {
     allocator: std.mem.Allocator,
 
     scene: *Scene,
-    mouse_camera_handler: *MouseHandler,
     gizmo: *gizmo_vertexbuffer.GizmoVertexBuffer,
     clear_color: *const [4]f32,
+    mouse_handler: *MouseHandler = undefined,
 
     pub fn init(allocator: std.mem.Allocator, camera: *zigla.Camera, clear_color: *const [4]f32) Self {
         var self = Self{
@@ -125,9 +131,9 @@ pub const FboDock = struct {
             .allocator = allocator,
             .scene = Scene.new(allocator),
             .gizmo = gizmo_vertexbuffer.GizmoVertexBuffer.new(allocator),
-            .mouse_camera_handler = MouseHandler.new(allocator, camera),
             .clear_color = clear_color,
         };
+        self.mouse_handler = MouseHandler.new(allocator, camera, self.gizmo);
 
         // gizmo shapes
         var i: i32 = -2;
@@ -149,7 +155,8 @@ pub const FboDock = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        self.mouse_camera_handler.delete();
+        self.mouse_handler.delete();
+        self.gizmo_mouse_handler.delete();
         self.gizmo.delete();
         self.scene.delete();
     }
@@ -189,10 +196,10 @@ pub const FboDock = struct {
                     .wheel = @floatToInt(i32, io.MouseWheel),
                 };
                 // std.debug.print("{}\n", .{mouse_input});
-                const camera = self.mouse_camera_handler.process(mouse_input, true);
+                const camera = self.mouse_handler.process(mouse_input, true);
 
                 // self.scene.render(mouse_input);
-                self.gizmo.render(camera.getViewProjectionMatrix(), camera.getRay(mouse_input.x, mouse_input.y));
+                self.gizmo.render(camera, mouse_input.x, mouse_input.y);
             }
         }
     }

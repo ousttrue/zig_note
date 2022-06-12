@@ -44,6 +44,13 @@ const Material = struct {
     }
 };
 
+pub const RayHit = struct {
+    cursor_pos: zigla.Vec2,
+    ray: zigla.Ray,
+    shape: ?*zigla.Shape,
+    distance: f32,
+};
+
 pub const GizmoVertexBuffer = struct {
     const Self = @This();
 
@@ -58,7 +65,15 @@ pub const GizmoVertexBuffer = struct {
 
     shapes: [256]quad_shape.Shape = undefined,
     shape_count: u32 = 0,
-    hover_shape: ?*zigla.quad_shape.Shape = null,
+    hit: RayHit = .{
+        .cursor_pos = zigla.Vec2.init(0, 0),
+        .ray = .{
+            .origin = zigla.Vec3.scalar(0),
+            .dir = zigla.Vec3.scalar(0),
+        },
+        .shape = null,
+        .distance = std.math.inf(f32),
+    },
 
     vao: ?glo.Vao = null,
     material: ?Material = null,
@@ -148,7 +163,7 @@ pub const GizmoVertexBuffer = struct {
         return shape;
     }
 
-    pub fn render(self: *Self, camera_matrix: zigla.Mat4, ray: zigla.ray_intersection.Ray) void {
+    pub fn render(self: *Self, camera: *const zigla.Camera, x: i32, y: i32) void {
         if (self.material == null) {
             var shader = glo.Shader.load(self.allocator, VS, FS) catch {
                 @panic(glo.getErrorMessage());
@@ -177,7 +192,7 @@ pub const GizmoVertexBuffer = struct {
             defer material.shader.unuse();
 
             // update uniforms
-            material.uVP.setMat4(&camera_matrix._0.x, .{});
+            material.uVP.setMat4(&camera.getViewProjectionMatrix()._0.x, .{});
 
             material.uBoneMatrices.setMat4(&self.skin[0]._0.x, .{ .transpose = false, .count = self.shape_count });
 
@@ -192,6 +207,7 @@ pub const GizmoVertexBuffer = struct {
         // ray intersection
         var hit_shape: ?*zigla.quad_shape.Shape = null;
         var hit_distance: f32 = std.math.inf(f32);
+        const ray = camera.getRay(x, y);
         for (self.shapes) |*shape, i| {
             if (i >= self.shape_count) {
                 break;
@@ -206,14 +222,19 @@ pub const GizmoVertexBuffer = struct {
         }
 
         // update hover
-        if (hit_shape != self.hover_shape) {
-            if (self.hover_shape) |hover_shape| {
+        if (hit_shape != self.hit.shape) {
+            if (self.hit.shape) |hover_shape| {
                 hover_shape.state.removeState(zigla.quad_shape.ShapeState.HOVER);
             }
         }
-        self.hover_shape = hit_shape;
+        self.hit = .{
+            .cursor_pos = .{ .x = @intToFloat(f32, x), .y = @intToFloat(f32, y) },
+            .ray = ray,
+            .shape = hit_shape,
+            .distance = hit_distance,
+        };
 
-        if (self.hover_shape) |hover_shape| {
+        if (self.hit.shape) |hover_shape| {
             hover_shape.state.addState(zigla.quad_shape.ShapeState.HOVER);
         }
     }
