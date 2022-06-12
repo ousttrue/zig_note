@@ -112,20 +112,21 @@ pub const FboDock = struct {
     fbo: glo.FboManager,
     bg: imgui.ImVec4 = .{ .x = 0, .y = 0, .z = 0, .w = 0 },
     tint: imgui.ImVec4 = .{ .x = 1, .y = 1, .z = 1, .w = 1 },
-    clearColor: [4]f32 = .{ 0, 0, 0, 1 },
     allocator: std.mem.Allocator,
 
     scene: *Scene,
     mouse_camera_handler: *MouseHandler,
     gizmo: *gizmo_vertexbuffer.GizmoVertexBuffer,
+    clear_color: *const [4]f32,
 
-    pub fn init(allocator: std.mem.Allocator, camera: *zigla.Camera) Self {
+    pub fn init(allocator: std.mem.Allocator, camera: *zigla.Camera, clear_color: *const [4]f32) Self {
         var self = Self{
             .fbo = glo.FboManager{},
             .allocator = allocator,
             .scene = Scene.new(allocator),
             .gizmo = gizmo_vertexbuffer.GizmoVertexBuffer.new(allocator),
             .mouse_camera_handler = MouseHandler.new(allocator, camera),
+            .clear_color = clear_color,
         };
 
         // gizmo shapes
@@ -155,7 +156,7 @@ pub const FboDock = struct {
 
     pub fn showFbo(self: *Self, x: f32, y: f32, size: imgui.ImVec2) void {
         // std.debug.assert(size != imgui.ImVec2{.x=0, .y=0});
-        if (self.fbo.clear(@floatToInt(c_int, size.x), @floatToInt(c_int, size.y), self.clearColor)) |texture| {
+        if (self.fbo.clear(@floatToInt(c_int, size.x), @floatToInt(c_int, size.y), self.clear_color)) |texture| {
             defer self.fbo.unbind();
             _ = imgui.ImageButton(texture, size, .{
                 .uv0 = .{ .x = 0, .y = 1 },
@@ -212,12 +213,16 @@ pub const FboDock = struct {
     }
 };
 
+const init_color = [_]f32{ 0.2, 0.2, 0.2, 1 };
+
 pub const CameraDock = struct {
     const Self = @This();
     name: [*:0]const u8 = "camera",
     is_open: bool = true,
 
     camera: zigla.Camera = .{},
+    clear_color: [4]f32 = init_color,
+    mult_color: [4]f32 = init_color,
 
     pub fn show(self: *Self) void {
         if (!self.is_open) {
@@ -225,6 +230,13 @@ pub const CameraDock = struct {
         }
 
         if (imgui.Begin("camera", .{ .p_open = &self.is_open })) {
+            if (imgui.ColorPicker4("clear_color", &self.clear_color[0], .{})) {
+                self.mult_color[0] = self.clear_color[0] * self.clear_color[3];
+                self.mult_color[1] = self.clear_color[1] * self.clear_color[3];
+                self.mult_color[2] = self.clear_color[2] * self.clear_color[3];
+                self.mult_color[3] = self.clear_color[3];
+            }
+
             imgui.SetNextItemOpen(true, .{ .cond = @enumToInt(imgui.ImGuiCond._FirstUseEver) });
             if (imgui.CollapsingHeader("projection", .{})) {
                 _ = imgui.InputInt("width", @ptrCast(*i32, &self.camera.projection.width), .{});
@@ -233,6 +245,7 @@ pub const CameraDock = struct {
                 _ = imgui.InputFloat("near", &self.camera.projection.near, .{});
                 _ = imgui.InputFloat("far", &self.camera.projection.far, .{});
             }
+
             imgui.SetNextItemOpen(true, .{ .cond = @enumToInt(imgui.ImGuiCond._FirstUseEver) });
             if (imgui.CollapsingHeader("view", .{})) {
                 _ = imgui.InputFloat3("shift", &self.camera.view.shift.x, .{});

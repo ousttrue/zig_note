@@ -63,7 +63,7 @@ pub const FboManager = struct {
         }
     }
 
-    pub fn clear(self: *Self, width: c_int, height: c_int, color: [4]f32) ?*anyopaque {
+    pub fn clear(self: *Self, width: c_int, height: c_int, color: *const [4]f32) ?*anyopaque {
         if (width == 0 or height == 0) {
             return null;
         }

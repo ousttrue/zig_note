@@ -22,7 +22,7 @@ pub const Renderer = struct {
         self.is_initialized = false;
         self.metrics = .{};
         self.camera = .{};
-        self.fbo = scene_dock.FboDock.init(allocator, &self.camera.camera);
+        self.fbo = scene_dock.FboDock.init(allocator, &self.camera.camera, &self.camera.mult_color);
         self.docks = std.ArrayList(dockspace.Dock).init(allocator);
         try self.docks.append(dockspace.Dock.create(&self.metrics));
         try self.docks.append(dockspace.Dock.create(&self.fbo));
