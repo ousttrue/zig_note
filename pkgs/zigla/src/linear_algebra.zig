@@ -8,6 +8,20 @@ const Vector = std.meta.Vector;
 // T | 1
 //
 
+pub fn nearlyEqual(comptime epsilon: anytype, comptime n: usize, lhs: [n]@TypeOf(epsilon), rhs: [n]@TypeOf(epsilon)) bool {
+    for (lhs) |l, i| {
+        const delta = std.math.fabs(l - rhs[i]);
+        if (delta > epsilon) {
+            std.debug.print("\n", .{});
+            std.debug.print("lhs: {any}\n", .{lhs});
+            std.debug.print("rhs: {any}\n", .{rhs});
+            std.debug.print("{}: {}, {} => {}\n", .{ i, l, rhs[i], delta });
+            return false;
+        }
+    }
+    return true;
+}
+
 pub fn vdot4(lhs: Vector(4, f32), rhs: Vector(4, f32)) f32 {
     return @reduce(.Add, lhs * rhs);
 }
@@ -54,7 +68,7 @@ pub const Vec3 = struct {
     pub fn const_array(self: *const Self) [3]f32 {
         return (@ptrCast([*]const f32, &self.x))[0..3].*;
     }
-    pub fn inverse(self: Self) Self {
+    pub fn inversed(self: Self) Self {
         return .{ .x = -self.x, .y = -self.y, .z = -self.z };
     }
     pub fn dot(self: Self, rhs: Self) f32 {
@@ -154,12 +168,12 @@ pub const Quaternion = struct {
         return copy;
     }
 
-    pub fn inverse(self: Self) Self {
+    pub fn inversed(self: Self) Self {
         return .{ .x = -self.x, .y = -self.y, .z = -self.z, .w = self.w };
     }
 
     pub fn rotate(self: Self, v: Vec3) Vec3 {
-        return Mat3.rotate(self).mul(v);
+        return Mat3.rotate(self).apply(v);
     }
 
     pub fn mul(self: Self, rhs: Self) Self {
@@ -197,18 +211,36 @@ pub const Mat3 = struct {
     pub fn angleAxis(angle: f32, a: Vec3) Self {
         const c = std.math.cos(angle);
         const s = std.math.sin(angle);
+        const _00 = c + a.x * a.x * (1 - c);
+        const _10 = a.x * a.y * (1 - c) - a.z * s;
+        const _20 = a.x * a.z * (1 - c) + a.y * s;
+        const _01 = a.x * a.y * (1 - c) + a.z * s;
+        const _11 = c + a.y * a.y * (1 - c);
+        const _21 = a.y * a.z * (1 - c) - a.x * s;
+        const _02 = a.x * a.z * (1 - c) - a.y * s;
+        const _12 = a.y * a.z * (1 - c) + a.x * s;
+        const _22 = c + a.z * a.z * (1 - c);
         return Self.rows(
-            Vec3.init(c + a.x * a.x * (1 - c), a.x * a.y * (1 - c) - a.z * s, a.x * a.z * (1 - c) + a.y * s),
-            Vec3.init(a.x * a.y * (1 - c) + a.z * s, c + a.y * a.y * (1 - c), a.y * a.z * (1 - c) - a.x * s),
-            Vec3.init(a.x * a.z * (1 - c) - a.y * s, a.y * a.z * (1 - c) + a.x * s, c + a.z * a.z * (1 - c)),
+            Vec3.init(_00, _01, _02),
+            Vec3.init(_10, _11, _12),
+            Vec3.init(_20, _21, _22),
         );
     }
 
     pub fn rotate(q: Quaternion) Self {
+        const _00 = 1 - 2 * q.y * q.y - 2 * q.z * q.z;
+        const _10 = 2 * q.x * q.y - 2 * q.w * q.z;
+        const _20 = 2 * q.z * q.x + 2 * q.w * q.y;
+        const _01 = 2 * q.x * q.y + 2 * q.w * q.z;
+        const _11 = 1 - 2 * q.z * q.z - 2 * q.x * q.x;
+        const _21 = 2 * q.y * q.z - 2 * q.w * q.x;
+        const _02 = 2 * q.z * q.x - 2 * q.w * q.y;
+        const _12 = 2 * q.y * q.z + 2 * q.w * q.x;
+        const _22 = 1 - 2 * q.x * q.x - 2 * q.y * q.y;
         return Self.rows(
-            Vec3.init(1 - 2 * q.y * q.y - 2 * q.z * q.z, 2 * q.x * q.y - 2 * q.w * q.z, 2 * q.z * q.x + 2 * q.w * q.y),
-            Vec3.init(2 * q.x * q.y + 2 * q.w * q.z, 1 - 2 * q.z * q.z - 2 * q.x * q.x, 2 * q.y * q.z - 2 * q.w * q.x),
-            Vec3.init(2 * q.z * q.x - 2 * q.w * q.y, 2 * q.y * q.z + 2 * q.w * q.x, 1 - 2 * q.x * q.x - 2 * q.y * q.y),
+            Vec3.init(_00, _01, _02),
+            Vec3.init(_10, _11, _12),
+            Vec3.init(_20, _21, _22),
         );
     }
 
@@ -254,7 +286,7 @@ pub const Mat3 = struct {
         q1 *= r;
         q2 *= r;
         q3 *= r;
-        return Quaternion{ .x = q0, .y = q1, .z = q2, .w = q3 };
+        return Quaternion{ .x = q1, .y = q2, .z = q3, .w = q0 };
     }
 
     pub fn array(self: *Self) [9]f32 {
@@ -302,23 +334,23 @@ pub const Mat3 = struct {
         self._2.z *= f;
     }
 
-    pub fn mul(self: Self, rhs: anytype) @TypeOf(rhs) {
-        const T = @TypeOf(rhs);
-        if (T == Mat3) {
-            return Self.rows(
-                Vec3.init(self._0.dot(rhs.col0()), self._0.dot(rhs.col1()), self._0.dot(rhs.col2())),
-                Vec3.init(self._1.dot(rhs.col0()), self._1.dot(rhs.col1()), self._1.dot(rhs.col2())),
-                Vec3.init(self._2.dot(rhs.col0()), self._2.dot(rhs.col1()), self._2.dot(rhs.col2())),
-            );
-        } else if (T == Vec3) {
-            return Vec3.init(
-                self._0.dot(rhs),
-                self._1.dot(rhs),
-                self._2.dot(rhs),
-            );
-        } else {
-            @compileError("not implemented");
-        }
+    pub fn mul(self: Self, rhs: Self) Self {
+        return Self.rows(
+            Vec3.init(self._0.dot(rhs.col0()), self._0.dot(rhs.col1()), self._0.dot(rhs.col2())),
+            Vec3.init(self._1.dot(rhs.col0()), self._1.dot(rhs.col1()), self._1.dot(rhs.col2())),
+            Vec3.init(self._2.dot(rhs.col0()), self._2.dot(rhs.col1()), self._2.dot(rhs.col2())),
+        );
+    }
+
+    ///          [m00, m01, m02]
+    /// [x, y, z][m10, m11, m12] => [x', y', z']
+    ///          [m20, m21, m22]
+    pub fn apply(self: Self, v: Vec3) Vec3 {
+        return Vec3.init(
+            v.dot(self.col0()),
+            v.dot(self.col1()),
+            v.dot(self.col2()),
+        );
     }
 };
 
@@ -411,50 +443,51 @@ pub const Mat4 = struct {
         return Vec4.init(self._0.w, self._1.w, self._2.w, self._3.w);
     }
 
-    pub fn apply(self: Self, v: Vec3, w: f32) Vec3 {
+    ///             [m00, m01, m02, m03]
+    ///             [m10, m11, m12, m13]
+    /// [x, y, z, w][m20, m21, m22, m23]
+    ///             [m30, m31, m32, m33]
+    pub fn apply(self: Self, v: Vec4) Vec4 {
+        return Vec4.init(
+            v.dot(self.col0()),
+            v.dot(self.col1()),
+            v.dot(self.col2()),
+            v.dot(self.col3()),
+        );
+    }
+
+    pub fn applyVec3(self: Self, v: Vec3, w: f32) Vec3 {
         const v4 = Vec4.vec3(v, w).mul(self);
         return v4.toVec3();
     }
 
-    pub fn mul(self: Self, rhs: anytype) @TypeOf(rhs) {
-        const T = @TypeOf(rhs);
-        if (T == Mat4) {
-            return Self.rows(
-                Vec4.init(
-                    self._0.dot(rhs.col0()),
-                    self._0.dot(rhs.col1()),
-                    self._0.dot(rhs.col2()),
-                    self._0.dot(rhs.col3()),
-                ),
-                Vec4.init(
-                    self._1.dot(rhs.col0()),
-                    self._1.dot(rhs.col1()),
-                    self._1.dot(rhs.col2()),
-                    self._1.dot(rhs.col3()),
-                ),
-                Vec4.init(
-                    self._2.dot(rhs.col0()),
-                    self._2.dot(rhs.col1()),
-                    self._2.dot(rhs.col2()),
-                    self._2.dot(rhs.col3()),
-                ),
-                Vec4.init(
-                    self._3.dot(rhs.col0()),
-                    self._3.dot(rhs.col1()),
-                    self._3.dot(rhs.col2()),
-                    self._3.dot(rhs.col3()),
-                ),
-            );
-        } else if (T == Vec4) {
-            return Vec4.init(
-                self._0.dot(rhs),
-                self._1.dot(rhs),
-                self._2.dot(rhs),
-                self._3.dot(rhs),
-            );
-        } else {
-            @compileError("not implemented");
-        }
+    pub fn mul(self: Self, rhs: Self) Self {
+        return Self.rows(
+            Vec4.init(
+                self._0.dot(rhs.col0()),
+                self._0.dot(rhs.col1()),
+                self._0.dot(rhs.col2()),
+                self._0.dot(rhs.col3()),
+            ),
+            Vec4.init(
+                self._1.dot(rhs.col0()),
+                self._1.dot(rhs.col1()),
+                self._1.dot(rhs.col2()),
+                self._1.dot(rhs.col3()),
+            ),
+            Vec4.init(
+                self._2.dot(rhs.col0()),
+                self._2.dot(rhs.col1()),
+                self._2.dot(rhs.col2()),
+                self._2.dot(rhs.col3()),
+            ),
+            Vec4.init(
+                self._3.dot(rhs.col0()),
+                self._3.dot(rhs.col1()),
+                self._3.dot(rhs.col2()),
+                self._3.dot(rhs.col3()),
+            ),
+        );
     }
 };
 
@@ -464,6 +497,50 @@ pub fn @"+"(lhs: anytype, rhs: @TypeOf(lhs)) @TypeOf(lhs) {
 pub fn @"-"(lhs: anytype, rhs: @TypeOf(lhs)) @TypeOf(lhs) {
     return lhs.sub(rhs);
 }
-pub fn @"*"(lhs: anytype, rhs: anytype) @TypeOf(rhs) {
+pub fn @"*"(lhs: anytype, rhs: @TypeOf(lhs)) @TypeOf(lhs) {
     return lhs.mul(rhs);
+}
+
+fn Child(comptime t: type) type {
+    return switch (@typeInfo(t)) {
+        .Array => |a| a.child,
+        .Pointer => |p| p.child,
+        else => @compileError("not implemented"),
+    };
+}
+
+test "vdot" {
+    const v1234: [4]f32 = .{ 1, 2, 3, 4 };
+    try std.testing.expectEqual(@as(f32, 30.0), vdot4(v1234, v1234));
+    const v123 = [_]f32{ 1, 2, 3 };
+    try std.testing.expectEqual(@as(f32, 14.0), vdot3(v123, v123));
+}
+
+test "Vec3" {
+    const v1 = Vec3.init(1, 2, 3);
+    try std.testing.expectEqual(@as(f32, 14.0), v1.dot(v1));
+    try std.testing.expectEqual(Vec3.init(2, 4, 6), v1.mul(2.0));
+    try std.testing.expectEqual(Vec3.init(2, 4, 6), @"+"(v1, v1));
+    try std.testing.expectEqual(Vec3.init(0, 0, 1), Vec3.init(1, 0, 0).cross(Vec3.init(0, 1, 0)));
+    try std.testing.expectEqual(Vec3.init(1, 0, 0), Vec3.init(2, 0, 0).normalized());
+}
+
+test "Quaternion" {
+    const q = Quaternion{};
+    try std.testing.expectEqual(q, q.mul(q));
+
+    const m = Mat3.rotate(q);
+    const qq = m.toQuaternion();
+    try std.testing.expectEqual(q, qq);
+    try std.testing.expectEqual(Quaternion{ .x = 0, .y = 0, .z = 0, .w = 1 }, qq);
+}
+
+test "Mat3" {
+    const m = Mat3{};
+    try std.testing.expectEqual(@as(f32, 1.0), m.det());
+    var axis = Vec3.init(1, 2, 3);
+    axis.normalize();
+    const angle = std.math.pi * 25.0 / 180.0;
+    const q = Quaternion.angleAxis(angle, axis);
+    try std.testing.expect(nearlyEqual(@as(f32, 1e-5), 9, Mat3.rotate(q).array(), Mat3.angleAxis(angle, axis).array()));
 }

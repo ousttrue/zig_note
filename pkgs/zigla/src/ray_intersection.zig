@@ -17,7 +17,7 @@ pub const Ray = struct {
         const yy = -(y / h * 2 - 1);
         // std.log.debug("({d:.2}, {d:.2}), ({d:.2}, {d:.2}), {d:.2}, {d:.2}", .{ x, y, w, h, xx, yy });
 
-        var dir = @"*"(r, la.Vec3.init(
+        var dir = r.apply(la.Vec3.init(
             xx * std.math.tan(half_fov) * (aspect),
             yy * std.math.tan(half_fov),
             -1,
@@ -128,9 +128,9 @@ pub const Triangle = struct {
 
     pub fn transform(self: Self, m: la.Mat4) Self {
         return .{
-            .v0 = m.apply(self.v0, 1),
-            .v1 = m.apply(self.v1, 1),
-            .v2 = m.apply(self.v2, 1),
+            .v0 = m.applyVec3(self.v0, 1),
+            .v1 = m.applyVec3(self.v1, 1),
+            .v2 = m.applyVec3(self.v2, 1),
         };
     }
 
@@ -146,3 +146,94 @@ pub const Triangle = struct {
         return if (isInside2D(p2d[0], p2d[1], p2d[2], p2d[3])) t else null;
     }
 };
+
+test "ray triangle ccw" {
+    const ray = Ray{
+        .origin = la.Vec3.init(0, 0, -1),
+        .dir = la.Vec3.init(0, 0, 1),
+    };
+
+    const t = Triangle{
+        .v0 = la.Vec3.init(-1, -1, 0),
+        .v1 = la.Vec3.init(1, -1, 0),
+        .v2 = la.Vec3.init(0, 1, 0),
+    };
+    try std.testing.expectEqual(@as(f32, 1.0), t.intersect(ray).?);
+}
+
+test "ray triangle cw" {
+    const ray = Ray{
+        .origin = la.Vec3.init(0, 0, -1),
+        .dir = la.Vec3.init(0, 0, 1),
+    };
+
+    const t = Triangle{
+        .v0 = la.Vec3.init(1, 2, -3),
+        .v2 = la.Vec3.init(1, -2, -3),
+        .v1 = la.Vec3.init(-1, -2, -3),
+    };
+    try std.testing.expectEqual(@as(f32, -2.0), t.intersect(ray).?);
+}
+
+test "ray not hit" {
+    const ray = Ray{
+        .origin = la.Vec3.init(10, 0, -1),
+        .dir = la.Vec3.init(0, 0, 1),
+    };
+    const p0 = ray.position(3);
+    try std.testing.expectEqual(la.Vec3.init(10, 0, 2), p0);
+
+    const tri = Triangle{
+        .v0 = la.Vec3.init(-1, -1, 0),
+        .v1 = la.Vec3.init(1, -1, 0),
+        .v2 = la.Vec3.init(0, 1, 0),
+    };
+    const l = tri.getPlain();
+    const t = l.intersect(ray).?;
+    try std.testing.expectEqual(@as(f32, 1), t);
+    const p = ray.position(t);
+    try std.testing.expectEqual(la.Vec3.init(10, 0, 0), p);
+    const p2d = dropMaxAxis(l.n, [_]la.Vec3{ p, tri.v0, tri.v1, tri.v2 });
+    try std.testing.expectEqual(la.Vec2.init(10, 0), p2d[0]);
+    try std.testing.expectEqual(la.Vec2.init(-1, -1), p2d[1]);
+    try std.testing.expectEqual(la.Vec2.init(1, -1), p2d[2]);
+    try std.testing.expectEqual(la.Vec2.init(0, 1), p2d[3]);
+    try std.testing.expect(tri.intersect(ray) == null);
+}
+
+test "ray negative" {
+    const t = Triangle{
+        .v0 = la.Vec3.init(-1, -1, 0),
+        .v1 = la.Vec3.init(1, -1, 0),
+        .v2 = la.Vec3.init(0, 1, 0),
+    };
+    const l = t.getPlain();
+    const ray = Ray{
+        .origin = la.Vec3.init(0, 0, 1),
+        .dir = la.Vec3.init(0, 0, -1),
+    };
+
+    try std.testing.expectEqual(@as(f32, 1.0), l.intersect(ray).?);
+    try std.testing.expectEqual(@as(f32, 1.0), t.intersect(ray).?);
+}
+
+test "ray debug" {
+    const ray = Ray{
+        .origin = la.Vec3.init(100, 0, 5),
+        .dir = la.Vec3.init(0, 0, -1),
+    };
+    const tri = Triangle{
+        .v0 = la.Vec3.init(1, 2, -3),
+        .v1 = la.Vec3.init(1, -2, -3),
+        .v2 = la.Vec3.init(-1, -2, -3),
+    };
+
+    const l = tri.getPlain();
+    const t = l.intersect(ray).?;
+    const p = ray.position(t);
+    const p2d = dropMaxAxis(l.n, [_]la.Vec3{ p, tri.v0, tri.v1, tri.v2 });
+    _ = p2d;
+
+    try std.testing.expect(tri.intersect(ray) == null);
+    // std.debug.print("{any}\n", .{p2d});
+}

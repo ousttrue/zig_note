@@ -103,11 +103,8 @@ pub const Shape = struct {
     }
 
     pub fn localRay(self: Self, ray: Ray) Ray {
-        var rb = rigidbody.RigidBodyTransformation{
-            .rotation = self.matrix.toMat3().toQuaternion(),
-            .translation = self.matrix._3.toVec3(),
-        };
-        rb = rb.inverse();
+        var rb = rigidbody.RigidBodyTransformation.mat4(self.matrix.*);
+        rb = rb.inversed();
         return Ray{
             .origin = rb.transform(ray.origin),
             .dir = rb.rotation.rotate(ray.dir),
@@ -121,24 +118,24 @@ pub const Shape = struct {
 
         var closest: ?f32 = null;
 
-        // const local_ray = self.localRay(ray);
-        // for (self.quads) |quad| {
-        //     if (quad.intersect(local_ray)) |hit| {
-        //         closest = if (closest) |closest_hit|
-        //             if (hit < closest_hit) hit else closest_hit
-        //         else
-        //             hit;
-        //     }
-        // }
-        for (self.quads) |quad_origin| {
-            const quad = quad_origin.transform(self.matrix.*);            
-            if (quad.intersect(ray)) |hit| {
+        const local_ray = self.localRay(ray);
+        for (self.quads) |quad| {
+            if (quad.intersect(local_ray)) |hit| {
                 closest = if (closest) |closest_hit|
                     if (hit < closest_hit) hit else closest_hit
                 else
                     hit;
             }
         }
+        // for (self.quads) |quad_origin| {
+        //     const quad = quad_origin.transform(self.matrix.*);
+        //     if (quad.intersect(ray)) |hit| {
+        //         closest = if (closest) |closest_hit|
+        //             if (hit < closest_hit) hit else closest_hit
+        //         else
+        //             hit;
+        //     }
+        // }
 
         return closest;
     }
@@ -174,4 +171,71 @@ pub fn createCube(allocator: std.mem.Allocator, width: f32, height: f32, depth: 
         Quad.from_points(v1, v5, v6, v2),
     }) catch @panic("dupe");
     return quads;
+}
+
+test "Shape" {
+    const allocator = std.testing.allocator;
+    const quads = createCube(allocator, 2, 4, 6);
+    defer allocator.free(quads);
+    var m = la.Mat4{};
+    var s: [1]f32 = .{0};
+    var state = StateReference{
+        .state = &s,
+        .count = 1,
+        .stride = 0,
+    };
+    const cube = Shape.init(quads, &m, state);
+
+    const ray = Ray{
+        .origin = la.Vec3.init(0, 0, 5),
+        .dir = la.Vec3.init(0, 0, -1),
+    };
+
+    const localRay = cube.localRay(ray);
+    try std.testing.expectEqual(la.Vec3.init(0, 0, 5), localRay.origin);
+    try std.testing.expectEqual(la.Vec3.init(0, 0, -1), localRay.dir);
+
+    // const q0 = Quad.from_points(la.Vec3.init(-1, 2, 3), la.Vec3.init(-1, -2, 3), la.Vec3.init(1, -2, 3), la.Vec3.init(1, 2, 3));
+    // try std.testing.expectEqual(q0, cube.quads[0]);
+    // try std.testing.expectEqual(@as(f32, 2.0), q0.t0.getPlain().intersect(ray).?);
+
+    // try std.testing.expectEqual(@as(f32, 2.0), cube.quads[0].intersect(ray).?);
+
+    {
+        const t = cube.intersect(ray);
+        try std.testing.expectEqual(@as(f32, 2.0), t.?);
+    }
+
+    // {
+    //     const out_ray = Ray{
+    //         .origin = la.Vec3.init(100, 0, 5),
+    //         .dir = la.Vec3.init(0, 0, -1),
+    //     };
+
+    //     const tq0 = cube.quads[0].intersect(out_ray);
+    //     try std.testing.expect(tq0 == null);
+    //     const tq1 = cube.quads[1].intersect(out_ray);
+    //     try std.testing.expect(tq1 == null);
+
+    //     const tri = cube.quads[2].t0;
+    //     _ = tri;
+
+    //     const tq20 = cube.quads[2].t0.intersect(out_ray);
+    //     // std.debug.print("({}) => ({})\n", .{ tq20, tri });
+    //     try std.testing.expect(tq20 == null);
+    //     const tq21 = cube.quads[2].t1.intersect(out_ray);
+    //     try std.testing.expect(tq21 == null);
+
+    //     const tq2 = cube.quads[2].intersect(out_ray);
+    //     try std.testing.expect(tq2 == null);
+    //     const tq3 = cube.quads[3].intersect(out_ray);
+    //     try std.testing.expect(tq3 == null);
+    //     const tq4 = cube.quads[4].intersect(out_ray);
+    //     try std.testing.expect(tq4 == null);
+    //     const tq5 = cube.quads[5].intersect(out_ray);
+    //     try std.testing.expect(tq5 == null);
+
+    //     const t = cube.intersect(out_ray);
+    //     try std.testing.expect(t == null);    
+    // }
 }

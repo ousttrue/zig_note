@@ -26,5 +26,15 @@
                 "$gcc"
             ]
         },
+        {
+            "label": "test zigla x",
+            "type": "shell",
+            // "command": "zig test pkgs/zigla/src/linear_algebra.zig",
+            // "command": "zig test pkgs/zigla/src/ray_intersection.zig",
+            "command": "zig test pkgs/zigla/src/quad_shape.zig",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
     ]
 }

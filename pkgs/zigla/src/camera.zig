@@ -39,9 +39,9 @@ pub const View = struct {
     }
 
     pub fn getTransformMatrix(self: Self) la.Mat4 {
-        const inverse = self.rotation.inverse();
+        const inverse = self.rotation.inversed();
         const r = la.Mat4.rotate(inverse);
-        const t = la.Mat4.translate(self.shift.inverse());
+        const t = la.Mat4.translate(self.shift.inversed());
         return @"*"(t, r);
     }
 };
@@ -65,10 +65,22 @@ pub const Camera = struct {
             @intToFloat(f32, y),
             @intToFloat(f32, self.projection.width),
             @intToFloat(f32, self.projection.height),
-            inv.mul(self.view.shift.inverse()),
+            inv.apply(self.view.shift.inversed()),
             inv,
             self.projection.fovy,
             self.projection.getAspectRatio(),
         );
     }
 };
+
+test "Camera" {
+    var c = Camera{};
+    c.projection.resize(2, 2);
+
+    const m = c.view.getTransformMatrix();
+    try std.testing.expectEqual(la.Vec4.init(0, 0, 5, 1), m._3);
+
+    const ray = c.getRay(1, 1);
+    try std.testing.expectEqual(la.Vec3.init(0, 0, 5), ray.origin);
+    try std.testing.expectEqual(la.Vec3.init(0, 0, -1), ray.dir);
+}
