@@ -87,17 +87,23 @@ pub const StateReference = struct {
 pub const Shape = struct {
     const Self = @This();
 
+    allocator: std.mem.Allocator,
     quads: []const Quad,
     matrix: *la.Mat4,
     state: StateReference,
 
-    pub fn init(quads: []const Quad, pMatrix: *la.Mat4, state: StateReference) Self {
+    pub fn init(allocator: std.mem.Allocator, quads: []const Quad, pMatrix: *la.Mat4, state: StateReference) Self {
         var self = Self{
-            .quads = quads,
+            .allocator = allocator,
+            .quads = allocator.dupe(Quad, quads) catch @panic("dupe"),
             .matrix = pMatrix,
             .state = state,
         };
         return self;
+    }
+
+    pub fn deinit(self: *Self) void {
+        self.allocator.free(self.quads);
     }
 
     pub fn setPosition(self: *Self, p: la.Vec3) void {
@@ -152,7 +158,7 @@ pub const Shape = struct {
 /// +-+5 6 /
 /// 1 2   /
 /// --------> width
-pub fn createCube(allocator: std.mem.Allocator, width: f32, height: f32, depth: f32) []const Quad {
+pub fn createCube(width: f32, height: f32, depth: f32) [6]Quad {
     const x = width / 2;
     const y = height / 2;
     const z = depth / 2;
@@ -164,15 +170,14 @@ pub fn createCube(allocator: std.mem.Allocator, width: f32, height: f32, depth: 
     const v5 = la.Vec3.init(-x, -y, -z);
     const v6 = la.Vec3.init(x, -y, -z);
     const v7 = la.Vec3.init(x, y, -z);
-    const quads = allocator.dupe(Quad, &.{
+    return .{
         Quad.from_points(v0, v1, v2, v3),
         Quad.from_points(v3, v2, v6, v7),
         Quad.from_points(v7, v6, v5, v4),
         Quad.from_points(v4, v5, v1, v0),
         Quad.from_points(v4, v0, v3, v7),
         Quad.from_points(v1, v5, v6, v2),
-    }) catch @panic("dupe");
-    return quads;
+    };
 }
 
 test "Shape" {
@@ -197,47 +202,6 @@ test "Shape" {
     try std.testing.expectEqual(la.Vec3.init(0, 0, 5), localRay.origin);
     try std.testing.expectEqual(la.Vec3.init(0, 0, -1), localRay.dir);
 
-    // const q0 = Quad.from_points(la.Vec3.init(-1, 2, 3), la.Vec3.init(-1, -2, 3), la.Vec3.init(1, -2, 3), la.Vec3.init(1, 2, 3));
-    // try std.testing.expectEqual(q0, cube.quads[0]);
-    // try std.testing.expectEqual(@as(f32, 2.0), q0.t0.getPlain().intersect(ray).?);
-
-    // try std.testing.expectEqual(@as(f32, 2.0), cube.quads[0].intersect(ray).?);
-
-    {
-        const t = cube.intersect(ray);
-        try std.testing.expectEqual(@as(f32, 2.0), t.?);
-    }
-
-    // {
-    //     const out_ray = Ray{
-    //         .origin = la.Vec3.init(100, 0, 5),
-    //         .dir = la.Vec3.init(0, 0, -1),
-    //     };
-
-    //     const tq0 = cube.quads[0].intersect(out_ray);
-    //     try std.testing.expect(tq0 == null);
-    //     const tq1 = cube.quads[1].intersect(out_ray);
-    //     try std.testing.expect(tq1 == null);
-
-    //     const tri = cube.quads[2].t0;
-    //     _ = tri;
-
-    //     const tq20 = cube.quads[2].t0.intersect(out_ray);
-    //     // std.debug.print("({}) => ({})\n", .{ tq20, tri });
-    //     try std.testing.expect(tq20 == null);
-    //     const tq21 = cube.quads[2].t1.intersect(out_ray);
-    //     try std.testing.expect(tq21 == null);
-
-    //     const tq2 = cube.quads[2].intersect(out_ray);
-    //     try std.testing.expect(tq2 == null);
-    //     const tq3 = cube.quads[3].intersect(out_ray);
-    //     try std.testing.expect(tq3 == null);
-    //     const tq4 = cube.quads[4].intersect(out_ray);
-    //     try std.testing.expect(tq4 == null);
-    //     const tq5 = cube.quads[5].intersect(out_ray);
-    //     try std.testing.expect(tq5 == null);
-
-    //     const t = cube.intersect(out_ray);
-    //     try std.testing.expect(t == null);
-    // }
+    const t = cube.intersect(ray);
+    try std.testing.expectEqual(@as(f32, 2.0), t.?);
 }

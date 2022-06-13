@@ -158,7 +158,7 @@ pub const GizmoVertexBuffer = struct {
         state.setState(quad_shape.ShapeState.NONE);
 
         var shape = &self.shapes[shape_index];
-        shape.* = quad_shape.Shape.init(quads, m, state);
+        shape.* = quad_shape.Shape.init(self.allocator, quads, m, state);
 
         return shape;
     }

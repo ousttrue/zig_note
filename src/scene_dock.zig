@@ -140,8 +140,8 @@ pub const FboDock = struct {
         while (i < 3) : (i += 1) {
             var j: i32 = -2;
             while (j < 3) : (j += 1) {
-                var quads = zigla.quad_shape.createCube(allocator, 0.5, 0.5, 0.5);
-                const shape = self.gizmo.addShape(quads);
+                var quads = zigla.quad_shape.createCube(0.5, 0.5, 0.5);
+                const shape = self.gizmo.addShape(&quads);
                 _ = shape;
                 shape.setPosition(zigla.Vec3.init(
                     @intToFloat(f32, i),
@@ -150,6 +150,13 @@ pub const FboDock = struct {
                 ));
             }
         }
+
+        // XRingShape(inner=inner, outer=outer, depth=depth, color=glm.vec4(1, 0.3, 0.3, 1)): (RingDragContext, {'axis': Axis.X}),
+        // YRingShape(inner=inner, outer=outer, depth=depth, color=glm.vec4(0.3, 1, 0.3, 1)): (RingDragContext, {'axis': Axis.Y}),
+        // ZRingShape(inner=inner, outer=outer, depth=depth, color=glm.vec4(0.3, 0.3, 1, 1)): (RingDragContext, {'axis': Axis.Z}),
+        // XRollShape(inner=inner, outer=outer, depth=depth, color=glm.vec4(1, 0.3, 0.3, 1)): (RollDragContext, {'axis': Axis.X}),
+        // YRollShape(inner=inner, outer=outer, depth=depth, color=glm.vec4(0.3, 1, 0.3, 1)): (RollDragContext, {'axis': Axis.Y}),
+        // ZRollShape(inner=inner, outer=outer, depth=depth, color=glm.vec4(0.3, 0.3, 1, 1)): (RollDragContext, {'axis': Axis.Z}),
 
         return self;
     }
