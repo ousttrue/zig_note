@@ -141,7 +141,7 @@ pub const FboDock = struct {
             var j: i32 = -2;
             while (j < 3) : (j += 1) {
                 const quads = zigla.quad_shape.createCube(0.5, 0.5, 0.5);
-                const shape = self.gizmo.addShape(&quads, zigla.colors.white);
+                const shape = self.gizmo.createShape(&quads, zigla.colors.white);
                 shape.setPosition(zigla.Vec3.init(
                     @intToFloat(f32, i),
                     @intToFloat(f32, j),
@@ -152,12 +152,12 @@ pub const FboDock = struct {
 
         // drag gizmios
         {
-            _ = self.gizmo.addShape(&zigla.quad_shape.createXRing(20, 0.4, 0.6, 0.04), zigla.colors.red);
-            _ = self.gizmo.addShape(&zigla.quad_shape.createYRing(20, 0.4, 0.6, 0.04), zigla.colors.green);
-            _ = self.gizmo.addShape(&zigla.quad_shape.createZRing(20, 0.4, 0.6, 0.04), zigla.colors.blue);
-            _ = self.gizmo.addShape(&zigla.quad_shape.createXRoll(20, 0.6, 0.04), zigla.colors.red);
-            _ = self.gizmo.addShape(&zigla.quad_shape.createYRoll(20, 0.6, 0.04), zigla.colors.green);
-            _ = self.gizmo.addShape(&zigla.quad_shape.createZRoll(20, 0.6, 0.04), zigla.colors.blue);
+            _ = self.gizmo.createShape(&zigla.quad_shape.createXRing(20, 0.4, 0.6, 0.04), zigla.colors.red);
+            _ = self.gizmo.createShape(&zigla.quad_shape.createYRing(20, 0.4, 0.6, 0.04), zigla.colors.green);
+            _ = self.gizmo.createShape(&zigla.quad_shape.createZRing(20, 0.4, 0.6, 0.04), zigla.colors.blue);
+            _ = self.gizmo.createShape(&zigla.quad_shape.createXRoll(20, 0.6, 0.04), zigla.colors.red);
+            _ = self.gizmo.createShape(&zigla.quad_shape.createYRoll(20, 0.6, 0.04), zigla.colors.green);
+            _ = self.gizmo.createShape(&zigla.quad_shape.createZRoll(20, 0.6, 0.04), zigla.colors.blue);
         }
 
         return self;

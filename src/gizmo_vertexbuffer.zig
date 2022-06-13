@@ -138,7 +138,7 @@ pub const GizmoVertexBuffer = struct {
         self.addTriangle(joint, quad.t1, color);
     }
 
-    pub fn addShape(self: *Self, quads: []const quad_shape.Quad, color: zigla.Vec4) *quad_shape.Shape {
+    pub fn createShape(self: *Self, quads: []const quad_shape.Quad, color: zigla.Vec4) *quad_shape.Shape {
         const shape_index = self.shape_count;
         self.shape_count += 1;
         var m = &self.skin[shape_index];
