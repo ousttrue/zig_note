@@ -78,11 +78,14 @@ pub const GizmoVertexBuffer = struct {
     vao: ?glo.Vao = null,
     material: ?Material = null,
 
+    drag_shapes: std.ArrayList(*zigla.Shape),
+
     pub fn new(allocator: std.mem.Allocator) *Self {
         var self = allocator.create(Self) catch @panic("create");
         self.* = Self{
             .allocator = allocator,
             .bone_vertex_map = std.AutoHashMap(u32, std.ArrayList(usize)).init(allocator),
+            .drag_shapes = std.ArrayList(*zigla.Shape).init(allocator),
         };
 
         self.skin[0] = .{};
@@ -91,9 +94,17 @@ pub const GizmoVertexBuffer = struct {
     }
 
     pub fn delete(self: *Self) void {
+        self.drag_shapes.deinit();
         self.material.deinit();
         self.bone_vertex_map.deinit();
         self.allocator.destroy(self);
+    }
+
+    pub fn updateContext(self: *Self, context: *const zigla.quad_shape.DragContext, m: zigla.Mat4) void {
+        _ = context;
+        for(self.drag_shapes.items)|shape|{
+            shape.matrix.* = m;
+        }
     }
 
     pub fn addVertex(self: *Self, joint: u32, position: zigla.Vec3, normal: zigla.Vec3, color: zigla.Vec4) u16 {
@@ -138,7 +149,7 @@ pub const GizmoVertexBuffer = struct {
         self.addTriangle(joint, quad.t1, color);
     }
 
-    pub fn createShape(self: *Self, quads: []const quad_shape.Quad, color: zigla.Vec4) *quad_shape.Shape {
+    pub fn createShape(self: *Self, quads: []const quad_shape.Quad, color: zigla.Vec4, drag: ?*const zigla.quad_shape.DragFactory) *quad_shape.Shape {
         const shape_index = self.shape_count;
         self.shape_count += 1;
         var m = &self.skin[shape_index];
@@ -159,6 +170,12 @@ pub const GizmoVertexBuffer = struct {
 
         var shape = &self.shapes[shape_index];
         shape.* = quad_shape.Shape.init(self.allocator, quads, m, state);
+
+        if(drag)|drag_factory|
+        {
+            shape.drag_factory = drag_factory;
+            self.drag_shapes.append(shape) catch @panic("append");
+        }
 
         return shape;
     }

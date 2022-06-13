@@ -43,10 +43,7 @@ pub const GizmoDragHandler = struct {
         if (self.context) |*context| {
             std.log.debug("drag", .{});
             const m = context.drag(mouse_input.x, mouse_input.y);
-            _ = m;
-            // update manipulator
-            // for drag_shape in self.drag_shapes.keys():
-            //     drag_shape.matrix.set(m)
+            self.gizmo.updateContext(context, m);
         }
     }
 
