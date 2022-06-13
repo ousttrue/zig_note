@@ -21,14 +21,14 @@ pub fn getArcballVector(mouse_input: MouseInput) zigla.Vec3 {
 pub const ArcBall = struct {
     const Self = @This();
 
-    view: *zigla.camera.View,
-    projection: *zigla.camera.Projection,
+    view: *zigla.camera_types.View,
+    projection: *zigla.camera_types.Projection,
     rotation: zigla.Quaternion,
     tmp_rotation: zigla.Quaternion,
     last: ?MouseInput = null,
     va: ?zigla.Vec3 = null,
 
-    pub fn init(view: *zigla.camera.View, projection: *zigla.camera.Projection) Self {
+    pub fn init(view: *zigla.camera_types.View, projection: *zigla.camera_types.Projection) Self {
         return .{
             .rotation = .{},
             .tmp_rotation = .{},
@@ -76,11 +76,11 @@ pub const ArcBall = struct {
 pub const TurnTable = struct {
     const Self = @This();
 
-    view: *zigla.camera.View,
+    view: *zigla.camera_types.View,
     yaw: f32 = 0.0,
     pitch: f32 = 0.0,
 
-    pub fn init(view: *zigla.camera.View) Self {
+    pub fn init(view: *zigla.camera_types.View) Self {
         var self = Self{
             .view = view,
         };
@@ -109,10 +109,10 @@ pub const TurnTable = struct {
 pub const ScreenShift = struct {
     const Self = @This();
 
-    view: *zigla.camera.View,
-    projection: *zigla.camera.Projection,
+    view: *zigla.camera_types.View,
+    projection: *zigla.camera_types.Projection,
 
-    pub fn init(view: *zigla.camera.View, projection: *zigla.camera.Projection) Self {
+    pub fn init(view: *zigla.camera_types.View, projection: *zigla.camera_types.Projection) Self {
         return .{
             .view = view,
             .projection = projection,

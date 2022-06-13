@@ -52,7 +52,7 @@ pub const MouseHandler = struct {
         self.allocator = allocator;
         self.camera = camera;
         self.mouse_event = mouse_event;
-        self.left_button_handler = gizmo_mouse_handler.GizmoDragHandler.init(gizmo);
+        self.left_button_handler = gizmo_mouse_handler.GizmoDragHandler.init(gizmo, camera);
         self.right_button_handler = screen.ArcBall.init(&self.camera.view, &self.camera.projection);
         self.middle_button_handler = screen.ScreenShift.init(&self.camera.view, &self.camera.projection);
         self.nvg = NanoVgRenderer.init(allocator, null, null);
@@ -152,7 +152,10 @@ pub const FboDock = struct {
 
         // drag gizmios
         {
-            _ = self.gizmo.createShape(&zigla.quad_shape.createXRing(20, 0.4, 0.6, 0.04), zigla.colors.red);
+            var shape = self.gizmo.createShape(&zigla.quad_shape.createXRing(20, 0.4, 0.6, 0.04), zigla.colors.red);
+            shape.drag_factory = &zigla.quad_shape.createRingDragContext;
+        }
+        {
             _ = self.gizmo.createShape(&zigla.quad_shape.createYRing(20, 0.4, 0.6, 0.04), zigla.colors.green);
             _ = self.gizmo.createShape(&zigla.quad_shape.createZRing(20, 0.4, 0.6, 0.04), zigla.colors.blue);
             _ = self.gizmo.createShape(&zigla.quad_shape.createXRoll(20, 0.6, 0.04), zigla.colors.red);

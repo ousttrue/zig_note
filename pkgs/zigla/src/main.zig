@@ -1,7 +1,7 @@
 const la = @import("./linear_algebra.zig");
 pub const ray_intersection = @import("./ray_intersection.zig");
 pub const quad_shape = @import("./quad_shape.zig");
-pub const camera = @import("./camera.zig");
+pub const camera_types = @import("./camera_types.zig");
 pub const colors = @import("./colors.zig");
 
 pub const @"*" = la.@"*";
@@ -13,6 +13,7 @@ pub const Vec4 = la.Vec4;
 pub const Quaternion = la.Quaternion;
 pub const Mat3 = la.Mat3;
 pub const Mat4 = la.Mat4;
-pub const Camera = camera.Camera;
+pub const Camera = camera_types.Camera;
 pub const Ray = ray_intersection.Ray;
 pub const Shape = quad_shape.Shape;
+pub const DragContext = quad_shape.DragContext;
