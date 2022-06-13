@@ -7,6 +7,7 @@ const Ray = ray_intersection.Ray;
 const Triangle = ray_intersection.Triangle;
 const @"+" = la.@"+";
 const @"*" = la.@"*";
+const @"-" = la.@"-";
 
 pub const Quad = struct {
     const Self = @This();
@@ -151,74 +152,86 @@ pub const Shape = struct {
     }
 };
 
+pub const ScreenLine = struct {
+    const Self = @This();
+
+    start: la.Vec2,
+    dir: la.Vec2,
+
+    pub fn init(start: la.Vec2, dir: la.Vec2) Self {
+        return .{
+            .start = start,
+            .dir = dir.normalized(),
+        };
+    }
+
+    pub fn beginEnd(start: la.Vec2, end: la.Vec2, w: f32, h: f32) Self {
+        return Self.init(start, @"-"(end, start), w, h);
+    }
+
+    pub fn drag(self: *Self, v: la.Vec2) f32 {
+        return @"-"(v, self.start).dot(self.dir);
+    }
+};
+
 pub const DragContext = struct {
     const Self = @This();
 
-    pub fn deinit(self: *Self) void {
-        _ = self;
+    line: ScreenLine,
+    init_matrix: la.Mat4,
+    axis: la.Vec3,
+
+    pub fn init(line: ScreenLine, init_matrix: la.Mat4, axis: la.Vec3) Self {
+        return .{
+            .line = line,
+            .init_matrix = init_matrix,
+            .axis = axis,
+        };
     }
 
-    pub fn drag(self: *Self, mouse_x: i32, mouse_y: i32) la.Mat4 {
-        _ = self;
-        _ = mouse_x;
-        _ = mouse_y;
-        return .{};
+    pub fn drag(self: *Self, cursor_pos: la.Vec2) la.Mat4 {
+        const d = self.line.drag(cursor_pos);
+        const angle = d * 0.02;
+        const delta = la.Mat3.angleAxis(angle, self.axis);
+        return @"*"(self.init_matrix, la.Mat4.mat3(delta));
     }
 };
 
 pub const DragFactory = fn (cursor_pos: la.Vec2, manipulator: *Shape, target: *Shape, camera: *camera_types.Camera) DragContext;
 
+const identity = la.Mat3{};
+
 /// 円盤面のドラッグ
-pub fn createRingDragContext(start_screen_pos: la.Vec2, manipulator: *Shape, target: *Shape, camera: *camera_types.Camera) DragContext {
-    _ = start_screen_pos;
-    _ = manipulator;
-    _ = target;
-    _ = camera;
-    // def __init__():
-    //     super().__init__(start_screen_pos, manipulator=manipulator, target=target)
-    //     self.axis = axis
+pub fn DragFractoryFactory(comptime axis_index: usize) type {
+    return struct {
+        pub fn createRingDragContext(start_screen_pos: la.Vec2, manipulator: *Shape, target: *Shape, camera: *camera_types.Camera) DragContext {
+            const vp = camera.getViewProjectionMatrix();
+            const center_pos = @"*"(target.matrix.*, vp).apply(la.Vec4.init(0, 0, 0, 1));
+            const cx = center_pos.x / center_pos.w;
+            const cy = center_pos.y / center_pos.w;
+            const center_screen_pos = la.Vec2.init(
+                (cx * 0.5 + 0.5) * @intToFloat(f32, camera.projection.width),
+                -(cy - 1) * 0.5 * @intToFloat(f32, camera.projection.height),
+            );
 
-    //     vp = camera.projection.matrix * camera.view.matrix
-    //     center_pos = vp * target.matrix.value * glm.vec4(0, 0, 0, 1)
-    //     cx = center_pos.x / center_pos.w
-    //     cy = center_pos.y / center_pos.w
-    //     center_screen_pos = glm.vec2(
-    //         (cx * 0.5 + 0.5)*camera.projection.width,
-    //         -(cy - 1)*0.5*camera.projection.height
-    //     )
+            //     def draw_center_start(vg):
+            //         from pydear.utils.nanovg_renderer import nvg_line_from_to
+            //         nvg_line_from_to(vg, center_screen_pos.x, center_screen_pos.y,
+            //                          self.start_screen_pos.x, self.start_screen_pos.y)
+            //     # self.line = ScreenLine(start_screen_pos, self.center_screen_pos)
 
-    //     def draw_center_start(vg):
-    //         from pydear.utils.nanovg_renderer import nvg_line_from_to
-    //         nvg_line_from_to(vg, center_screen_pos.x, center_screen_pos.y,
-    //                          self.start_screen_pos.x, self.start_screen_pos.y)
-    //     # self.line = ScreenLine(start_screen_pos, self.center_screen_pos)
+            //     # l = ScreenLine(self.start_screen_pos, self.center_screen_pos)
+            //     # self.left = l.point_from_x(0)
+            //     # self.right = l.point_from_x(camera.projection.width)
 
-    //     # l = ScreenLine(self.start_screen_pos, self.center_screen_pos)
-    //     # self.left = l.point_from_x(0)
-    //     # self.right = l.point_from_x(camera.projection.width)
+            const view_axis = @"*"(manipulator.matrix.*, camera.view.getViewMatrix()).getRow(axis_index).toVec3();
+            const center_start = @"-"(la.Vec3.vec2(start_screen_pos, 0), la.Vec3.vec2(center_screen_pos, 0));
+            const cross = center_start.cross(view_axis).normalized();
+            const n = cross.toVec2().normalized();
 
-    //     view_axis = (camera.view.matrix *
-    //                  manipulator.matrix.value)[axis.value].xyz
-    //     center_start = glm.vec3(self.start_screen_pos, 0) - \
-    //         glm.vec3(center_screen_pos, 0)
-    //     cross = glm.normalize(glm.cross(center_start, view_axis))
-    //     # assert cross.x != 0 or cross.y != 0
-    //     # self.edge = False
-    //     n = glm.normalize(cross.xy)
-    //     from .screen_slider import ScreenSlider
-    //     self.line = ScreenSlider(self.start_screen_pos, n,
-    //                              camera.projection.width, camera.projection.height,
-    //                              debug_draw=[draw_center_start])
-
-    // def drag(self, cursor_pos: glm.vec2):
-    //     d = self.line.drag(cursor_pos)
-
-    //     angle = d * 0.02
-    //     m = self.init_matrix * glm.rotate(angle, IDENTITY[self.axis.value].xyz)
-    //     self.target.matrix.set(m)
-    //     return m
-
-    return .{};
+            return DragContext.init(ScreenLine.init(start_screen_pos, n), manipulator.matrix.*, identity.getRow(axis_index));
+        }
+    };
 }
 
 /// height

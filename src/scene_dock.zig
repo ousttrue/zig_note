@@ -152,7 +152,7 @@ pub const FboDock = struct {
 
         // drag gizmios
         {
-            _ = self.gizmo.createShape(&zigla.quad_shape.createXRing(20, 0.4, 0.6, 0.04), zigla.colors.red, &zigla.quad_shape.createRingDragContext);
+            _ = self.gizmo.createShape(&zigla.quad_shape.createXRing(20, 0.4, 0.6, 0.04), zigla.colors.red, &zigla.quad_shape.DragFractoryFactory(0).createRingDragContext);
         }
         {
             // _ = self.gizmo.createShape(&zigla.quad_shape.createYRing(20, 0.4, 0.6, 0.04), zigla.colors.green);

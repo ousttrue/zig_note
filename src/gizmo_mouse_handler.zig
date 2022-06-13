@@ -42,15 +42,17 @@ pub const GizmoDragHandler = struct {
 
         if (self.context) |*context| {
             std.log.debug("drag", .{});
-            const m = context.drag(mouse_input.x, mouse_input.y);
+            const m = context.drag(zigla.Vec2.init(@intToFloat(f32, mouse_input.x), @intToFloat(f32, mouse_input.y)));
+            if (self.selected) |selected| {
+                selected.matrix.* = m;
+            }
             self.gizmo.updateContext(context, m);
         }
     }
 
     pub fn end(self: *Self, _: screen.MouseInput) void {
-        if (self.context) |*context| {
+        if (self.context) |_| {
             std.log.debug("end", .{});
-            context.deinit();
             self.context = null;
         }
     }

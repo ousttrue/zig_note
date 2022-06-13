@@ -49,6 +49,17 @@ pub const Vec2 = struct {
     pub fn sub(self: Self, rhs: Self) Vec2 {
         return .{ .x = self.x - rhs.x, .y = self.y - rhs.y };
     }
+    pub fn normalize(self: *Self) void {
+        const sqnorm = self.dot(self.*);
+        const factor = 1.0 / std.math.sqrt(sqnorm);
+        self.x *= factor;
+        self.y *= factor;
+    }
+    pub fn normalized(self: Self) Self {
+        var copy = self;
+        copy.normalize();
+        return copy;
+    }
 };
 
 pub const Vec3 = struct {
@@ -62,8 +73,14 @@ pub const Vec3 = struct {
     pub fn scalar(n: f32) Self {
         return .{ .x = n, .y = n, .z = n };
     }
+    pub fn vec2(v: Vec2, z: f32) Vec3 {
+        return .{ .x = v.x, .y = v.y, .z = z };
+    }
     pub fn array(self: *Self) [3]f32 {
         return (@ptrCast([*]f32, &self.x))[0..3].*;
+    }
+    pub fn toVec2(self: Self) Vec2 {
+        return .{ .x = self.x, .y = self.y };
     }
     pub fn const_array(self: *const Self) [3]f32 {
         return (@ptrCast([*]const f32, &self.x))[0..3].*;
@@ -244,6 +261,15 @@ pub const Mat3 = struct {
         );
     }
 
+    pub fn getRow(self: Self, comptime row: usize) Vec3 {
+        return switch (row) {
+            0 => self._0,
+            1 => self._1,
+            2 => self._2,
+            else => unreachable,
+        };
+    }
+
     /// http://www.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/tech0052.html
     pub fn toQuaternion(self: Self) Quaternion {
         var q0 = (self._0.x + self._1.y + self._2.z + 1.0) / 4.0;
@@ -378,6 +404,16 @@ pub const Mat4 = struct {
             ._1 = _1,
             ._2 = _2,
             ._3 = _3,
+        };
+    }
+
+    pub fn getRow(self: Self, comptime row: usize) Vec4 {
+        return switch (row) {
+            0 => self._0,
+            1 => self._1,
+            2 => self._2,
+            3 => self._3,
+            else => unreachable,
         };
     }
 
