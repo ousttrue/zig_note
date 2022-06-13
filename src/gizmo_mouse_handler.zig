@@ -18,9 +18,7 @@ pub const GizmoDragHandler = struct {
         };
     }
 
-    pub fn begin(self: *Self, mouse_input: screen.MouseInput) void {
-        _ = mouse_input;
-
+    pub fn begin(self: *Self, _: screen.MouseInput) void {
         const hit = self.gizmo.hit;
         if (hit.shape) |shape| {
             if (self.selected) |selected| {
@@ -35,11 +33,7 @@ pub const GizmoDragHandler = struct {
         self.select(self.gizmo.hit.shape);
     }
 
-    pub fn drag(self: *Self, mouse_input: screen.MouseInput, dx: i32, dy: i32) void {
-        _ = mouse_input;
-        _ = dx;
-        _ = dy;
-
+    pub fn drag(self: *Self, mouse_input: screen.MouseInput, _: i32, _: i32) void {
         if (self.context) |*context| {
             std.log.debug("drag", .{});
             const m = context.drag(zigla.Vec2.init(@intToFloat(f32, mouse_input.x), @intToFloat(f32, mouse_input.y)));
