@@ -2,6 +2,7 @@ const la = @import("./linear_algebra.zig");
 pub const ray_intersection = @import("./ray_intersection.zig");
 pub const quad_shape = @import("./quad_shape.zig");
 pub const camera = @import("./camera.zig");
+pub const colors = @import("./colors.zig");
 
 pub const @"*" = la.@"*";
 pub const @"+" = la.@"+";

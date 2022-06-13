@@ -135,14 +135,13 @@ pub const FboDock = struct {
         };
         self.mouse_handler = MouseHandler.new(allocator, camera, self.gizmo);
 
-        // gizmo shapes
+        // select gizmos
         var i: i32 = -2;
         while (i < 3) : (i += 1) {
             var j: i32 = -2;
             while (j < 3) : (j += 1) {
-                var quads = zigla.quad_shape.createCube(0.5, 0.5, 0.5);
-                const shape = self.gizmo.addShape(&quads);
-                _ = shape;
+                const quads = zigla.quad_shape.createCube(0.5, 0.5, 0.5);
+                const shape = self.gizmo.addShape(&quads, zigla.colors.white);
                 shape.setPosition(zigla.Vec3.init(
                     @intToFloat(f32, i),
                     @intToFloat(f32, j),
@@ -151,12 +150,15 @@ pub const FboDock = struct {
             }
         }
 
-        // XRingShape(inner=inner, outer=outer, depth=depth, color=glm.vec4(1, 0.3, 0.3, 1)): (RingDragContext, {'axis': Axis.X}),
-        // YRingShape(inner=inner, outer=outer, depth=depth, color=glm.vec4(0.3, 1, 0.3, 1)): (RingDragContext, {'axis': Axis.Y}),
-        // ZRingShape(inner=inner, outer=outer, depth=depth, color=glm.vec4(0.3, 0.3, 1, 1)): (RingDragContext, {'axis': Axis.Z}),
-        // XRollShape(inner=inner, outer=outer, depth=depth, color=glm.vec4(1, 0.3, 0.3, 1)): (RollDragContext, {'axis': Axis.X}),
-        // YRollShape(inner=inner, outer=outer, depth=depth, color=glm.vec4(0.3, 1, 0.3, 1)): (RollDragContext, {'axis': Axis.Y}),
-        // ZRollShape(inner=inner, outer=outer, depth=depth, color=glm.vec4(0.3, 0.3, 1, 1)): (RollDragContext, {'axis': Axis.Z}),
+        // drag gizmios
+        {
+            _ = self.gizmo.addShape(&zigla.quad_shape.createXRing(20, 0.4, 0.6, 0.04), zigla.colors.red);
+            _ = self.gizmo.addShape(&zigla.quad_shape.createYRing(20, 0.4, 0.6, 0.04), zigla.colors.green);
+            _ = self.gizmo.addShape(&zigla.quad_shape.createZRing(20, 0.4, 0.6, 0.04), zigla.colors.blue);
+            _ = self.gizmo.addShape(&zigla.quad_shape.createXRoll(20, 0.6, 0.04), zigla.colors.red);
+            _ = self.gizmo.addShape(&zigla.quad_shape.createYRoll(20, 0.6, 0.04), zigla.colors.green);
+            _ = self.gizmo.addShape(&zigla.quad_shape.createZRoll(20, 0.6, 0.04), zigla.colors.blue);
+        }
 
         return self;
     }

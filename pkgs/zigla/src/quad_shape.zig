@@ -180,6 +180,84 @@ pub fn createCube(width: f32, height: f32, depth: f32) [6]Quad {
     };
 }
 
+pub fn createRing(comptime sections: usize, axis: la.Vec3, start: la.Vec3, inner: f32, outer: f32, depth: f32) [sections * 2]Quad {
+    const delta = std.math.pi * 2.0 / @as(f32, sections);
+    var vertices: [sections]la.Vec3 = undefined;
+    for (vertices) |*v, i| {
+        v.* = la.Quaternion.angleAxis(@intToFloat(f32, i) * delta, axis).rotate(start);
+    }
+
+    var quads: [sections * 2]Quad = undefined;
+    const d = axis.mul(depth * 0.5);
+    for (vertices) |v, i| {
+        const vv = vertices[(i + 1) % sections];
+        const v0 = @"+"(d, v.mul(inner));
+        const v1 = @"+"(d, v.mul(outer));
+        const v2 = @"+"(d, vv.mul(outer));
+        const v3 = @"+"(d, vv.mul(inner));
+        const v4 = @"+"(d.inversed(), v.mul(inner));
+        const v5 = @"+"(d.inversed(), v.mul(outer));
+        const v6 = @"+"(d.inversed(), vv.mul(outer));
+        const v7 = @"+"(d.inversed(), vv.mul(inner));
+        //         v7 v6
+        // v3 v2 v4 v5
+        // v0 v1
+        quads[i * 2] = Quad.from_points(v0, v1, v2, v3);
+        quads[i * 2 + 1] = Quad.from_points(v7, v6, v5, v4);
+    }
+
+    return quads;
+}
+
+pub fn createXRing(comptime sections: usize, inner: f32, outer: f32, depth: f32) [sections * 2]Quad {
+    return createRing(sections, la.Vec3.init(1, 0, 0), la.Vec3.init(0, 1, 0), inner, outer, depth);
+}
+
+pub fn createYRing(comptime sections: usize, inner: f32, outer: f32, depth: f32) [sections * 2]Quad {
+    return createRing(sections, la.Vec3.init(0, 1, 0), la.Vec3.init(0, 0, 1), inner, outer, depth);
+}
+
+pub fn createZRing(comptime sections: usize, inner: f32, outer: f32, depth: f32) [sections * 2]Quad {
+    return createRing(sections, la.Vec3.init(0, 0, 1), la.Vec3.init(1, 0, 0), inner, outer, depth);
+}
+
+pub fn createRoll(comptime sections: usize, axis: la.Vec3, start: la.Vec3, outer: f32, depth: f32) [sections]Quad {
+    const delta = std.math.pi * 2.0 / @as(f32, sections);
+    var vertices: [sections]la.Vec3 = undefined;
+    for (vertices) |*v, i| {
+        v.* = la.Quaternion.angleAxis(@intToFloat(f32, i) * delta, axis).rotate(start);
+    }
+
+    var quads: [sections]Quad = undefined;
+    const d = axis.mul(depth * 0.5);
+    for (vertices) |v, i| {
+        const vv = vertices[(i + 1) % sections];
+        // const v0 = @"+"(d, v.mul(inner));
+        const v1 = @"+"(d, v.mul(outer));
+        const v2 = @"+"(d, vv.mul(outer));
+        // const v3 = @"+"(d, vv.mul(inner));
+        // const v4 = @"+"(d.inversed(), v.mul(inner));
+        const v5 = @"+"(d.inversed(), v.mul(outer));
+        const v6 = @"+"(d.inversed(), vv.mul(outer));
+        // const v7 = @"+"(d.inversed(), vv.mul(inner));
+        //         v7 v6
+        // v3 v2 v4 v5
+        // v0 v1
+        quads[i] = Quad.from_points(v1, v5, v6, v2);
+    }
+    return quads;
+}
+
+pub fn createXRoll(comptime sections: usize, outer: f32, depth: f32) [sections]Quad {
+    return createRoll(sections, la.Vec3.init(1, 0, 0), la.Vec3.init(0, 1, 0), outer, depth);
+}
+pub fn createYRoll(comptime sections: usize, outer: f32, depth: f32) [sections]Quad {
+    return createRoll(sections, la.Vec3.init(0, 1, 0), la.Vec3.init(0, 0, 1), outer, depth);
+}
+pub fn createZRoll(comptime sections: usize, outer: f32, depth: f32) [sections]Quad {
+    return createRoll(sections, la.Vec3.init(0, 0, 1), la.Vec3.init(1, 0, 0), outer, depth);
+}
+
 test "Shape" {
     const allocator = std.testing.allocator;
     const quads = createCube(allocator, 2, 4, 6);

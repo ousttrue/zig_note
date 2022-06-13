@@ -10,7 +10,7 @@ const @"-" = zigla.@"-";
 const VS = @embedFile("gizmo.vs");
 const FS = @embedFile("gizmo.fs");
 
-const white = zigla.Vec4.init(1, 1, 1, 1);
+// const white = zigla.Vec4.init(1, 1, 1, 1);
 
 pub const Vertex = struct {
     position: zigla.Vec3,
@@ -138,7 +138,7 @@ pub const GizmoVertexBuffer = struct {
         self.addTriangle(joint, quad.t1, color);
     }
 
-    pub fn addShape(self: *Self, quads: []const quad_shape.Quad) *quad_shape.Shape {
+    pub fn addShape(self: *Self, quads: []const quad_shape.Quad, color: zigla.Vec4) *quad_shape.Shape {
         const shape_index = self.shape_count;
         self.shape_count += 1;
         var m = &self.skin[shape_index];
@@ -146,7 +146,7 @@ pub const GizmoVertexBuffer = struct {
 
         const start = self.vertex_count;
         for (quads) |quad| {
-            self.addQuad(shape_index, quad, white);
+            self.addQuad(shape_index, quad, color);
         }
         const end = self.vertex_count;
 
