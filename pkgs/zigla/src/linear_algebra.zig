@@ -43,6 +43,9 @@ pub const Vec2 = struct {
     pub fn init(x: f32, y: f32) Self {
         return .{ .x = x, .y = y };
     }
+    pub fn inversed(self: Self) Self {
+        return .{ .x = -self.x, .y = -self.y };
+    }
     pub fn dot(self: Self, rhs: Self) f32 {
         return self.x * rhs.x + self.y * rhs.y;
     }

@@ -211,13 +211,16 @@ pub fn RingDragFactory(comptime axis_index: usize) type {
             const cy = center_pos.y / center_pos.w;
             const center_screen_pos = la.Vec2.init(
                 (cx * 0.5 + 0.5) * @intToFloat(f32, camera.projection.width),
-                -(cy - 1) * 0.5 * @intToFloat(f32, camera.projection.height),
+                (cy * 0.5 + 0.5) * @intToFloat(f32, camera.projection.height),
             );
+            const screen_dir = @"-"(start_screen_pos, center_screen_pos);
+            var n = la.Vec2.init(-screen_dir.y, screen_dir.x);
+            n.normalize();
 
             const view_axis = @"*"(init_matrix, camera.view.getViewMatrix()).getRow(axis_index).toVec3();
-            const center_start = @"-"(la.Vec3.vec2(start_screen_pos, 0), la.Vec3.vec2(center_screen_pos, 0));
-            const cross = center_start.cross(view_axis).normalized();
-            const n = cross.toVec2().normalized();
+            if (view_axis.dot(la.Vec3.init(0, 0, 1)) < 0) {
+                n = n.inversed();
+            }
 
             return DragContext.init(ScreenLine.init(start_screen_pos, n), init_matrix, identity.getRow(axis_index));
         }
