@@ -272,10 +272,20 @@ pub const Mat3 = struct {
 
     /// http://www.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/tech0052.html
     pub fn toQuaternion(self: Self) Quaternion {
-        var q0 = (self._0.x + self._1.y + self._2.z + 1.0) / 4.0;
-        var q1 = (self._0.x - self._1.y - self._2.z + 1.0) / 4.0;
-        var q2 = (-self._0.x + self._1.y - self._2.z + 1.0) / 4.0;
-        var q3 = (-self._0.x - self._1.y + self._2.z + 1.0) / 4.0;
+        const _00 = self._0.x;
+        const _01 = self._0.y;
+        const _02 = self._0.z;
+        const _10 = self._1.x;
+        const _11 = self._1.y;
+        const _12 = self._1.z;
+        const _20 = self._2.x;
+        const _21 = self._2.y;
+        const _22 = self._2.z;
+
+        var q0 = (_00 + _11 + _22 + 1.0) / 4.0;
+        var q1 = (_00 - _11 - _22 + 1.0) / 4.0;
+        var q2 = (-_00 + _11 - _22 + 1.0) / 4.0;
+        var q3 = (-_00 - _11 + _22 + 1.0) / 4.0;
         if (q0 < 0.0) q0 = 0.0;
         if (q1 < 0.0) q1 = 0.0;
         if (q2 < 0.0) q2 = 0.0;
@@ -286,23 +296,23 @@ pub const Mat3 = struct {
         q3 = std.math.sqrt(q3);
         if (q0 >= q1 and q0 >= q2 and q0 >= q3) {
             // q0 *= 1.0;
-            q1 *= sign(self._2.y - self._1.z);
-            q2 *= sign(self._0.z - self._2.x);
-            q3 *= sign(self._1.x - self._0.y);
+            q1 *= sign(_12 - _21);
+            q2 *= sign(_20 - _02);
+            q3 *= sign(_01 - _10);
         } else if (q1 >= q0 and q1 >= q2 and q1 >= q3) {
-            q0 *= sign(self._2.y - self._1.z);
+            q0 *= sign(_12 - _21);
             // q1 *= 1.0;
-            q2 *= sign(self._1.x + self._0.y);
-            q3 *= sign(self._0.z + self._2.x);
+            q2 *= sign(_01 + _10);
+            q3 *= sign(_20 + _02);
         } else if (q2 >= q0 and q2 >= q1 and q2 >= q3) {
-            q0 *= sign(self._0.z - self._2.x);
-            q1 *= sign(self._1.x + self._0.y);
+            q0 *= sign(_20 - _02);
+            q1 *= sign(_01 + _10);
             // q2 *= 1.0;
-            q3 *= sign(self._2.y + self._1.z);
+            q3 *= sign(_12 + _21);
         } else if (q3 >= q0 and q3 >= q1 and q3 >= q2) {
-            q0 *= sign(self._1.x - self._0.y);
-            q1 *= sign(self._2.x + self._0.z);
-            q2 *= sign(self._2.y + self._1.z);
+            q0 *= sign(_01 - _10);
+            q1 *= sign(_02 + _20);
+            q2 *= sign(_12 + _21);
             q3 *= 1.0;
         } else {
             unreachable;
