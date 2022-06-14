@@ -193,7 +193,7 @@ pub const DragContext = struct {
         const d = self.line.drag(cursor_pos);
         const angle = d * 0.02;
         const delta = la.Mat3.angleAxis(angle, self.axis);
-        return @"*"(self.init_matrix, la.Mat4.mat3(delta));
+        return @"*"(la.Mat4.mat3(delta), self.init_matrix);
     }
 };
 
@@ -213,16 +213,6 @@ pub fn DragFractoryFactory(comptime axis_index: usize) type {
                 (cx * 0.5 + 0.5) * @intToFloat(f32, camera.projection.width),
                 -(cy - 1) * 0.5 * @intToFloat(f32, camera.projection.height),
             );
-
-            //     def draw_center_start(vg):
-            //         from pydear.utils.nanovg_renderer import nvg_line_from_to
-            //         nvg_line_from_to(vg, center_screen_pos.x, center_screen_pos.y,
-            //                          self.start_screen_pos.x, self.start_screen_pos.y)
-            //     # self.line = ScreenLine(start_screen_pos, self.center_screen_pos)
-
-            //     # l = ScreenLine(self.start_screen_pos, self.center_screen_pos)
-            //     # self.left = l.point_from_x(0)
-            //     # self.right = l.point_from_x(camera.projection.width)
 
             const view_axis = @"*"(manipulator.matrix.*, camera.view.getViewMatrix()).getRow(axis_index).toVec3();
             const center_start = @"-"(la.Vec3.vec2(start_screen_pos, 0), la.Vec3.vec2(center_screen_pos, 0));

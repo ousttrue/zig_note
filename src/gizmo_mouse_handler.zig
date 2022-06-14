@@ -23,7 +23,6 @@ pub const GizmoDragHandler = struct {
         if (hit.shape) |shape| {
             if (self.selected) |selected| {
                 if (shape.drag_factory) |factory| {
-                    std.log.debug("begin", .{});
                     self.context = factory.*(hit.cursor_pos, shape, selected, self.camera);
                     return;
                 }
@@ -35,18 +34,16 @@ pub const GizmoDragHandler = struct {
 
     pub fn drag(self: *Self, mouse_input: screen.MouseInput, _: i32, _: i32) void {
         if (self.context) |*context| {
-            std.log.debug("drag", .{});
             const m = context.drag(zigla.Vec2.init(@intToFloat(f32, mouse_input.x), @intToFloat(f32, mouse_input.y)));
             if (self.selected) |selected| {
                 selected.matrix.* = m;
             }
-            self.gizmo.updateContext(context, m);
+            self.gizmo.updateDraggable(m);
         }
     }
 
     pub fn end(self: *Self, _: screen.MouseInput) void {
         if (self.context) |_| {
-            std.log.debug("end", .{});
             self.context = null;
         }
     }
@@ -55,7 +52,6 @@ pub const GizmoDragHandler = struct {
         if (shape == self.selected) {
             return;
         }
-        std.log.debug("select", .{});
         // clear
         if (self.selected) |selected| {
             selected.state.removeState(zigla.quad_shape.ShapeState.SELECT);
@@ -64,6 +60,9 @@ pub const GizmoDragHandler = struct {
         self.selected = shape;
         if (self.selected) |selected| {
             selected.state.addState(zigla.quad_shape.ShapeState.SELECT);
+            self.gizmo.updateDraggable(selected.matrix.*);
+        } else {
+            self.gizmo.hideDraggable();
         }
     }
 };

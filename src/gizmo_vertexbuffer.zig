@@ -100,10 +100,16 @@ pub const GizmoVertexBuffer = struct {
         self.allocator.destroy(self);
     }
 
-    pub fn updateContext(self: *Self, context: *const zigla.quad_shape.DragContext, m: zigla.Mat4) void {
-        _ = context;
-        for(self.drag_shapes.items)|shape|{
+    pub fn hideDraggable(self: *Self) void {
+        for (self.drag_shapes.items) |shape| {
+            shape.state.addState(zigla.quad_shape.ShapeState.HIDE);
+        }
+    }
+
+    pub fn updateDraggable(self: *Self, m: zigla.Mat4) void {
+        for (self.drag_shapes.items) |shape| {
             shape.matrix.* = m;
+            shape.state.removeState(zigla.quad_shape.ShapeState.HIDE);
         }
     }
 
@@ -171,8 +177,7 @@ pub const GizmoVertexBuffer = struct {
         var shape = &self.shapes[shape_index];
         shape.* = quad_shape.Shape.init(self.allocator, quads, m, state);
 
-        if(drag)|drag_factory|
-        {
+        if (drag) |drag_factory| {
             shape.drag_factory = drag_factory;
             self.drag_shapes.append(shape) catch @panic("append");
         }
