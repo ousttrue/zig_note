@@ -9,10 +9,10 @@ pub const Projection = struct {
     fovy: f32 = std.math.pi * (60.0 / 180.0),
     near: f32 = 0.1,
     far: f32 = 100.0,
-    width: u32 = 1,
-    height: u32 = 1,
+    width: i32 = 1,
+    height: i32 = 1,
 
-    pub fn resize(self: *Self, width: u32, height: u32) void {
+    pub fn resize(self: *Self, width: i32, height: i32) void {
         self.width = width;
         self.height = height;
     }

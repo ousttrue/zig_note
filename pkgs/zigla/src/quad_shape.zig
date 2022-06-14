@@ -197,16 +197,16 @@ pub const DragContext = struct {
     }
 };
 
-pub const DragFactory = fn (cursor_pos: la.Vec2, manipulator: *Shape, target: *Shape, camera: *camera_types.Camera) DragContext;
+pub const DragFactory = fn (cursor_pos: la.Vec2, init_matrix: la.Mat4, camera: *camera_types.Camera) DragContext;
 
 const identity = la.Mat3{};
 
 /// 円盤面のドラッグ
 pub fn RingDragFactory(comptime axis_index: usize) type {
     return struct {
-        pub fn createRingDragContext(start_screen_pos: la.Vec2, manipulator: *Shape, target: *Shape, camera: *camera_types.Camera) DragContext {
+        pub fn createRingDragContext(start_screen_pos: la.Vec2, init_matrix: la.Mat4, camera: *camera_types.Camera) DragContext {
             const vp = camera.getViewProjectionMatrix();
-            const center_pos = @"*"(target.matrix.*, vp).apply(la.Vec4.init(0, 0, 0, 1));
+            const center_pos = @"*"(init_matrix, vp).apply(la.Vec4.init(0, 0, 0, 1));
             const cx = center_pos.x / center_pos.w;
             const cy = center_pos.y / center_pos.w;
             const center_screen_pos = la.Vec2.init(
@@ -214,12 +214,12 @@ pub fn RingDragFactory(comptime axis_index: usize) type {
                 -(cy - 1) * 0.5 * @intToFloat(f32, camera.projection.height),
             );
 
-            const view_axis = @"*"(manipulator.matrix.*, camera.view.getViewMatrix()).getRow(axis_index).toVec3();
+            const view_axis = @"*"(init_matrix, camera.view.getViewMatrix()).getRow(axis_index).toVec3();
             const center_start = @"-"(la.Vec3.vec2(start_screen_pos, 0), la.Vec3.vec2(center_screen_pos, 0));
             const cross = center_start.cross(view_axis).normalized();
             const n = cross.toVec2().normalized();
 
-            return DragContext.init(ScreenLine.init(start_screen_pos, n), manipulator.matrix.*, identity.getRow(axis_index));
+            return DragContext.init(ScreenLine.init(start_screen_pos, n), init_matrix, identity.getRow(axis_index));
         }
     };
 }
@@ -227,10 +227,10 @@ pub fn RingDragFactory(comptime axis_index: usize) type {
 /// 車輪面のドラッグ
 pub fn RollDragFactory(comptime axis_index: usize) type {
     return struct {
-        pub fn createRingDragContext(start_screen_pos: la.Vec2, manipulator: *Shape, _: *Shape, camera: *camera_types.Camera) DragContext {
-            var view_axis = @"*"(manipulator.matrix.*, camera.view.getViewMatrix()).getRow(axis_index).toVec3();
-            view_axis.normalize();
-            return DragContext.init(ScreenLine.init(start_screen_pos, view_axis.toVec2()), manipulator.matrix.*, identity.getRow(axis_index));
+        pub fn createRingDragContext(start_screen_pos: la.Vec2, init_matrix: la.Mat4, camera: *camera_types.Camera) DragContext {
+            var view_axis = @"*"(init_matrix, camera.view.getViewMatrix()).getRow(axis_index).toVec3();
+            const n = la.Vec2.init(view_axis.y, -view_axis.x).normalized();
+            return DragContext.init(ScreenLine.init(start_screen_pos, n), init_matrix, identity.getRow(axis_index));
         }
     };
 }
