@@ -202,7 +202,7 @@ pub const DragFactory = fn (cursor_pos: la.Vec2, manipulator: *Shape, target: *S
 const identity = la.Mat3{};
 
 /// 円盤面のドラッグ
-pub fn DragFractoryFactory(comptime axis_index: usize) type {
+pub fn RingDragFactory(comptime axis_index: usize) type {
     return struct {
         pub fn createRingDragContext(start_screen_pos: la.Vec2, manipulator: *Shape, target: *Shape, camera: *camera_types.Camera) DragContext {
             const vp = camera.getViewProjectionMatrix();
@@ -220,6 +220,17 @@ pub fn DragFractoryFactory(comptime axis_index: usize) type {
             const n = cross.toVec2().normalized();
 
             return DragContext.init(ScreenLine.init(start_screen_pos, n), manipulator.matrix.*, identity.getRow(axis_index));
+        }
+    };
+}
+
+/// 車輪面のドラッグ
+pub fn RollDragFactory(comptime axis_index: usize) type {
+    return struct {
+        pub fn createRingDragContext(start_screen_pos: la.Vec2, manipulator: *Shape, _: *Shape, camera: *camera_types.Camera) DragContext {
+            var view_axis = @"*"(manipulator.matrix.*, camera.view.getViewMatrix()).getRow(axis_index).toVec3();
+            view_axis.normalize();
+            return DragContext.init(ScreenLine.init(start_screen_pos, view_axis.toVec2()), manipulator.matrix.*, identity.getRow(axis_index));
         }
     };
 }
