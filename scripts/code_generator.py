@@ -113,6 +113,8 @@ pub const STB_TexteditState = extern struct {
    preferred_x: f32,
    undostate: StbUndoState,
 };
+
+pub extern fn Custom_ButtonBehaviorMiddleRight() void;
 '''),
         Header(IMGUI_HEADER_INTERNAL,
                if_include=lambda f_name: f_name == 'ButtonBehavior'),
