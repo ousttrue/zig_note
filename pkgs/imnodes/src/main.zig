@@ -83,9 +83,15 @@ pub const ImNodesMiniMapLocation = enum(c_int) {
 };
 
 pub const ImNodesIO = extern struct {
-    EmulateThreeButtonMouse: EmulateThreeButtonMouse,
-    LinkDetachWithModifierClick: LinkDetachWithModifierClick,
-    MultipleSelectModifier: MultipleSelectModifier,
+    EmulateThreeButtonMouse: extern struct {
+        Modifier: *const bool,
+    },
+    LinkDetachWithModifierClick: extern struct {
+        Modifier: *const bool,
+    },
+    MultipleSelectModifier: extern struct {
+        Modifier: *const bool,
+    },
     AltMouseButton: c_int,
     AutoPanningSpeed: f32,
 };
@@ -122,387 +128,310 @@ pub const ImNodesContext = opaque {};
 pub const ImNodesEditorContext = opaque {};
 const ImNodesMiniMapNodeHoveringCallback = fn (_2109176811: c_int, _4235066064: ?*anyopaque) callconv(.C) void;
 extern "c" fn _ZN7ImNodes15SetImGuiContextEP12ImGuiContext(ctx: ?*ImGuiContext) void;
-pub fn SetImGuiContext(ctx: ?*ImGuiContext) void
-{
+pub fn SetImGuiContext(ctx: ?*ImGuiContext) void {
     return _ZN7ImNodes15SetImGuiContextEP12ImGuiContext(ctx);
 }
 extern "c" fn _ZN7ImNodes13CreateContextEv() ?*ImNodesContext;
-pub fn CreateContext() ?*ImNodesContext
-{
+pub fn CreateContext() ?*ImNodesContext {
     return _ZN7ImNodes13CreateContextEv();
 }
 extern "c" fn _ZN7ImNodes14DestroyContextEP14ImNodesContext(ctx: ?*ImNodesContext) void;
-pub fn DestroyContext(__default: struct{ctx: ?*ImNodesContext= null}) void
-{
+pub fn DestroyContext(__default: struct { ctx: ?*ImNodesContext = null }) void {
     return _ZN7ImNodes14DestroyContextEP14ImNodesContext(__default.ctx);
 }
 extern "c" fn _ZN7ImNodes17GetCurrentContextEv() ?*ImNodesContext;
-pub fn GetCurrentContext() ?*ImNodesContext
-{
+pub fn GetCurrentContext() ?*ImNodesContext {
     return _ZN7ImNodes17GetCurrentContextEv();
 }
 extern "c" fn _ZN7ImNodes17SetCurrentContextEP14ImNodesContext(ctx: ?*ImNodesContext) void;
-pub fn SetCurrentContext(ctx: ?*ImNodesContext) void
-{
+pub fn SetCurrentContext(ctx: ?*ImNodesContext) void {
     return _ZN7ImNodes17SetCurrentContextEP14ImNodesContext(ctx);
 }
 extern "c" fn _ZN7ImNodes19EditorContextCreateEv() ?*ImNodesEditorContext;
-pub fn EditorContextCreate() ?*ImNodesEditorContext
-{
+pub fn EditorContextCreate() ?*ImNodesEditorContext {
     return _ZN7ImNodes19EditorContextCreateEv();
 }
 extern "c" fn _ZN7ImNodes17EditorContextFreeEP20ImNodesEditorContext(_2846435981: ?*ImNodesEditorContext) void;
-pub fn EditorContextFree(_2846435981: ?*ImNodesEditorContext) void
-{
+pub fn EditorContextFree(_2846435981: ?*ImNodesEditorContext) void {
     return _ZN7ImNodes17EditorContextFreeEP20ImNodesEditorContext(_2846435981);
 }
 extern "c" fn _ZN7ImNodes16EditorContextSetEP20ImNodesEditorContext(_3120688268: ?*ImNodesEditorContext) void;
-pub fn EditorContextSet(_3120688268: ?*ImNodesEditorContext) void
-{
+pub fn EditorContextSet(_3120688268: ?*ImNodesEditorContext) void {
     return _ZN7ImNodes16EditorContextSetEP20ImNodesEditorContext(_3120688268);
 }
 extern "c" fn _ZN7ImNodes23EditorContextGetPanningEv() ImVec2;
-pub fn EditorContextGetPanning() ImVec2
-{
+pub fn EditorContextGetPanning() ImVec2 {
     return _ZN7ImNodes23EditorContextGetPanningEv();
 }
 extern "c" fn _ZN7ImNodes25EditorContextResetPanningERK6ImVec2(pos: *const ImVec2) void;
-pub fn EditorContextResetPanning(pos: ImVec2) void
-{
+pub fn EditorContextResetPanning(pos: ImVec2) void {
     return _ZN7ImNodes25EditorContextResetPanningERK6ImVec2(&pos);
 }
 extern "c" fn _ZN7ImNodes23EditorContextMoveToNodeEi(node_id: c_int) void;
-pub fn EditorContextMoveToNode(node_id: c_int) void
-{
+pub fn EditorContextMoveToNode(node_id: c_int) void {
     return _ZN7ImNodes23EditorContextMoveToNodeEi(node_id);
 }
 extern "c" fn _ZN7ImNodes5GetIOEv() *ImNodesIO;
-pub fn GetIO() *ImNodesIO
-{
+pub fn GetIO() *ImNodesIO {
     return _ZN7ImNodes5GetIOEv();
 }
 extern "c" fn _ZN7ImNodes8GetStyleEv() *ImNodesStyle;
-pub fn GetStyle() *ImNodesStyle
-{
+pub fn GetStyle() *ImNodesStyle {
     return _ZN7ImNodes8GetStyleEv();
 }
 extern "c" fn _ZN7ImNodes15StyleColorsDarkEP12ImNodesStyle(dest: ?*ImNodesStyle) void;
-pub fn StyleColorsDark(__default: struct{dest: ?*ImNodesStyle= null}) void
-{
+pub fn StyleColorsDark(__default: struct { dest: ?*ImNodesStyle = null }) void {
     return _ZN7ImNodes15StyleColorsDarkEP12ImNodesStyle(__default.dest);
 }
 extern "c" fn _ZN7ImNodes18StyleColorsClassicEP12ImNodesStyle(dest: ?*ImNodesStyle) void;
-pub fn StyleColorsClassic(__default: struct{dest: ?*ImNodesStyle= null}) void
-{
+pub fn StyleColorsClassic(__default: struct { dest: ?*ImNodesStyle = null }) void {
     return _ZN7ImNodes18StyleColorsClassicEP12ImNodesStyle(__default.dest);
 }
 extern "c" fn _ZN7ImNodes16StyleColorsLightEP12ImNodesStyle(dest: ?*ImNodesStyle) void;
-pub fn StyleColorsLight(__default: struct{dest: ?*ImNodesStyle= null}) void
-{
+pub fn StyleColorsLight(__default: struct { dest: ?*ImNodesStyle = null }) void {
     return _ZN7ImNodes16StyleColorsLightEP12ImNodesStyle(__default.dest);
 }
 extern "c" fn _ZN7ImNodes15BeginNodeEditorEv() void;
-pub fn BeginNodeEditor() void
-{
+pub fn BeginNodeEditor() void {
     return _ZN7ImNodes15BeginNodeEditorEv();
 }
 extern "c" fn _ZN7ImNodes13EndNodeEditorEv() void;
-pub fn EndNodeEditor() void
-{
+pub fn EndNodeEditor() void {
     return _ZN7ImNodes13EndNodeEditorEv();
 }
 extern "c" fn _ZN7ImNodes7MiniMapEfiPFviPvES0_(minimap_size_fraction: f32, location: c_int, node_hovering_callback: *const ImNodesMiniMapNodeHoveringCallback, node_hovering_callback_data: ?*anyopaque) void;
-pub fn MiniMap(__default: struct{minimap_size_fraction: f32= 0.2, location: c_int= ImNodesMiniMapLocation_TopLeft, node_hovering_callback: *const ImNodesMiniMapNodeHoveringCallback= null, node_hovering_callback_data: ?*anyopaque= null}) void
-{
+pub fn MiniMap(__default: struct { minimap_size_fraction: f32 = 0.2, location: c_int = ImNodesMiniMapLocation._TopLeft, node_hovering_callback: *const ImNodesMiniMapNodeHoveringCallback = null, node_hovering_callback_data: ?*anyopaque = null }) void {
     return _ZN7ImNodes7MiniMapEfiPFviPvES0_(__default.minimap_size_fraction, __default.location, __default.node_hovering_callback, __default.node_hovering_callback_data);
 }
 extern "c" fn _ZN7ImNodes14PushColorStyleEij(item: c_int, color: c_uint) void;
-pub fn PushColorStyle(item: c_int, color: c_uint) void
-{
+pub fn PushColorStyle(item: c_int, color: c_uint) void {
     return _ZN7ImNodes14PushColorStyleEij(item, color);
 }
 extern "c" fn _ZN7ImNodes13PopColorStyleEv() void;
-pub fn PopColorStyle() void
-{
+pub fn PopColorStyle() void {
     return _ZN7ImNodes13PopColorStyleEv();
 }
 extern "c" fn _ZN7ImNodes12PushStyleVarEif(style_item: c_int, value: f32) void;
-pub fn PushStyleVar(style_item: c_int, value: f32) void
-{
+pub fn PushStyleVar(style_item: c_int, value: f32) void {
     return _ZN7ImNodes12PushStyleVarEif(style_item, value);
 }
 extern "c" fn _ZN7ImNodes12PushStyleVarEiRK6ImVec2(style_item: c_int, value: *const ImVec2) void;
-pub fn PushStyleVar_2(style_item: c_int, value: ImVec2) void
-{
+pub fn PushStyleVar_2(style_item: c_int, value: ImVec2) void {
     return _ZN7ImNodes12PushStyleVarEiRK6ImVec2(style_item, &value);
 }
 extern "c" fn _ZN7ImNodes11PopStyleVarEi(count: c_int) void;
-pub fn PopStyleVar(__default: struct{count: c_int= 1}) void
-{
+pub fn PopStyleVar(__default: struct { count: c_int = 1 }) void {
     return _ZN7ImNodes11PopStyleVarEi(__default.count);
 }
 extern "c" fn _ZN7ImNodes9BeginNodeEi(_id: c_int) void;
-pub fn BeginNode(_id: c_int) void
-{
+pub fn BeginNode(_id: c_int) void {
     return _ZN7ImNodes9BeginNodeEi(_id);
 }
 extern "c" fn _ZN7ImNodes7EndNodeEv() void;
-pub fn EndNode() void
-{
+pub fn EndNode() void {
     return _ZN7ImNodes7EndNodeEv();
 }
 extern "c" fn _ZN7ImNodes17GetNodeDimensionsEi(_id: c_int) ImVec2;
-pub fn GetNodeDimensions(_id: c_int) ImVec2
-{
+pub fn GetNodeDimensions(_id: c_int) ImVec2 {
     return _ZN7ImNodes17GetNodeDimensionsEi(_id);
 }
 extern "c" fn _ZN7ImNodes17BeginNodeTitleBarEv() void;
-pub fn BeginNodeTitleBar() void
-{
+pub fn BeginNodeTitleBar() void {
     return _ZN7ImNodes17BeginNodeTitleBarEv();
 }
 extern "c" fn _ZN7ImNodes15EndNodeTitleBarEv() void;
-pub fn EndNodeTitleBar() void
-{
+pub fn EndNodeTitleBar() void {
     return _ZN7ImNodes15EndNodeTitleBarEv();
 }
 extern "c" fn _ZN7ImNodes19BeginInputAttributeEii(_id: c_int, shape: c_int) void;
-pub fn BeginInputAttribute(_id: c_int, __default: struct{shape: c_int= ImNodesPinShape_CircleFilled}) void
-{
+pub fn BeginInputAttribute(_id: c_int, __default: struct { shape: c_int = ImNodesPinShape._CircleFilled }) void {
     return _ZN7ImNodes19BeginInputAttributeEii(_id, __default.shape);
 }
 extern "c" fn _ZN7ImNodes17EndInputAttributeEv() void;
-pub fn EndInputAttribute() void
-{
+pub fn EndInputAttribute() void {
     return _ZN7ImNodes17EndInputAttributeEv();
 }
 extern "c" fn _ZN7ImNodes20BeginOutputAttributeEii(_id: c_int, shape: c_int) void;
-pub fn BeginOutputAttribute(_id: c_int, __default: struct{shape: c_int= ImNodesPinShape_CircleFilled}) void
-{
+pub fn BeginOutputAttribute(_id: c_int, __default: struct { shape: c_int = ImNodesPinShape._CircleFilled }) void {
     return _ZN7ImNodes20BeginOutputAttributeEii(_id, __default.shape);
 }
 extern "c" fn _ZN7ImNodes18EndOutputAttributeEv() void;
-pub fn EndOutputAttribute() void
-{
+pub fn EndOutputAttribute() void {
     return _ZN7ImNodes18EndOutputAttributeEv();
 }
 extern "c" fn _ZN7ImNodes20BeginStaticAttributeEi(_id: c_int) void;
-pub fn BeginStaticAttribute(_id: c_int) void
-{
+pub fn BeginStaticAttribute(_id: c_int) void {
     return _ZN7ImNodes20BeginStaticAttributeEi(_id);
 }
 extern "c" fn _ZN7ImNodes18EndStaticAttributeEv() void;
-pub fn EndStaticAttribute() void
-{
+pub fn EndStaticAttribute() void {
     return _ZN7ImNodes18EndStaticAttributeEv();
 }
 extern "c" fn _ZN7ImNodes17PushAttributeFlagEi(flag: c_int) void;
-pub fn PushAttributeFlag(flag: c_int) void
-{
+pub fn PushAttributeFlag(flag: c_int) void {
     return _ZN7ImNodes17PushAttributeFlagEi(flag);
 }
 extern "c" fn _ZN7ImNodes16PopAttributeFlagEv() void;
-pub fn PopAttributeFlag() void
-{
+pub fn PopAttributeFlag() void {
     return _ZN7ImNodes16PopAttributeFlagEv();
 }
 extern "c" fn _ZN7ImNodes4LinkEiii(_id: c_int, start_attribute_id: c_int, end_attribute_id: c_int) void;
-pub fn Link(_id: c_int, start_attribute_id: c_int, end_attribute_id: c_int) void
-{
+pub fn Link(_id: c_int, start_attribute_id: c_int, end_attribute_id: c_int) void {
     return _ZN7ImNodes4LinkEiii(_id, start_attribute_id, end_attribute_id);
 }
 extern "c" fn _ZN7ImNodes16SetNodeDraggableEib(node_id: c_int, draggable: bool) void;
-pub fn SetNodeDraggable(node_id: c_int, draggable: bool) void
-{
+pub fn SetNodeDraggable(node_id: c_int, draggable: bool) void {
     return _ZN7ImNodes16SetNodeDraggableEib(node_id, draggable);
 }
 extern "c" fn _ZN7ImNodes21SetNodeScreenSpacePosEiRK6ImVec2(node_id: c_int, screen_space_pos: *const ImVec2) void;
-pub fn SetNodeScreenSpacePos(node_id: c_int, screen_space_pos: ImVec2) void
-{
+pub fn SetNodeScreenSpacePos(node_id: c_int, screen_space_pos: ImVec2) void {
     return _ZN7ImNodes21SetNodeScreenSpacePosEiRK6ImVec2(node_id, &screen_space_pos);
 }
 extern "c" fn _ZN7ImNodes21SetNodeEditorSpacePosEiRK6ImVec2(node_id: c_int, editor_space_pos: *const ImVec2) void;
-pub fn SetNodeEditorSpacePos(node_id: c_int, editor_space_pos: ImVec2) void
-{
+pub fn SetNodeEditorSpacePos(node_id: c_int, editor_space_pos: ImVec2) void {
     return _ZN7ImNodes21SetNodeEditorSpacePosEiRK6ImVec2(node_id, &editor_space_pos);
 }
 extern "c" fn _ZN7ImNodes19SetNodeGridSpacePosEiRK6ImVec2(node_id: c_int, grid_pos: *const ImVec2) void;
-pub fn SetNodeGridSpacePos(node_id: c_int, grid_pos: ImVec2) void
-{
+pub fn SetNodeGridSpacePos(node_id: c_int, grid_pos: ImVec2) void {
     return _ZN7ImNodes19SetNodeGridSpacePosEiRK6ImVec2(node_id, &grid_pos);
 }
 extern "c" fn _ZN7ImNodes21GetNodeScreenSpacePosEi(node_id: c_int) ImVec2;
-pub fn GetNodeScreenSpacePos(node_id: c_int) ImVec2
-{
+pub fn GetNodeScreenSpacePos(node_id: c_int) ImVec2 {
     return _ZN7ImNodes21GetNodeScreenSpacePosEi(node_id);
 }
 extern "c" fn _ZN7ImNodes21GetNodeEditorSpacePosEi(node_id: c_int) ImVec2;
-pub fn GetNodeEditorSpacePos(node_id: c_int) ImVec2
-{
+pub fn GetNodeEditorSpacePos(node_id: c_int) ImVec2 {
     return _ZN7ImNodes21GetNodeEditorSpacePosEi(node_id);
 }
 extern "c" fn _ZN7ImNodes19GetNodeGridSpacePosEi(node_id: c_int) ImVec2;
-pub fn GetNodeGridSpacePos(node_id: c_int) ImVec2
-{
+pub fn GetNodeGridSpacePos(node_id: c_int) ImVec2 {
     return _ZN7ImNodes19GetNodeGridSpacePosEi(node_id);
 }
 extern "c" fn _ZN7ImNodes14SnapNodeToGridEi(node_id: c_int) void;
-pub fn SnapNodeToGrid(node_id: c_int) void
-{
+pub fn SnapNodeToGrid(node_id: c_int) void {
     return _ZN7ImNodes14SnapNodeToGridEi(node_id);
 }
 extern "c" fn _ZN7ImNodes15IsEditorHoveredEv() bool;
-pub fn IsEditorHovered() bool
-{
+pub fn IsEditorHovered() bool {
     return _ZN7ImNodes15IsEditorHoveredEv();
 }
 extern "c" fn _ZN7ImNodes13IsNodeHoveredEPi(node_id: ?*c_int) bool;
-pub fn IsNodeHovered(node_id: ?*c_int) bool
-{
+pub fn IsNodeHovered(node_id: ?*c_int) bool {
     return _ZN7ImNodes13IsNodeHoveredEPi(node_id);
 }
 extern "c" fn _ZN7ImNodes13IsLinkHoveredEPi(link_id: ?*c_int) bool;
-pub fn IsLinkHovered(link_id: ?*c_int) bool
-{
+pub fn IsLinkHovered(link_id: ?*c_int) bool {
     return _ZN7ImNodes13IsLinkHoveredEPi(link_id);
 }
 extern "c" fn _ZN7ImNodes12IsPinHoveredEPi(attribute_id: ?*c_int) bool;
-pub fn IsPinHovered(attribute_id: ?*c_int) bool
-{
+pub fn IsPinHovered(attribute_id: ?*c_int) bool {
     return _ZN7ImNodes12IsPinHoveredEPi(attribute_id);
 }
 extern "c" fn _ZN7ImNodes16NumSelectedNodesEv() c_int;
-pub fn NumSelectedNodes() c_int
-{
+pub fn NumSelectedNodes() c_int {
     return _ZN7ImNodes16NumSelectedNodesEv();
 }
 extern "c" fn _ZN7ImNodes16NumSelectedLinksEv() c_int;
-pub fn NumSelectedLinks() c_int
-{
+pub fn NumSelectedLinks() c_int {
     return _ZN7ImNodes16NumSelectedLinksEv();
 }
 extern "c" fn _ZN7ImNodes16GetSelectedNodesEPi(node_ids: ?*c_int) void;
-pub fn GetSelectedNodes(node_ids: ?*c_int) void
-{
+pub fn GetSelectedNodes(node_ids: ?*c_int) void {
     return _ZN7ImNodes16GetSelectedNodesEPi(node_ids);
 }
 extern "c" fn _ZN7ImNodes16GetSelectedLinksEPi(link_ids: ?*c_int) void;
-pub fn GetSelectedLinks(link_ids: ?*c_int) void
-{
+pub fn GetSelectedLinks(link_ids: ?*c_int) void {
     return _ZN7ImNodes16GetSelectedLinksEPi(link_ids);
 }
 extern "c" fn _ZN7ImNodes18ClearNodeSelectionEv() void;
-pub fn ClearNodeSelection() void
-{
+pub fn ClearNodeSelection() void {
     return _ZN7ImNodes18ClearNodeSelectionEv();
 }
 extern "c" fn _ZN7ImNodes18ClearLinkSelectionEv() void;
-pub fn ClearLinkSelection() void
-{
+pub fn ClearLinkSelection() void {
     return _ZN7ImNodes18ClearLinkSelectionEv();
 }
 extern "c" fn _ZN7ImNodes10SelectNodeEi(node_id: c_int) void;
-pub fn SelectNode(node_id: c_int) void
-{
+pub fn SelectNode(node_id: c_int) void {
     return _ZN7ImNodes10SelectNodeEi(node_id);
 }
 extern "c" fn _ZN7ImNodes18ClearNodeSelectionEi(node_id: c_int) void;
-pub fn ClearNodeSelection_2(node_id: c_int) void
-{
+pub fn ClearNodeSelection_2(node_id: c_int) void {
     return _ZN7ImNodes18ClearNodeSelectionEi(node_id);
 }
 extern "c" fn _ZN7ImNodes14IsNodeSelectedEi(node_id: c_int) bool;
-pub fn IsNodeSelected(node_id: c_int) bool
-{
+pub fn IsNodeSelected(node_id: c_int) bool {
     return _ZN7ImNodes14IsNodeSelectedEi(node_id);
 }
 extern "c" fn _ZN7ImNodes10SelectLinkEi(link_id: c_int) void;
-pub fn SelectLink(link_id: c_int) void
-{
+pub fn SelectLink(link_id: c_int) void {
     return _ZN7ImNodes10SelectLinkEi(link_id);
 }
 extern "c" fn _ZN7ImNodes18ClearLinkSelectionEi(link_id: c_int) void;
-pub fn ClearLinkSelection_2(link_id: c_int) void
-{
+pub fn ClearLinkSelection_2(link_id: c_int) void {
     return _ZN7ImNodes18ClearLinkSelectionEi(link_id);
 }
 extern "c" fn _ZN7ImNodes14IsLinkSelectedEi(link_id: c_int) bool;
-pub fn IsLinkSelected(link_id: c_int) bool
-{
+pub fn IsLinkSelected(link_id: c_int) bool {
     return _ZN7ImNodes14IsLinkSelectedEi(link_id);
 }
 extern "c" fn _ZN7ImNodes17IsAttributeActiveEv() bool;
-pub fn IsAttributeActive() bool
-{
+pub fn IsAttributeActive() bool {
     return _ZN7ImNodes17IsAttributeActiveEv();
 }
 extern "c" fn _ZN7ImNodes20IsAnyAttributeActiveEPi(attribute_id: ?*c_int) bool;
-pub fn IsAnyAttributeActive(__default: struct{attribute_id: ?*c_int= null}) bool
-{
+pub fn IsAnyAttributeActive(__default: struct { attribute_id: ?*c_int = null }) bool {
     return _ZN7ImNodes20IsAnyAttributeActiveEPi(__default.attribute_id);
 }
 extern "c" fn _ZN7ImNodes13IsLinkStartedEPi(started_at_attribute_id: ?*c_int) bool;
-pub fn IsLinkStarted(started_at_attribute_id: ?*c_int) bool
-{
+pub fn IsLinkStarted(started_at_attribute_id: ?*c_int) bool {
     return _ZN7ImNodes13IsLinkStartedEPi(started_at_attribute_id);
 }
 extern "c" fn _ZN7ImNodes13IsLinkDroppedEPib(started_at_attribute_id: ?*c_int, including_detached_links: bool) bool;
-pub fn IsLinkDropped(__default: struct{started_at_attribute_id: ?*c_int= null, including_detached_links: bool= true}) bool
-{
+pub fn IsLinkDropped(__default: struct { started_at_attribute_id: ?*c_int = null, including_detached_links: bool = true }) bool {
     return _ZN7ImNodes13IsLinkDroppedEPib(__default.started_at_attribute_id, __default.including_detached_links);
 }
 extern "c" fn _ZN7ImNodes13IsLinkCreatedEPiS0_Pb(started_at_attribute_id: ?*c_int, ended_at_attribute_id: ?*c_int, created_from_snap: ?*bool) bool;
-pub fn IsLinkCreated(started_at_attribute_id: ?*c_int, ended_at_attribute_id: ?*c_int, __default: struct{created_from_snap: ?*bool= null}) bool
-{
+pub fn IsLinkCreated(started_at_attribute_id: ?*c_int, ended_at_attribute_id: ?*c_int, __default: struct { created_from_snap: ?*bool = null }) bool {
     return _ZN7ImNodes13IsLinkCreatedEPiS0_Pb(started_at_attribute_id, ended_at_attribute_id, __default.created_from_snap);
 }
 extern "c" fn _ZN7ImNodes13IsLinkCreatedEPiS0_S0_S0_Pb(started_at_node_id: ?*c_int, started_at_attribute_id: ?*c_int, ended_at_node_id: ?*c_int, ended_at_attribute_id: ?*c_int, created_from_snap: ?*bool) bool;
-pub fn IsLinkCreated_2(started_at_node_id: ?*c_int, started_at_attribute_id: ?*c_int, ended_at_node_id: ?*c_int, ended_at_attribute_id: ?*c_int, __default: struct{created_from_snap: ?*bool= null}) bool
-{
+pub fn IsLinkCreated_2(started_at_node_id: ?*c_int, started_at_attribute_id: ?*c_int, ended_at_node_id: ?*c_int, ended_at_attribute_id: ?*c_int, __default: struct { created_from_snap: ?*bool = null }) bool {
     return _ZN7ImNodes13IsLinkCreatedEPiS0_S0_S0_Pb(started_at_node_id, started_at_attribute_id, ended_at_node_id, ended_at_attribute_id, __default.created_from_snap);
 }
 extern "c" fn _ZN7ImNodes15IsLinkDestroyedEPi(link_id: ?*c_int) bool;
-pub fn IsLinkDestroyed(link_id: ?*c_int) bool
-{
+pub fn IsLinkDestroyed(link_id: ?*c_int) bool {
     return _ZN7ImNodes15IsLinkDestroyedEPi(link_id);
 }
 extern "c" fn _ZN7ImNodes33SaveCurrentEditorStateToIniStringEPy(data_size: ?*usize) ?[*:0]const u8;
-pub fn SaveCurrentEditorStateToIniString(__default: struct{data_size: ?*usize= null}) ?[*:0]const u8
-{
+pub fn SaveCurrentEditorStateToIniString(__default: struct { data_size: ?*usize = null }) ?[*:0]const u8 {
     return _ZN7ImNodes33SaveCurrentEditorStateToIniStringEPy(__default.data_size);
 }
 extern "c" fn _ZN7ImNodes26SaveEditorStateToIniStringEPK20ImNodesEditorContextPy(editor: ?*const ImNodesEditorContext, data_size: ?*usize) ?[*:0]const u8;
-pub fn SaveEditorStateToIniString(editor: ?*const ImNodesEditorContext, __default: struct{data_size: ?*usize= null}) ?[*:0]const u8
-{
+pub fn SaveEditorStateToIniString(editor: ?*const ImNodesEditorContext, __default: struct { data_size: ?*usize = null }) ?[*:0]const u8 {
     return _ZN7ImNodes26SaveEditorStateToIniStringEPK20ImNodesEditorContextPy(editor, __default.data_size);
 }
 extern "c" fn _ZN7ImNodes35LoadCurrentEditorStateFromIniStringEPKcy(data: ?[*:0]const u8, data_size: usize) void;
-pub fn LoadCurrentEditorStateFromIniString(data: ?[*:0]const u8, data_size: usize) void
-{
+pub fn LoadCurrentEditorStateFromIniString(data: ?[*:0]const u8, data_size: usize) void {
     return _ZN7ImNodes35LoadCurrentEditorStateFromIniStringEPKcy(data, data_size);
 }
 extern "c" fn _ZN7ImNodes28LoadEditorStateFromIniStringEP20ImNodesEditorContextPKcy(editor: ?*ImNodesEditorContext, data: ?[*:0]const u8, data_size: usize) void;
-pub fn LoadEditorStateFromIniString(editor: ?*ImNodesEditorContext, data: ?[*:0]const u8, data_size: usize) void
-{
+pub fn LoadEditorStateFromIniString(editor: ?*ImNodesEditorContext, data: ?[*:0]const u8, data_size: usize) void {
     return _ZN7ImNodes28LoadEditorStateFromIniStringEP20ImNodesEditorContextPKcy(editor, data, data_size);
 }
 extern "c" fn _ZN7ImNodes31SaveCurrentEditorStateToIniFileEPKc(file_name: ?[*:0]const u8) void;
-pub fn SaveCurrentEditorStateToIniFile(file_name: ?[*:0]const u8) void
-{
+pub fn SaveCurrentEditorStateToIniFile(file_name: ?[*:0]const u8) void {
     return _ZN7ImNodes31SaveCurrentEditorStateToIniFileEPKc(file_name);
 }
 extern "c" fn _ZN7ImNodes24SaveEditorStateToIniFileEPK20ImNodesEditorContextPKc(editor: ?*const ImNodesEditorContext, file_name: ?[*:0]const u8) void;
-pub fn SaveEditorStateToIniFile(editor: ?*const ImNodesEditorContext, file_name: ?[*:0]const u8) void
-{
+pub fn SaveEditorStateToIniFile(editor: ?*const ImNodesEditorContext, file_name: ?[*:0]const u8) void {
     return _ZN7ImNodes24SaveEditorStateToIniFileEPK20ImNodesEditorContextPKc(editor, file_name);
 }
 extern "c" fn _ZN7ImNodes33LoadCurrentEditorStateFromIniFileEPKc(file_name: ?[*:0]const u8) void;
-pub fn LoadCurrentEditorStateFromIniFile(file_name: ?[*:0]const u8) void
-{
+pub fn LoadCurrentEditorStateFromIniFile(file_name: ?[*:0]const u8) void {
     return _ZN7ImNodes33LoadCurrentEditorStateFromIniFileEPKc(file_name);
 }
 extern "c" fn _ZN7ImNodes26LoadEditorStateFromIniFileEP20ImNodesEditorContextPKc(editor: ?*ImNodesEditorContext, file_name: ?[*:0]const u8) void;
-pub fn LoadEditorStateFromIniFile(editor: ?*ImNodesEditorContext, file_name: ?[*:0]const u8) void
-{
+pub fn LoadEditorStateFromIniFile(editor: ?*ImNodesEditorContext, file_name: ?[*:0]const u8) void {
     return _ZN7ImNodes26LoadEditorStateFromIniFileEP20ImNodesEditorContextPKc(editor, file_name);
 }

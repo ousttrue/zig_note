@@ -14,6 +14,7 @@ pub const Renderer = struct {
     metrics: docks.MetricsDock,
     camera: scene_dock.CameraDock,
     fbo: scene_dock.FboDock,
+    node_editor: docks.NodeEditorDock,
 
     docks: std.ArrayList(dockspace.Dock),
 
@@ -22,11 +23,13 @@ pub const Renderer = struct {
         self.is_initialized = false;
         self.metrics = .{};
         self.camera = .{};
+        self.node_editor = .{};
         self.fbo = scene_dock.FboDock.init(allocator, &self.camera.camera, &self.camera.mult_color);
         self.docks = std.ArrayList(dockspace.Dock).init(allocator);
         try self.docks.append(dockspace.Dock.create(&self.metrics));
         try self.docks.append(dockspace.Dock.create(&self.fbo));
         try self.docks.append(dockspace.Dock.create(&self.camera));
+        try self.docks.append(dockspace.Dock.create(&self.node_editor));
     }
 
     pub fn new(allocator: std.mem.Allocator) !*Self {

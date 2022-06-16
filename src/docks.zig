@@ -1,5 +1,6 @@
 const std = @import("std");
 const imgui = @import("imgui");
+const imnodes = @import("imnodes");
 
 pub const DemoDock = struct {
     const Self = @This();
@@ -77,6 +78,29 @@ pub const AnotherDock = struct {
             if (imgui.Button("Close Me", .{})) {
                 self.is_open = false;
             }
+        }
+        imgui.End();
+    }
+};
+
+pub const NodeEditorDock = struct {
+    const Self = @This();
+    name: [*:0]const u8 = "imnodes",
+    is_open: bool = true,
+
+    context: ?*imnodes.ImNodesContext = null,
+
+    pub fn show(self: *Self) void {
+        if (!self.is_open) {
+            return;
+        }
+        if (imgui.Begin("ImNodes", .{ .p_open = &self.is_open })) {
+            if (self.context == null) {
+                self.context = imnodes.CreateContext();
+            }
+
+            imnodes.BeginNodeEditor();
+            imnodes.EndNodeEditor();
         }
         imgui.End();
     }
