@@ -10,3 +10,6 @@
 [submodule "pkgs/nanovg/pkgs/picovg"]
 	path = pkgs/nanovg/pkgs/picovg
 	url = git@github.com:ousttrue/picovg.git
+[submodule "pkgs/imnodes/pkgs/imnodes"]
+	path = pkgs/imnodes/pkgs/imnodes
+	url = https://github.com/Nelarius/imnodes.git
