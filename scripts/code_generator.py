@@ -153,12 +153,21 @@ extern "C" {{
 ''')
 
 
+def generate_imnodes():
+    IMNODES_HEADER = WORKSPACE / 'pkgs/imnodes/pkgs/imnodes/imnodes.h'
+    IMNODES_ZIG = WORKSPACE / 'pkgs/imnodes/src/main.zig'
+    LOGGER.debug(f'{IMNODES_HEADER.name} => {IMNODES_ZIG}')
+    generator = ZigGenerator(Header(IMNODES_HEADER))
+    generator.generate(IMNODES_ZIG)
+
+
 def main():
     coloredlogs.install(level='DEBUG')
     logging.basicConfig(level=logging.DEBUG)
     generate_glfw()
     generate_imgui()
     generate_nanovg()
+    generate_imnodes()
 
 
 if __name__ == '__main__':

@@ -6,6 +6,7 @@ const screen = @import("pkgs/screen/pkg.zig");
 const scene = @import("pkgs/scene/pkg.zig");
 const zigla = @import("pkgs/zigla/pkg.zig");
 const nanovg = @import("pkgs/nanovg/pkg.zig");
+const imnodes = @import("pkgs/imnodes/pkg.zig");
 
 const gl = std.build.Pkg{
     .name = "gl",
@@ -41,6 +42,7 @@ pub fn build(b: *std.build.Builder) void {
     const screenPkg = screen.addTo(allocator, exe, "pkgs/screen", &.{ziglaPkg});
     scene.addTo(allocator, exe, "pkgs/scene", &.{ screenPkg, gloPkg, ziglaPkg });
     exe.addPackage(gl);
+    _ = imnodes.addTo(allocator, exe, "pkgs/imnodes", null);
 
     const run_cmd = exe.run();
     run_cmd.step.dependOn(b.getInstallStep());
