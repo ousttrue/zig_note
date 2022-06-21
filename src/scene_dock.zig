@@ -113,7 +113,6 @@ pub const MouseHandler = struct {
 pub const FboDock = struct {
     const Self = @This();
     name: [*:0]const u8 = "fbo",
-    is_open: bool = false,
 
     fbo: glo.FboManager,
     bg: imgui.ImVec4 = .{ .x = 0, .y = 0, .z = 0, .w = 0 },
@@ -217,9 +216,13 @@ pub const FboDock = struct {
         }
     }
 
-    pub fn show(self: *Self) void {
+    pub fn show(self: *Self, p_open: *bool) void {
+        if (!p_open.*) {
+            return;
+        }
+
         imgui.PushStyleVar_2(@enumToInt(imgui.ImGuiStyleVar._WindowPadding), .{ .x = 0, .y = 0 });
-        if (imgui.Begin("render target", .{ .p_open = &self.is_open, .flags = (@enumToInt(imgui.ImGuiWindowFlags._NoScrollbar) | @enumToInt(imgui.ImGuiWindowFlags._NoScrollWithMouse)) })) {
+        if (imgui.Begin("render target", .{ .p_open = p_open, .flags = (@enumToInt(imgui.ImGuiWindowFlags._NoScrollbar) | @enumToInt(imgui.ImGuiWindowFlags._NoScrollWithMouse)) })) {
             var pos = imgui.GetWindowPos();
             // _ = imgui.InputFloat3("shift", &self.scene.camera.view.shift[0], .{});
             // _ = imgui.InputFloat4("rotation", &self.scene.camera.view.rotation.x, .{});
@@ -238,18 +241,17 @@ const init_color = [_]f32{ 0.2, 0.2, 0.2, 1 };
 pub const CameraDock = struct {
     const Self = @This();
     name: [*:0]const u8 = "camera",
-    is_open: bool = true,
 
     camera: zigla.Camera = .{},
     clear_color: [4]f32 = init_color,
     mult_color: [4]f32 = init_color,
 
-    pub fn show(self: *Self) void {
-        if (!self.is_open) {
+    pub fn show(self: *Self, p_open: *bool) void {
+        if (!p_open.*) {
             return;
         }
 
-        if (imgui.Begin("camera", .{ .p_open = &self.is_open })) {
+        if (imgui.Begin("camera", .{ .p_open = p_open })) {
             if (imgui.ColorPicker4("clear_color", &self.clear_color[0], .{})) {
                 self.mult_color[0] = self.clear_color[0] * self.clear_color[3];
                 self.mult_color[1] = self.clear_color[1] * self.clear_color[3];

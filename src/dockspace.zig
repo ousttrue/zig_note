@@ -65,10 +65,11 @@ pub const Dock = struct {
     const Self = @This();
 
     ptr: *anyopaque,
-    callback: fn (ptr: *anyopaque) void,
+    callback: fn (ptr: *anyopaque, p_open: *bool) void,
+    is_open: bool = true,
 
     pub fn show(self: *Self) void {
-        self.callback(self.ptr);
+        self.callback(self.ptr, &self.is_open);
     }
 
     pub fn create(p: anytype) Dock {
