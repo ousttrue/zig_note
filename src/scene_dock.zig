@@ -210,7 +210,7 @@ pub const FboDock = struct {
                 const camera = self.mouse_handler.process(mouse_input, true);
 
                 self.gizmo.render(camera, mouse_input.x, mouse_input.y);
-                self.scene.render(camera.getViewProjectionMatrix());
+                self.scene.render(camera);
             }
         }
     }

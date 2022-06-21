@@ -51,12 +51,15 @@ pub const ImVector = extern struct {
     Data: *anyopaque,
 };
 
-const ImWchar = u16;
 const STB_TEXTEDIT_UNDOSTATECOUNT = 99;
 const STB_TEXTEDIT_UNDOCHARCOUNT = 999;
 const STB_TEXTEDIT_POSITIONTYPE = c_int;
-const STB_TEXTEDIT_CHARTYPE = ImWchar;
-
+const STB_TEXTEDIT_CHARTYPE = u16;
+const ImWchar = u16;
+const ImGuiTableColumnIdx = i8;
+const ImGuiTableDrawChannelIdx = u8;
+const ImTextureID = *anyopaque;
+const ImFileHandle = *anyopaque;
 const ImGuiKey_NamedKey_BEGIN         = 512;
 const ImGuiKey_NamedKey_END           = 0x285; //ImGuiKey_COUNT;
 const ImGuiKey_NamedKey_COUNT         = ImGuiKey_NamedKey_END - ImGuiKey_NamedKey_BEGIN;
@@ -80,6 +83,7 @@ pub const ImPool = extern struct {
 pub const ImBitArray = extern struct {
     Storage: [(ImGuiKey_NamedKey_COUNT + 31) >> 5]u32,
 };
+pub const ImBitArrayForNamedKeys = ImBitArray;
 
 pub const StbUndoRecord = extern struct {
     where: STB_TEXTEDIT_POSITIONTYPE,

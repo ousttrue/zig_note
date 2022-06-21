@@ -144,6 +144,19 @@ pub const Vec4 = struct {
     pub fn dot(self: Self, rhs: Vec4) f32 {
         return self.x * rhs.x + self.y * rhs.y + self.z * rhs.z + self.w * rhs.w;
     }
+    pub fn normalize(self: *Self) void {
+        const sqnorm = self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w;
+        const factor = 1 / std.math.sqrt(sqnorm);
+        self.x *= factor;
+        self.y *= factor;
+        self.z *= factor;
+        self.w *= factor;
+    }
+    pub fn normalized(self: Self) Self {
+        var copy = self;
+        copy.normalize();
+        return copy;
+    }
     pub fn mul(self: Self, rhs: Mat4) Self {
         return Self.init(
             self.dot(rhs.col0()),

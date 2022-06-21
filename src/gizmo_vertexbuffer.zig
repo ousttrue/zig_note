@@ -196,7 +196,7 @@ pub const GizmoVertexBuffer = struct {
             const vertex_layout = shader.createVertexLayout(self.allocator);
             _ = vertex_layout;
             var vbo = glo.Vbo.init();
-            vbo.setVertices(self.vertices, true);
+            vbo.setVertices(Vertex, &self.vertices, true);
             var ibo = glo.Ibo.init();
             ibo.setIndices(self.indices, true);
             self.vao = glo.Vao.init(vbo, vertex_layout, ibo);

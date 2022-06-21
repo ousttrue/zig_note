@@ -132,6 +132,16 @@ pub const Shader = struct {
         }
     }
 
+    pub fn _setVec4(_: *Self, location: c_int, value: *const f32) void {
+        gl.uniform4fv(location, 1, value);
+    }
+
+    pub fn setVec4(self: *Self, name: []const u8, value: *const f32) void {
+        if (self.getLocation(name)) |location| {
+            self._setVec4(location, value);
+        }
+    }
+
     pub fn createVertexLayout(self: *Self, allocator: std.mem.Allocator) []const VertexLayout {
         _ = self;
         var count: gl.GLint = undefined;

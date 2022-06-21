@@ -56,6 +56,7 @@ pub const Scene = struct {
     vao: ?glo.Vao = null,
 
     vertices: ?[]const Vertex = null,
+    light: zigla.Vec4 = zigla.Vec4.init(1, 2, 3, 0).normalized(),
 
     pub fn new(allocator: std.mem.Allocator) *Self {
         var scene = allocator.create(Scene) catch @panic("create");
@@ -94,7 +95,7 @@ pub const Scene = struct {
         }
     }
 
-    pub fn render(self: *Self, camera_matrix: zigla.Mat4) void {
+    pub fn render(self: *Self, camera: *zigla.Camera) void {
         if (self.shader == null) {
             var shader = glo.Shader.load(self.allocator, vs, fs) catch {
                 std.debug.print("{s}\n", .{glo.getErrorMessage()});
@@ -107,7 +108,7 @@ pub const Scene = struct {
             if (self.vao == null) {
                 if (self.vertices) |vertices| {
                     var vbo = glo.Vbo.init();
-                    vbo.setVertices(vertices, false);
+                    vbo.setVertices(Vertex, vertices, false);
                     self.vao = glo.Vao.init(vbo, shader.createVertexLayout(self.allocator), null);
                 }
             }
@@ -117,7 +118,9 @@ pub const Scene = struct {
             shader.use();
             defer shader.unuse();
 
-            shader.setMat4("uMVP", &camera_matrix._0.x);
+            shader.setMat4("uMVP", &camera.getViewProjectionMatrix()._0.x);
+            shader.setMat4("uView", &camera.view.getViewMatrix()._0.x);
+            shader.setVec4("uLight", &self.light.x);
             if (self.vao) |vao| {
                 vao.draw(3, .{});
             }

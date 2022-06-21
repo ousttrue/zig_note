@@ -28,9 +28,9 @@ pub const Vbo = struct {
         gl.bindBuffer(gl.ARRAY_BUFFER, 0);
     }
 
-    pub fn setVertices(self: *Self, vertices: anytype, isDynamic: bool) void {
+    pub fn setVertices(self: *Self, comptime T: type, vertices: []const T, isDynamic: bool) void {
         self.bind();
-        gl.bufferData(gl.ARRAY_BUFFER, @sizeOf(@TypeOf(vertices)), &vertices, if (isDynamic) gl.DYNAMIC_DRAW else gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, @intCast(gl.GLsizeiptr, @sizeOf(T) * vertices.len), &vertices[0], if (isDynamic) gl.DYNAMIC_DRAW else gl.STATIC_DRAW);
         self.unbind();
     }
 
@@ -111,7 +111,7 @@ pub const Vao = struct {
             .vbo = vbo,
             .ibo = ibo,
         };
-        
+
         vbo.bind();
         defer vbo.unbind();
 
@@ -131,7 +131,7 @@ pub const Vao = struct {
         if (ibo) |ibo_| {
             self.ibo = ibo_;
             ibo_.unbind();
-        }        
+        }
 
         return self;
     }
