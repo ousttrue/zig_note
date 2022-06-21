@@ -26,10 +26,10 @@ pub const Renderer = struct {
         self.node_editor = .{};
         self.fbo = scene_dock.FboDock.init(allocator, &self.camera.camera, &self.camera.mult_color);
         self.docks = std.ArrayList(dockspace.Dock).init(allocator);
-        try self.docks.append(dockspace.Dock.create(&self.metrics));
-        try self.docks.append(dockspace.Dock.create(&self.fbo));
-        try self.docks.append(dockspace.Dock.create(&self.camera));
-        try self.docks.append(dockspace.Dock.create(&self.node_editor));
+        try self.docks.append(dockspace.Dock.create(&self.metrics, "metrics"));
+        try self.docks.append(dockspace.Dock.create(&self.fbo, "fbo"));
+        try self.docks.append(dockspace.Dock.create(&self.camera, "camera"));
+        try self.docks.append(dockspace.Dock.create(&self.node_editor, "node editor"));
     }
 
     pub fn new(allocator: std.mem.Allocator) !*Self {
@@ -78,6 +78,20 @@ pub const Renderer = struct {
         imgui.NewFrame();
 
         _ = dockspace.dockspace("dockspace", 0);
+
+        // menu
+        if (imgui.BeginMainMenuBar()) {
+            if (imgui.BeginMenu("Views", .{ .enabled = true })) {
+                for (self.docks.items) |*dock| {
+                    _ = imgui.MenuItem_2(dock.name, "", &dock.is_open, .{});
+                }
+                imgui.EndMenu();
+            }
+
+            imgui.EndMainMenuBar();
+        }
+
+        // views
         for (self.docks.items) |*dock| {
             dock.*.show();
         }

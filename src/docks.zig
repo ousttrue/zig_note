@@ -4,7 +4,8 @@ const imnodes = @import("imnodes");
 
 pub const DemoDock = struct {
     const Self = @This();
-    name: [*:0]const u8 = "demo",
+
+    dummy: i32=0,
 
     pub fn show(_: *Self, p_open: *bool) void {
         if (!p_open.*) {
@@ -16,7 +17,8 @@ pub const DemoDock = struct {
 
 pub const MetricsDock = struct {
     const Self = @This();
-    name: [*:0]const u8 = "metrics",
+
+    dummy: i32=0,
 
     pub fn show(_: *Self, p_open: *bool) void {
         if (!p_open.*) {
@@ -28,7 +30,6 @@ pub const MetricsDock = struct {
 
 pub const HelloDock = struct {
     const Self = @This();
-    name: [*:0]const u8 = "hello",
 
     show_demo_window: *bool,
     show_another_window: *bool,
@@ -63,7 +64,8 @@ pub const HelloDock = struct {
 
 pub const AnotherDock = struct {
     const Self = @This();
-    name: [*:0]const u8 = "another",
+
+    dummy: i32=0,
 
     pub fn show(_: *Self, p_open: *bool) void {
         if (!p_open.*) {
@@ -82,7 +84,6 @@ pub const AnotherDock = struct {
 
 pub const NodeEditorDock = struct {
     const Self = @This();
-    name: [*:0]const u8 = "imnodes",
 
     context: ?*imnodes.ImNodesContext = null,
 

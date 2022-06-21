@@ -112,7 +112,6 @@ pub const MouseHandler = struct {
 
 pub const FboDock = struct {
     const Self = @This();
-    name: [*:0]const u8 = "fbo",
 
     fbo: glo.FboManager,
     bg: imgui.ImVec4 = .{ .x = 0, .y = 0, .z = 0, .w = 0 },
@@ -240,7 +239,6 @@ const init_color = [_]f32{ 0.2, 0.2, 0.2, 1 };
 
 pub const CameraDock = struct {
     const Self = @This();
-    name: [*:0]const u8 = "camera",
 
     camera: zigla.Camera = .{},
     clear_color: [4]f32 = init_color,

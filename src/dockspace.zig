@@ -66,17 +66,19 @@ pub const Dock = struct {
 
     ptr: *anyopaque,
     callback: fn (ptr: *anyopaque, p_open: *bool) void,
+    name: [:0]const u8,
     is_open: bool = true,
 
     pub fn show(self: *Self) void {
         self.callback(self.ptr, &self.is_open);
     }
 
-    pub fn create(p: anytype) Dock {
+    pub fn create(p: anytype, name: [:0]const u8) Dock {
         const T = @TypeOf(p.*);
         return .{
             .ptr = p,
             .callback = TypeEraser(T, "show").call,
+            .name = name,
         };
     }
 };
