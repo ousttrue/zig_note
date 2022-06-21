@@ -20,41 +20,32 @@ const Vertex = struct {
     x: f32,
     y: f32,
     z: f32,
-    // nx: f32,
-    // ny: f32,
-    // nz: f32,
-    // r: f32,
-    // g: f32,
-    // b: f32,
+    nx: f32,
+    ny: f32,
+    nz: f32,
+    r: f32,
+    g: f32,
+    b: f32,
 
     pub fn create(v: anytype) Vertex {
         return .{
             .x = v.@"0",
             .y = v.@"1",
             .z = v.@"2",
-            // .nx = v.@"3",
-            // .ny = v.@"4",
-            // .nz = v.@"5",
-            // .r = v.@"6",
-            // .g = v.@"7",
-            // .b = v.@"8",
+            .nx = v.@"3",
+            .ny = v.@"4",
+            .nz = v.@"5",
+            .r = v.@"6",
+            .g = v.@"7",
+            .b = v.@"8",
         };
     }
 };
 
-const vertices: [3]Vertex = .{
-    Vertex.create(.{
-        -0.6, -0.4, 0,
-        //  0, 0, 1, 1.0, 0.0, 0.0
-    }),
-    Vertex.create(.{
-        0.6, -0.4, 0,
-        // , 0, 0, 1, 0.0, 1.0, 0.0
-    }),
-    Vertex.create(.{
-        0.0, 0.6, 0,
-        // , 0, 0, 1, 0.0, 0.0, 1.0
-    }),
+const g_vertices: [3]Vertex = .{
+    Vertex.create(.{ -2, -2, 0, 0, 0, 1, 1.0, 0.0, 0.0 }),
+    Vertex.create(.{ 2, -2, 0, 0, 0, 1, 0.0, 1.0, 0.0 }),
+    Vertex.create(.{ 0.0, 2, 0, 0, 0, 1, 0.0, 0.0, 1.0 }),
 };
 
 pub const Scene = struct {
@@ -64,10 +55,14 @@ pub const Scene = struct {
     shader: ?glo.Shader = null,
     vao: ?glo.Vao = null,
 
+    vertices: ?[]const Vertex = null,
+
     pub fn new(allocator: std.mem.Allocator) *Self {
         var scene = allocator.create(Scene) catch @panic("create");
+
         scene.* = Scene{
             .allocator = allocator,
+            .vertices = &g_vertices,
         };
         return scene;
     }
@@ -77,9 +72,6 @@ pub const Scene = struct {
     }
 
     pub fn load(self: *Self, path: []const u8) void {
-        _ = self;
-        _ = path;
-
         if (readsource(self.allocator, path)) |data| {
             defer self.allocator.free(data);
             std.debug.print("{}bytes\n", .{data.len});
@@ -109,10 +101,16 @@ pub const Scene = struct {
                 @panic("load");
             };
             self.shader = shader;
+        }
 
-            var vbo = glo.Vbo.init();
-            vbo.setVertices(vertices, false);
-            self.vao = glo.Vao.init(vbo, shader.createVertexLayout(self.allocator), null);
+        if (self.shader) |*shader| {
+            if (self.vao == null) {
+                if (self.vertices) |vertices| {
+                    var vbo = glo.Vbo.init();
+                    vbo.setVertices(vertices, false);
+                    self.vao = glo.Vao.init(vbo, shader.createVertexLayout(self.allocator), null);
+                }
+            }
         }
 
         if (self.shader) |*shader| {

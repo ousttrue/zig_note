@@ -81,6 +81,10 @@ pub const Renderer = struct {
 
         // menu
         if (imgui.BeginMainMenuBar()) {
+            if (imgui.BeginMenu("File", .{ .enabled = true })) {
+                imgui.EndMenu();
+            }
+
             if (imgui.BeginMenu("Views", .{ .enabled = true })) {
                 for (self.docks.items) |*dock| {
                     _ = imgui.MenuItem_2(dock.name, "", &dock.is_open, .{});

@@ -209,8 +209,8 @@ pub const FboDock = struct {
                 // std.debug.print("{}\n", .{mouse_input});
                 const camera = self.mouse_handler.process(mouse_input, true);
 
-                // self.scene.render(mouse_input);
                 self.gizmo.render(camera, mouse_input.x, mouse_input.y);
+                self.scene.render(camera.getViewProjectionMatrix());
             }
         }
     }

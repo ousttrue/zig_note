@@ -23,7 +23,7 @@ pub const Vbo = struct {
         gl.bindBuffer(gl.ARRAY_BUFFER, self.handle);
     }
 
-    pub fn unbind(self: *Self) void {
+    pub fn unbind(self: Self) void {
         _ = self;
         gl.bindBuffer(gl.ARRAY_BUFFER, 0);
     }
@@ -111,8 +111,11 @@ pub const Vao = struct {
             .vbo = vbo,
             .ibo = ibo,
         };
-        self.bind();
+        
         vbo.bind();
+        defer vbo.unbind();
+
+        self.bind();
         for (layouts) |*layout| {
             gl.enableVertexAttribArray(layout.attribute.location);
             const value = @intCast(usize, layout.byteOffset);
@@ -123,7 +126,13 @@ pub const Vao = struct {
             self.ibo = ibo_;
             ibo_.bind();
         }
+
         self.unbind();
+        if (ibo) |ibo_| {
+            self.ibo = ibo_;
+            ibo_.unbind();
+        }        
+
         return self;
     }
 
