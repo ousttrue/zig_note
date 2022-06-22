@@ -98,12 +98,12 @@ pub const Camera = struct {
 pub const Primitive = struct {
     attributes: struct { NORMAL: ?u32 = null, POSITION: u32, TEXCOORD_0: ?u32 = null },
     indices: ?u32 = null,
-    mode: ?u32,
-    material: ?u32,
+    mode: ?u32 = null,
+    material: ?u32 = null,
 };
 
 pub const Mesh = struct {
-    name: ?[]const u8,
+    name: ?[]const u8 = null,
     primitives: []Primitive = &.{},
 };
 
@@ -114,8 +114,8 @@ pub const Accessor = struct {
     byteOffset: usize = 0,
     componentType: u32,
     count: usize,
-    max: ?[]f32,
-    min: ?[]f32,
+    max: ?[]f32 = null,
+    min: ?[]f32 = null,
     @"type": []const u8,
 
     pub fn itemSize(self: Self) usize {
@@ -170,7 +170,7 @@ pub const Sampler = struct {
 };
 
 pub const BufferView = struct {
-    buffer: usize,
+    buffer: usize = 0,
     byteOffset: usize = 0,
     byteLength: usize,
     byteStride: ?usize = null,
@@ -178,8 +178,8 @@ pub const BufferView = struct {
 };
 
 pub const Buffer = struct {
-    byteLength: ?u32,
-    uri: ?[]const u8,
+    byteLength: ?u32 = null,
+    uri: ?[]const u8 = null,
 };
 
 pub const Gltf = struct {
