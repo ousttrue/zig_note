@@ -20,35 +20,23 @@ fn readsource(allocator: std.mem.Allocator, arg: []const u8) ![:0]const u8 {
 }
 
 const Vertex = struct {
-    x: f32,
-    y: f32,
-    z: f32,
-    nx: f32,
-    ny: f32,
-    nz: f32,
-    r: f32,
-    g: f32,
-    b: f32,
+    position: zigla.Vec3,
+    normal: zigla.Vec3,
+    color: zigla.Vec3,
 
     pub fn create(v: anytype) Vertex {
         return .{
-            .x = v.@"0",
-            .y = v.@"1",
-            .z = v.@"2",
-            .nx = v.@"3",
-            .ny = v.@"4",
-            .nz = v.@"5",
-            .r = v.@"6",
-            .g = v.@"7",
-            .b = v.@"8",
+            .position = .{ .x = v.@"0".@"0", .y = v.@"0".@"1", .z = v.@"0".@"2" },
+            .normal = .{ .x = v.@"1".@"0", .y = v.@"1".@"1", .z = v.@"1".@"2" },
+            .color = .{ .x = v.@"2".@"0", .y = v.@"2".@"1", .z = v.@"2".@"2" },
         };
     }
 };
 
 const g_vertices: [3]Vertex = .{
-    Vertex.create(.{ -2, -2, 0, 0, 0, 1, 1.0, 0.0, 0.0 }),
-    Vertex.create(.{ 2, -2, 0, 0, 0, 1, 0.0, 1.0, 0.0 }),
-    Vertex.create(.{ 0.0, 2, 0, 0, 0, 1, 0.0, 0.0, 1.0 }),
+    Vertex.create(.{ .{ -2, -2, 0 }, .{ 0, 0, 1 }, .{ 1.0, 0.0, 0.0 } }),
+    Vertex.create(.{ .{ 2, -2, 0 }, .{ 0, 0, 1 }, .{ 0.0, 1.0, 0.0 } }),
+    Vertex.create(.{ .{ 0.0, 2, 0 }, .{ 0, 0, 1 }, .{ 0.0, 0.0, 1.0 } }),
 };
 
 const Triangle = struct {
@@ -239,14 +227,14 @@ pub const Scene = struct {
                     },
                 }
 
-                const postion_bytes = reader.getBytesFromAccessor(prim.attributes.POSITION);
-                const vertex_count = parsed.accessors[prim.attributes.POSITION].count;
-                builder.vertices.resize(vertex_count) catch unreachable;
-                const position = @ptrCast([*]const zigla.Vec3, @alignCast(@alignOf(zigla.Vec3), &postion_bytes[0]))[0..vertex_count];
+                const position = reader.getTypedFromAccessor(zigla.Vec3, prim.attributes.POSITION);
+                const normal = reader.getTypedFromAccessor(zigla.Vec3, prim.attributes.NORMAL.?);
+                builder.vertices.resize(position.len) catch unreachable;
                 for (position) |v, j| {
-                    builder.vertices.items[j].x = v.x;
-                    builder.vertices.items[j].y = v.y;
-                    builder.vertices.items[j].z = v.z;
+                    var dst = &builder.vertices.items[j];
+                    dst.position = v;
+                    dst.normal = normal[j];
+                    dst.color = zigla.Vec3.init(1, 1, 1);
                 }
 
                 break :blk;

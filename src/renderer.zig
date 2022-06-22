@@ -23,6 +23,7 @@ pub const Renderer = struct {
         self.is_initialized = false;
         self.metrics = .{};
         self.camera = .{};
+        self.camera.camera.projection.far = 1000;
         self.node_editor = .{};
         self.fbo = scene_dock.FboDock.init(allocator, &self.camera.camera, &self.camera.mult_color);
         self.docks = std.ArrayList(dockspace.Dock).init(allocator);

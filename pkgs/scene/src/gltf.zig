@@ -122,12 +122,12 @@ pub const Accessor = struct {
         const t = self.@"type";
         const component_count: usize =
             if (std.mem.eql(u8, t, "SCALAR")) @as(usize, 1) //
-        else if (std.mem.eql(u8, t, "VEC2"))  @as(usize, 2) //
-        else if (std.mem.eql(u8, t, "VEC3"))  @as(usize, 3) //
-        else if (std.mem.eql(u8, t, "VEC4"))  @as(usize, 4) //
-        else if (std.mem.eql(u8, t, "MAT2"))  @as(usize, 4) //
-        else if (std.mem.eql(u8, t, "MAT3"))  @as(usize, 9) //
-        else if (std.mem.eql(u8, t, "MAT4"))  @as(usize, 16) //
+        else if (std.mem.eql(u8, t, "VEC2")) @as(usize, 2) //
+        else if (std.mem.eql(u8, t, "VEC3")) @as(usize, 3) //
+        else if (std.mem.eql(u8, t, "VEC4")) @as(usize, 4) //
+        else if (std.mem.eql(u8, t, "MAT2")) @as(usize, 4) //
+        else if (std.mem.eql(u8, t, "MAT3")) @as(usize, 9) //
+        else if (std.mem.eql(u8, t, "MAT4")) @as(usize, 16) //
         else unreachable;
 
         const component_byte_size: usize = switch (self.componentType) {
@@ -210,5 +210,11 @@ pub const GtlfBufferReader = struct {
         const buffer_view = self.bufferViews[accessor.bufferView];
         const buffer_view_bytes = self.buffers[0][buffer_view.byteOffset .. buffer_view.byteOffset + buffer_view.byteLength];
         return buffer_view_bytes[accessor.byteOffset .. accessor.byteOffset + accessor.count * accessor.itemSize()];
+    }
+
+    pub fn getTypedFromAccessor(self: Self, comptime T: type, accessor_index: usize) []const T {
+        const bytes = self.getBytesFromAccessor(accessor_index);
+        const count = self.accessors[accessor_index].count;
+        return @ptrCast([*]const T, @alignCast(@alignOf(T), &bytes[0]))[0..count];
     }
 };
