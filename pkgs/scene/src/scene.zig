@@ -72,28 +72,28 @@ pub const Scene = struct {
         self.allocator.destroy(self);
     }
 
-    pub fn load(self: *Self, path: []const u8) void {
-        if (readsource(self.allocator, path)) |data| {
-            defer self.allocator.free(data);
-            std.debug.print("{}bytes\n", .{data.len});
-            if (gltf.Glb.parse(data)) |glb| {
-                std.debug.print("parse glb\n", .{});
+    // pub fn load(self: *Self, path: []const u8) void {
+    //     if (readsource(self.allocator, path)) |data| {
+    //         defer self.allocator.free(data);
+    //         std.debug.print("{}bytes\n", .{data.len});
+    //         if (gltf.Glb.parse(data)) |glb| {
+    //             std.debug.print("parse glb\n", .{});
 
-                var parser = std.json.Parser.init(self.allocator, false);
-                defer parser.deinit();
-                if (parser.parse(glb.jsonChunk)) |parsed| {
-                    _ = parsed;
-                    std.debug.print("parsed\n", .{});
-                } else |err| {
-                    std.debug.print("error: {s}", .{@errorName(err)});
-                }
-            } else |err| {
-                std.debug.print("error: {s}", .{@errorName(err)});
-            }
-        } else |err| {
-            std.debug.print("error: {s}", .{@errorName(err)});
-        }
-    }
+    //             var parser = std.json.Parser.init(self.allocator, false);
+    //             defer parser.deinit();
+    //             if (parser.parse(glb.jsonChunk)) |parsed| {
+    //                 _ = parsed;
+    //                 std.debug.print("parsed\n", .{});
+    //             } else |err| {
+    //                 std.debug.print("error: {s}", .{@errorName(err)});
+    //             }
+    //         } else |err| {
+    //             std.debug.print("error: {s}", .{@errorName(err)});
+    //         }
+    //     } else |err| {
+    //         std.debug.print("error: {s}", .{@errorName(err)});
+    //     }
+    // }
 
     pub fn render(self: *Self, camera: *zigla.Camera) void {
         if (self.shader == null) {
@@ -105,12 +105,14 @@ pub const Scene = struct {
         }
 
         if (self.shader) |*shader| {
-            if (self.vao == null) {
-                if (self.vertices) |vertices| {
-                    var vbo = glo.Vbo.init();
-                    vbo.setVertices(Vertex, vertices, false);
-                    self.vao = glo.Vao.init(vbo, shader.createVertexLayout(self.allocator), null);
+            if (self.vertices) |vertices| {
+                self.vertices = null;
+                var vbo = glo.Vbo.init();
+                vbo.setVertices(Vertex, vertices, false);
+                if (self.vao) |*vao| {
+                    vao.deinit();
                 }
+                self.vao = glo.Vao.init(vbo, shader.createVertexLayout(self.allocator), null);
             }
         }
 

@@ -65,7 +65,8 @@ pub fn main() anyerror!void {
 
     if (std.os.argv.len > 1) {
         const arg1 = try std.fmt.allocPrint(allocator, "{s}", .{std.os.argv[1]});
-        renderer.fbo.scene.load(arg1);
+        _ = arg1;
+        // renderer.fbo.scene.load(arg1);
     }
 
     //

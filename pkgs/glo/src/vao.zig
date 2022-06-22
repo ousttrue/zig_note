@@ -137,7 +137,7 @@ pub const Vao = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        gl.deleteVertexArrays(1, &self.vao);
+        gl.deleteVertexArrays(1, &self.handle);
     }
 
     pub fn bind(self: *const Self) void {
