@@ -217,4 +217,30 @@ pub const GtlfBufferReader = struct {
         const count = self.accessors[accessor_index].count;
         return @ptrCast([*]const T, @alignCast(@alignOf(T), &bytes[0]))[0..count];
     }
+
+    pub fn getUIntIndicesFromAccessor(self: Self, accessor_index: usize, out: []u32, vertex_offset: usize) void {
+        const indices_bytes = self.getBytesFromAccessor(accessor_index);
+        const accessor = self.accessors[accessor_index];
+        const index_count = accessor.count;
+        switch (accessor.componentType) {
+            5120, 5121 => {
+                for (indices_bytes[0..index_count]) |index, j| {
+                    out[j] = index + @intCast(u8, vertex_offset);
+                }
+            },
+            5122, 5123 => {
+                const indices = @ptrCast([*]const u16, @alignCast(@alignOf(u16), &indices_bytes[0]))[0..index_count];
+                for (indices) |index, j| {
+                    out[j] = index + @intCast(u16, vertex_offset);
+                }
+            },
+            5125 => {
+                const indices = @ptrCast([*]const u32, @alignCast(@alignOf(u32), &indices_bytes[0]))[0..index_count];
+                for (indices) |index, j| {
+                    out[j] = index + @intCast(u32, vertex_offset);
+                }
+            },
+            else => unreachable,
+        }
+    }
 };
