@@ -70,16 +70,14 @@ pub const Ibo = struct {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    pub fn setIndices(self: *Self, indices: anytype, isDynamic: bool) void {
-        const T = @TypeOf(indices);
-        const E = @typeInfo(T).Array.child;
-        switch (@sizeOf(E)) {
+    pub fn setIndices(self: *Self, comptime T: type, indices: []const T, isDynamic: bool) void {
+        switch (@sizeOf(T)) {
             2 => self.format = gl.UNSIGNED_SHORT,
             4 => self.format = gl.UNSIGNED_INT,
             else => @panic("not implemented"),
         }
         self.bind();
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, @sizeOf(T), &indices, if (isDynamic) gl.DYNAMIC_DRAW else gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, @intCast(gl.GLsizeiptr, @sizeOf(T) * indices.len), &indices[0], if (isDynamic) gl.DYNAMIC_DRAW else gl.STATIC_DRAW);
         self.unbind();
     }
 

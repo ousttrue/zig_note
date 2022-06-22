@@ -108,13 +108,40 @@ pub const Mesh = struct {
 };
 
 pub const Accessor = struct {
-    bufferView: ?u32,
-    byteOffset: ?u32,
-    componentType: ?u32,
-    count: ?u32,
+    const Self = @This();
+
+    bufferView: usize,
+    byteOffset: usize = 0,
+    componentType: u32,
+    count: usize,
     max: ?[]f32,
     min: ?[]f32,
-    @"type": ?[]const u8,
+    @"type": []const u8,
+
+    pub fn itemSize(self: Self) usize {
+        const t = self.@"type";
+        const component_count: usize =
+            if (std.mem.eql(u8, t, "SCALAR")) @as(usize, 1) //
+        else if (std.mem.eql(u8, t, "VEC2"))  @as(usize, 2) //
+        else if (std.mem.eql(u8, t, "VEC3"))  @as(usize, 3) //
+        else if (std.mem.eql(u8, t, "VEC4"))  @as(usize, 4) //
+        else if (std.mem.eql(u8, t, "MAT2"))  @as(usize, 4) //
+        else if (std.mem.eql(u8, t, "MAT3"))  @as(usize, 9) //
+        else if (std.mem.eql(u8, t, "MAT4"))  @as(usize, 16) //
+        else unreachable;
+
+        const component_byte_size: usize = switch (self.componentType) {
+            5120 => 1,
+            5121 => 1,
+            5122 => 2,
+            5123 => 2,
+            5125 => 4,
+            5126 => 4,
+            else => unreachable,
+        };
+
+        return component_count * component_byte_size;
+    }
 };
 
 pub const Material = struct {
@@ -143,11 +170,11 @@ pub const Sampler = struct {
 };
 
 pub const BufferView = struct {
-    buffer: ?u32,
-    byteOffset: ?u32,
-    byteLength: ?u32,
-    byteStride: ?u32,
-    target: ?u32,
+    buffer: usize,
+    byteOffset: usize = 0,
+    byteLength: usize,
+    byteStride: ?usize = null,
+    target: ?u32 = null,
 };
 
 pub const Buffer = struct {
@@ -162,11 +189,26 @@ pub const Gltf = struct {
     // nodes: ?[]Node,
     // cameras: ?[]Camera,
     meshes: []Mesh = &.{},
-    // accessors: ?[]Accessor,
+    accessors: []Accessor = &.{},
     // materials: ?[]Material,
     // textures: ?[]Texture,
     // images: ?[]Image,
     // samplers: ?[]Sampler,
-    // bufferViews: ?[]BufferView,
+    bufferViews: []BufferView = &.{},
     // buffers: ?[]Buffer,
+};
+
+pub const GtlfBufferReader = struct {
+    const Self = @This();
+
+    buffers: []const []const u8,
+    bufferViews: []const BufferView,
+    accessors: []const Accessor,
+
+    pub fn getBytesFromAccessor(self: Self, accessor_index: usize) []const u8 {
+        const accessor = self.accessors[accessor_index];
+        const buffer_view = self.bufferViews[accessor.bufferView];
+        const buffer_view_bytes = self.buffers[0][buffer_view.byteOffset .. buffer_view.byteOffset + buffer_view.byteLength];
+        return buffer_view_bytes[accessor.byteOffset .. accessor.byteOffset + accessor.count * accessor.itemSize()];
+    }
 };
