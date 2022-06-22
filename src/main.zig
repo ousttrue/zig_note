@@ -5,6 +5,7 @@ const gl = @import("gl");
 const imgui = @import("imgui");
 const Renderer = @import("renderer.zig").Renderer;
 const Store = @import("./store.zig").Store;
+const scene = @import("scene");
 
 fn getProc(_: ?*glfw.GLFWwindow, name: [:0]const u8) ?*const anyopaque {
     return glfw.glfwGetProcAddress(@ptrCast([*:0]const u8, name));
@@ -66,7 +67,7 @@ pub fn main() anyerror!void {
     if (std.os.argv.len > 1) {
         const arg1 = try std.fmt.allocPrint(allocator, "{s}", .{std.os.argv[1]});
         _ = arg1;
-        renderer.fbo.scene.load(arg1);
+        renderer.fbo.scene.model = scene.Model.load(allocator, arg1);
     }
 
     //
