@@ -11,6 +11,8 @@ fn readsource(allocator: std.mem.Allocator, arg: []const u8) ![:0]const u8 {
     const file_size = try file.getEndPos();
 
     var buffer = try allocator.allocSentinel(u8, file_size, 0);
+    errdefer allocator.free(buffer);
+
     const bytes_read = try file.read(buffer);
     std.debug.assert(bytes_read == file_size);
     return buffer;
@@ -47,6 +49,31 @@ const g_vertices: [3]Vertex = .{
     Vertex.create(.{ 2, -2, 0, 0, 0, 1, 0.0, 1.0, 0.0 }),
     Vertex.create(.{ 0.0, 2, 0, 0, 0, 1, 0.0, 0.0, 1.0 }),
 };
+fn triangle(_: ?*anyopaque) []const Vertex {
+    return &g_vertices;
+}
+
+pub const Finalizer = fn (self: ?*anyopaque) void;
+pub const GetVertices = fn (self: ?*anyopaque) []const Vertex;
+
+pub const Loader = struct {
+    const Self = @This();
+
+    _ptr: ?*anyopaque = null,
+    _deinit: ?*const Finalizer = null,
+    // interfaces
+    _getVertices: *const GetVertices,
+
+    pub fn deinit(self: *Self) void {
+        if (self._deinit) |callback| {
+            callback.*(if (self._ptr) |ptr| ptr else null);
+        }
+    }
+
+    pub fn getVertices(self: *Self) []const Vertex {
+        return self._getVertices.*(if (self._ptr) |ptr| ptr else null);
+    }
+};
 
 pub const Scene = struct {
     const Self = @This();
@@ -55,7 +82,7 @@ pub const Scene = struct {
     shader: ?glo.Shader = null,
     vao: ?glo.Vao = null,
 
-    vertices: ?[]const Vertex = null,
+    loader: ?Loader = null,
     light: zigla.Vec4 = zigla.Vec4.init(1, 2, 3, 0).normalized(),
 
     pub fn new(allocator: std.mem.Allocator) *Self {
@@ -63,8 +90,9 @@ pub const Scene = struct {
 
         scene.* = Scene{
             .allocator = allocator,
-            .vertices = &g_vertices,
         };
+        scene.loader = .{ ._getVertices = &triangle };
+
         return scene;
     }
 
@@ -72,28 +100,55 @@ pub const Scene = struct {
         self.allocator.destroy(self);
     }
 
-    // pub fn load(self: *Self, path: []const u8) void {
-    //     if (readsource(self.allocator, path)) |data| {
-    //         defer self.allocator.free(data);
-    //         std.debug.print("{}bytes\n", .{data.len});
-    //         if (gltf.Glb.parse(data)) |glb| {
-    //             std.debug.print("parse glb\n", .{});
+    pub fn load(self: *Self, path: []const u8) void {
+        const data = readsource(self.allocator, path) catch |err| {
+            std.debug.print("error: {s}", .{@errorName(err)});
+            return;
+        };
+        errdefer self.allocator.free(data);
+        std.debug.print("{}bytes\n", .{data.len});
 
-    //             var parser = std.json.Parser.init(self.allocator, false);
-    //             defer parser.deinit();
-    //             if (parser.parse(glb.jsonChunk)) |parsed| {
-    //                 _ = parsed;
-    //                 std.debug.print("parsed\n", .{});
-    //             } else |err| {
-    //                 std.debug.print("error: {s}", .{@errorName(err)});
-    //             }
-    //         } else |err| {
-    //             std.debug.print("error: {s}", .{@errorName(err)});
-    //         }
-    //     } else |err| {
-    //         std.debug.print("error: {s}", .{@errorName(err)});
-    //     }
-    // }
+        const glb = gltf.Glb.parse(data) catch |err| {
+            std.debug.print("error: {s}", .{@errorName(err)});
+            return;
+        };
+        std.debug.print("parse glb\n", .{});
+
+        _ = glb;
+
+        // var parser = std.json.Parser.init(self.allocator, false);
+        // defer parser.deinit();
+        // const parsed = parser.parse(glb.jsonChunk) catch |err| {
+        //     std.debug.print("error: {s}", .{@errorName(err)});
+        //     return;
+        // };
+        // _ = parsed;
+        // std.debug.print("parsed\n", .{});
+
+        var stream = std.json.TokenStream.init(glb.jsonChunk);
+        const options = std.json.ParseOptions{ .allocator = self.allocator, .ignore_unknown_fields = true };
+        const parsed = std.json.parse(gltf.Gltf, &stream, options) catch |err|
+            {
+            std.debug.print("error: {s}", .{@errorName(err)});
+            return;
+        };
+        defer std.json.parseFree(gltf.Gltf, parsed, options);
+        std.debug.print("{} meshes\n", .{parsed.meshes.len});
+
+        blk: for (parsed.meshes) |*mesh, i| {
+            std.debug.print("mesh#{}: {} prims\n", .{ i, mesh.primitives.len });
+            for (mesh.primitives) |*prim| {
+                _ = prim;
+                std.debug.print("POSITIONS={}, indices={}\n", .{ prim.indices, prim.attributes.POSITION });
+
+
+
+                break :blk;
+            }
+        }
+
+        defer self.allocator.free(data);
+    }
 
     pub fn render(self: *Self, camera: *zigla.Camera) void {
         if (self.shader == null) {
@@ -105,10 +160,12 @@ pub const Scene = struct {
         }
 
         if (self.shader) |*shader| {
-            if (self.vertices) |vertices| {
-                self.vertices = null;
+            if (self.loader) |*loader| {
+                defer loader.deinit();
+                defer self.loader = null;
+
                 var vbo = glo.Vbo.init();
-                vbo.setVertices(Vertex, vertices, false);
+                vbo.setVertices(Vertex, loader.getVertices(), false);
                 if (self.vao) |*vao| {
                     vao.deinit();
                 }

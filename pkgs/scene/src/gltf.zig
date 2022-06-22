@@ -96,15 +96,15 @@ pub const Camera = struct {
 };
 
 pub const Primitive = struct {
-    attributes: ?struct { NORMAL: ?u32, POSITION: ?u32, TEXCOORD_0: ?u32 },
-    indices: ?u32,
+    attributes: struct { NORMAL: ?u32 = null, POSITION: u32, TEXCOORD_0: ?u32 = null },
+    indices: ?u32 = null,
     mode: ?u32,
     material: ?u32,
 };
 
 pub const Mesh = struct {
     name: ?[]const u8,
-    primitives: ?[]Primitive,
+    primitives: []Primitive = &.{},
 };
 
 pub const Accessor = struct {
@@ -156,17 +156,17 @@ pub const Buffer = struct {
 };
 
 pub const Gltf = struct {
-    asset: ?Asset,
-    scene: ?u32,
-    scenes: ?[]Scene,
-    nodes: ?[]Node,
-    cameras: ?[]Camera,
-    meshes: ?[]Mesh,
-    accessors: ?[]Accessor,
-    materials: ?[]Material,
-    textures: ?[]Texture,
-    images: ?[]Image,
-    samplers: ?[]Sampler,
-    bufferViews: ?[]BufferView,
-    buffers: ?[]Buffer,
+    // asset: ?Asset,
+    // scene: ?u32,
+    // scenes: ?[]Scene,
+    // nodes: ?[]Node,
+    // cameras: ?[]Camera,
+    meshes: []Mesh = &.{},
+    // accessors: ?[]Accessor,
+    // materials: ?[]Material,
+    // textures: ?[]Texture,
+    // images: ?[]Image,
+    // samplers: ?[]Sampler,
+    // bufferViews: ?[]BufferView,
+    // buffers: ?[]Buffer,
 };
