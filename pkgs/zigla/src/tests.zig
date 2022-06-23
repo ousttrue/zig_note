@@ -3,7 +3,6 @@ test {
     _ = @import("./camera_types.zig");
     _ = @import("./ray_intersection.zig");
     _ = @import("./quad_shape.zig");
-    _ = @import("./rigidbody_transformation.zig");
     _ = @import("./vector.zig");
     _ = @import("./vec.zig");
     _ = @import("./rotation.zig");
