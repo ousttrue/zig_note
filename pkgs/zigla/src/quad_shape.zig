@@ -2,7 +2,6 @@ const std = @import("std");
 const vec = @import("./vec.zig");
 const rotation = @import("./rotation.zig");
 const transformation = @import("./transformation.zig");
-const rigidbody = @import("./rigidbody_transformation.zig");
 const ray_intersection = @import("./ray_intersection.zig");
 const camera_types = @import("./camera_types.zig");
 const util = @import("./util.zig");
@@ -117,7 +116,7 @@ pub const Shape = struct {
     }
 
     pub fn localRay(self: Self, ray: Ray) Ray {
-        var rb = rigidbody.RigidBodyTransformation.mat4(self.matrix.*);
+        var rb = transformation.TRS.mat4(self.matrix.*);
         rb = rb.inversed();
         return Ray{
             .origin = rb.transform(ray.origin),
