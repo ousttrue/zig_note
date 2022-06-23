@@ -27,6 +27,7 @@ pub const Vec4 = vec.Vec4;
 pub const AngleAxis = rotation.AngleAxis;
 pub const Mat3 = rotation.Mat3;
 pub const Quaternion = rotation.Quaternion;
+pub const Rotation = rotation.Rotation;
 
 // transformation
 pub const Mat4 = tramsformation.Mat4;

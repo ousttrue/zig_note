@@ -269,7 +269,7 @@ pub const CameraDock = struct {
             imgui.SetNextItemOpen(true, .{ .cond = @enumToInt(imgui.ImGuiCond._FirstUseEver) });
             if (imgui.CollapsingHeader("view", .{})) {
                 _ = imgui.InputFloat3("shift", &self.camera.view.shift.x, .{});
-                _ = imgui.InputFloat4("rotation", &self.camera.view.rotation.x, .{});
+                // _ = imgui.InputFloat4("rotation", &self.camera.view.rotation.x, .{});
             }
         }
         imgui.End();

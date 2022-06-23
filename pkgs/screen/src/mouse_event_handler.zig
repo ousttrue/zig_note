@@ -23,15 +23,15 @@ pub const ArcBall = struct {
 
     view: *zigla.camera_types.View,
     projection: *zigla.camera_types.Projection,
-    rotation: zigla.Quaternion,
-    tmp_rotation: zigla.Quaternion,
+    rotation: zigla.Rotation,
+    tmp_rotation: zigla.Rotation,
     last: ?MouseInput = null,
     va: ?zigla.Vec3 = null,
 
     pub fn init(view: *zigla.camera_types.View, projection: *zigla.camera_types.Projection) Self {
         return .{
-            .rotation = .{},
-            .tmp_rotation = .{},
+            .rotation = .identity,
+            .tmp_rotation = .identity,
             .view = view,
             .projection = projection,
         };
@@ -40,7 +40,6 @@ pub const ArcBall = struct {
     pub fn update(self: *Self) void {
         // self.view.rotation = self.tmp_rotation.mul(self.rotation).normalize();
         self.view.rotation = @"*"(self.tmp_rotation, self.rotation);
-        self.view.rotation.normalize();
     }
 
     pub fn begin(self: *Self, mouse_input: MouseInput) void {
@@ -57,9 +56,9 @@ pub const ArcBall = struct {
                 const dot = va.dot(vb);
                 const angle = std.math.acos(std.math.min(1.0, dot)) * 2;
                 const axis = va.cross(vb);
-                const angleAxis = zigla.AngleAxis.init(angle, axis);
+                // const angleAxis = zigla.AngleAxis.init(angle, axis);
                 // std.log.debug("[{d:.2}, {d:.2}, {d:.2}], [{d:.2}, {d:.2}, {d:.2}][{d:.2}, {d:.2}, {d:.2}], {d:.2}, {d:.2}", .{ va.x, va.y, va.z, vb.x, vb.y, vb.z, axis.x, axis.y, axis.z, dot, angle });
-                self.tmp_rotation = zigla.Quaternion.angleAxis(angleAxis);
+                self.tmp_rotation = zigla.Rotation.angleAxis(angle, axis);
                 self.update();
             }
         }
@@ -68,8 +67,7 @@ pub const ArcBall = struct {
 
     pub fn end(self: *Self, _: MouseInput) void {
         self.rotation = @"*"(self.tmp_rotation, self.rotation);
-        self.rotation.normalize();
-        self.tmp_rotation = .{};
+        self.tmp_rotation = .identity;
         self.update();
     }
 };

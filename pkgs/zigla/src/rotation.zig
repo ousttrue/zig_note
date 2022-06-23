@@ -4,35 +4,35 @@ const util = @import("./util.zig");
 const Vec3 = vec.Vec3;
 const sign = util.sign;
 
-pub const Axis = union(enum) {
-    const Self = @This();
+// pub const Axis = union(enum) {
+//     const Self = @This();
 
-    x,
-    y,
-    z,
-    vec3: Vec3,
+//     x,
+//     y,
+//     z,
+//     vec3: Vec3,
 
-    pub fn toVec3(self: Self) Vec3 {
-        return switch (self) {
-            .x => Vec3.values(1, 0, 0),
-            .y => Vec3.values(0, 1, 0),
-            .z => Vec3.values(0, 0, 1),
-            .vec3 => |v| v,
-        };
-    }
-};
+//     pub fn toVec3(self: Self) Vec3 {
+//         return switch (self) {
+//             .x => Vec3.values(1, 0, 0),
+//             .y => Vec3.values(0, 1, 0),
+//             .z => Vec3.values(0, 0, 1),
+//             .vec3 => |v| v,
+//         };
+//     }
+// };
 
-pub const AngleAxis = struct {
-    const Self = @This();
-    angle: f32,
-    axis: Axis,
-    pub fn init(angle: f32, axis: Vec3) Self {
-        return Self{
-            .angle = angle,
-            .axis = .{ .vec3 = axis },
-        };
-    }
-};
+// pub const AngleAxis = struct {
+//     const Self = @This();
+//     angle: f32,
+//     axis: Axis,
+//     pub fn init(angle: f32, axis: Vec3) Self {
+//         return Self{
+//             .angle = angle,
+//             .axis = .{ .vec3 = axis },
+//         };
+//     }
+// };
 
 /// mat3 for rotation. without scale
 pub const Mat3 = struct {
@@ -73,7 +73,7 @@ pub const Mat3 = struct {
         );
     }
 
-    pub fn rotate(q: Quaternion) Self {
+    pub fn quaternion(q: Quaternion) Self {
         const _00 = 1 - 2 * q.y * q.y - 2 * q.z * q.z;
         const _10 = 2 * q.x * q.y - 2 * q.w * q.z;
         const _20 = 2 * q.z * q.x + 2 * q.w * q.y;
@@ -188,15 +188,18 @@ pub const Mat3 = struct {
     pub fn normalize(self: *Self) void {
         const d = self.det();
         const f = 1.0 / d;
-        self._0.x *= f;
-        self._0.y *= f;
-        self._0.z *= f;
-        self._1.x *= f;
-        self._1.y *= f;
-        self._1.z *= f;
-        self._2.x *= f;
-        self._2.y *= f;
-        self._2.z *= f;
+        const s = Mat3.init(
+            f,
+            0,
+            0,
+            0,
+            f,
+            0,
+            0,
+            0,
+            f,
+        );
+        self.* = self.mul(s);
     }
 
     pub fn mul(self: Self, rhs: Self) Self {
@@ -225,8 +228,7 @@ test "Mat3" {
     var axis = Vec3.values(1, 2, 3);
     axis.normalize();
     const angle = std.math.pi * 25.0 / 180.0;
-    const angleAxis = AngleAxis.init(angle, axis);
-    const q = Quaternion.angleAxis(angleAxis);
+    const q = Quaternion.angleAxis(angle, axis);
     try std.testing.expect(util.nearlyEqual(@as(f32, 1e-5), 9, Mat3.rotate(q).array(), Mat3.angleAxis(angle, axis).array()));
 }
 
@@ -237,11 +239,10 @@ pub const Quaternion = struct {
     z: f32 = 0,
     w: f32 = 1,
 
-    pub fn angleAxis(aa: AngleAxis) Self {
-        const half = aa.angle / 2;
+    pub fn angleAxis(angle: f32, axis: Vec3) Self {
+        const half = angle / 2;
         const c = std.math.cos(half);
         const s = std.math.sin(half);
-        const axis = aa.axis.toVec3();
         return .{
             .x = axis.x * s,
             .y = axis.y * s,
@@ -270,7 +271,7 @@ pub const Quaternion = struct {
     }
 
     pub fn rotate(self: Self, v: Vec3) Vec3 {
-        return Mat3.rotate(self).apply(v);
+        return Mat3.quaternion(self).apply(v);
     }
 
     pub fn mul(self: Self, rhs: Self) Self {
@@ -298,7 +299,61 @@ test "Quaternion" {
 
 /// TODO: euler angles
 pub const Rotation = union(enum) {
+    const Self = @This();
+
     identity,
     mat3: Mat3,
     quaternion: Quaternion,
+
+    pub fn angleAxis(angle: f32, axis: Vec3) Self {
+        return .{
+            .quaternion = Quaternion.angleAxis(angle, axis),
+        };
+    }
+
+    pub fn toMat3(self: Self) Mat3 {
+        return switch (self) {
+            .identity => .{},
+            .mat3 => |mat3| mat3,
+            .quaternion => |q| Mat3.quaternion(q),
+        };
+    }
+
+    pub fn mul(self: Self, rhs: Self) Self {
+        switch (self) {
+            .identity => return rhs,
+            .mat3 => |l_mat3| {
+                switch (rhs) {
+                    .identity => return self,
+                    .mat3 => |r_mat3| {
+                        var m = l_mat3.mul(r_mat3);
+                        m.normalize();
+                        return .{ .mat3 = m };
+                    },
+                    .quaternion => |r_q| {
+                        const r_mat3 = Mat3.quaternion(r_q);
+                        var m = l_mat3.mul(r_mat3);
+                        m.normalize();
+                        return .{ .mat3 = m };
+                    },
+                }
+            },
+            .quaternion => |l_q| {
+                switch (rhs) {
+                    .identity => return self,
+                    .mat3 => |r_mat3| {
+                        const r_q = r_mat3.toQuaternion();
+                        var q = l_q.mul(r_q);
+                        q.normalize();
+                        return .{ .quaternion = q };
+                    },
+                    .quaternion => |r_q| {
+                        var q = l_q.mul(r_q);
+                        q.normalize();
+                        return .{ .quaternion = q };
+                    },
+                }
+            },
+        }
+    }
 };

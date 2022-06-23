@@ -5,6 +5,7 @@ const ray_intersection = @import("./ray_intersection.zig");
 const transformation = @import("./transformation.zig");
 const util = @import("./util.zig");
 const @"*" = util.@"*";
+const Rotation = rotation.Rotation;
 
 pub const Projection = struct {
     const Self = @This();
@@ -32,13 +33,15 @@ pub const Projection = struct {
 pub const View = struct {
     const Self = @This();
 
-    rotation: rotation.Quaternion = .{},
+    gaze: vec.Vec3 = vec.Vec3.values(0, 0, 0),
+    rotation: Rotation = .identity,
     shift: vec.Vec3 = vec.Vec3.values(0, 0, -5),
 
     pub fn getViewMatrix(self: Self) transformation.Mat4 {
+        const g = transformation.Mat4.translate(self.gaze.inversed());
         const r = transformation.Mat4.rotate(self.rotation);
         const t = transformation.Mat4.translate(self.shift);
-        return @"*"(r, t);
+        return @"*"(g, @"*"(r, t));
     }
 
     pub fn getTransformMatrix(self: Self) transformation.Mat4 {
@@ -62,7 +65,7 @@ pub const Camera = struct {
     }
 
     pub fn getRay(self: Self, x: i32, y: i32) ray_intersection.Ray {
-        const inv = rotation.Mat3.rotate(self.view.rotation).transposed();
+        const inv = self.view.rotation.toMat3().transposed();
         return ray_intersection.Ray.createFromScreen(
             @intToFloat(f32, x),
             @intToFloat(f32, y),

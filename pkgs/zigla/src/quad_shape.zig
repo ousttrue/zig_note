@@ -276,8 +276,7 @@ pub fn createRing(comptime sections: usize, axis: vec.Vec3, start: vec.Vec3, inn
     const delta = std.math.pi * 2.0 / @as(f32, sections);
     var vertices: [sections]vec.Vec3 = undefined;
     for (vertices) |*v, i| {
-        const angleAxis = rotation.AngleAxis.init(@intToFloat(f32, i) * delta, axis);
-        v.* = rotation.Quaternion.angleAxis(angleAxis).rotate(start);
+        v.* = rotation.Quaternion.angleAxis(@intToFloat(f32, i) * delta, axis).rotate(start);
     }
 
     var quads: [sections * 2]Quad = undefined;
@@ -318,8 +317,7 @@ pub fn createRoll(comptime sections: usize, axis: vec.Vec3, start: vec.Vec3, out
     const delta = std.math.pi * 2.0 / @as(f32, sections);
     var vertices: [sections]vec.Vec3 = undefined;
     for (vertices) |*v, i| {
-        const angleAxis = rotation.AngleAxis.init(@intToFloat(f32, i) * delta, axis);
-        v.* = rotation.Quaternion.angleAxis(angleAxis).rotate(start);
+        v.* = rotation.Quaternion.angleAxis(@intToFloat(f32, i) * delta, axis).rotate(start);
     }
 
     var quads: [sections]Quad = undefined;

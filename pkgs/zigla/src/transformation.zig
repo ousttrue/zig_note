@@ -86,8 +86,8 @@ pub const Mat4 = struct {
         );
     }
 
-    pub fn rotate(q: rotation.Quaternion) Mat4 {
-        return Self.mat3(rotation.Mat3.rotate(q));
+    pub fn rotate(r: rotation.Rotation) Mat4 {
+        return Self.mat3(r.toMat3());
     }
 
     pub fn col0(self: Self) Vec4 {
