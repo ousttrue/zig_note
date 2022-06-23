@@ -314,7 +314,7 @@ pub const Rotation = union(enum) {
     pub fn toMat3(self: Self) Mat3 {
         return switch (self) {
             .identity => .{},
-            .mat3 => |mat3| mat3,
+            .mat3 => |m| m,
             .quaternion => |q| Mat3.quaternion(q),
         };
     }
@@ -322,8 +322,16 @@ pub const Rotation = union(enum) {
     pub fn inversed(self: Self) Self {
         return switch (self) {
             .identity => .identity,
-            .mat3 => |mat3| .{ .mat3 = mat3.transposed() },
+            .mat3 => |m| .{ .mat3 = m.transposed() },
             .quaternion => |q| .{ .quaternion = q.inversed() },
+        };
+    }
+
+    pub fn rotate(self: Self, v: Vec3) Vec3 {
+        return switch (self) {
+            .identity => v,
+            .mat3 => |m| m.apply(v),
+            .quaternion => |q| q.rotate(v),
         };
     }
 

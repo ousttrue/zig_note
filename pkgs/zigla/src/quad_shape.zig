@@ -116,11 +116,11 @@ pub const Shape = struct {
     }
 
     pub fn localRay(self: Self, ray: Ray) Ray {
-        var rb = transformation.TRS.mat4(self.matrix.*);
+        var rb = transformation.Transformation{ .mat4 = self.matrix.* };
         rb = rb.inversed();
         return Ray{
-            .origin = rb.transform(ray.origin),
-            .dir = rb.rotation.rotate(ray.dir),
+            .origin = rb.applyVec3(ray.origin, 1),
+            .dir = rb.applyVec3(ray.dir, 0),
         };
     }
 

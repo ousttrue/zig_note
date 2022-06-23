@@ -126,7 +126,7 @@ pub const Mat4 = struct {
     // }
 
     pub fn applyVec3(self: Self, v: Vec3, w: f32) Vec3 {
-        const v4 = Vec4.vec3(v, w).mul(self);
+        const v4 = self.apply(Vec4.vec3(v, w));
         return v4.toVec3();
     }
 
@@ -173,15 +173,8 @@ pub const TRS = struct {
     const Self = @This();
 
     translation: vec.Vec3 = vec.Vec3.scalar(0),
-    rotation: rotation.Quaternion = .{},
+    rotation: rotation.Rotation = .identity,
     scale: Scaling = .identity,
-
-    pub fn mat4(m: Mat4) Self {
-        return .{
-            .rotation = m.toMat3().toQuaternion(),
-            .translation = m._3.toVec3(),
-        };
-    }
 
     /// R * T * (Tinv * Rinv) = I
     /// Rinv        |
@@ -195,8 +188,14 @@ pub const TRS = struct {
         };
     }
 
-    pub fn transform(self: Self, point: vec.Vec3) vec.Vec3 {
-        return self.rotation.rotate(point).add(self.translation);
+    pub fn applyVec3(self: Self, v: vec.Vec3, w: f32) vec.Vec3 {
+        if (w == 0) {
+            return self.rotation.rotate(v);
+        } else if (w == 1) {
+            return self.rotation.rotate(v).add(self.translation);
+        } else {
+            unreachable;
+        }
     }
 };
 
@@ -209,13 +208,41 @@ test "RigidBody inv" {
 test "RigidBody" {
     const q = rotation.Quaternion.angleAxis(std.math.pi / 2.0, vec.Vec3.values(1, 0, 0));
     const t = vec.Vec3.values(0, 0, 1);
-    const rb = TRS{ .rotation = q, .translation = t };
+    const rb = TRS{ .rotation = .{ .quaternion = q }, .translation = t };
     const inv = rb.inversed();
     try std.testing.expect(util.nearlyEqual(@as(f32, 1e-5), 3, vec.Vec3.values(0, -1, 0).toArray(), inv.translation.const_array()));
 }
 
 pub const Transformation = union(enum) {
+    const Self = @This();
+
     identity,
     trs: TRS,
     mat4: Mat4,
+
+    pub fn applyVec3(self: Self, v: Vec3, w: f32) Vec3 {
+        return switch (self) {
+            .identity => v,
+            .trs => |trs| trs.applyVec3(v, w),
+            .mat4 => |m| m.applyVec3(v, w),
+        };
+    }
+
+    pub fn inversed(self: Self) Self {
+        return switch (self) {
+            .identity => .identity,
+            .trs => |trs| Self{ .trs = trs.inversed() },
+            .mat4 => |m| blk: {
+                const q = m.toMat3().toQuaternion();
+                const translation = m._3.toVec3();
+                const trs = TRS{ .rotation = .{ .quaternion = q }, .translation = translation };
+                break :blk Self{ .trs = trs.inversed() };
+            },
+        };
+    }
 };
+
+// pub fn mat4(m: Mat4) Self {
+//     return .{
+//     };
+// }
