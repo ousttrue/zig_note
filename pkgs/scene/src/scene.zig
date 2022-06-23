@@ -6,7 +6,7 @@ pub const Scene = struct {
     const Self = @This();
 
     allocator: std.mem.Allocator,
-    light: zigla.Vec4 = zigla.Vec4.init(1, 2, 3, 0).normalized(),
+    light: zigla.Vec4 = zigla.Vec4.values(1, 2, 3, 0).normalized(),
     model: ?Model = null,
 
     pub fn new(allocator: std.mem.Allocator) *Self {

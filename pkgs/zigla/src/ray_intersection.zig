@@ -67,7 +67,7 @@ pub const Plain = struct {
 /// |/ g
 /// o
 fn isFGSameSide(e: vec.Vec2, f: vec.Vec2, g: vec.Vec2) bool {
-    const n = vec.Vec2.init(-e.y, e.x);
+    const n = vec.Vec2.values(-e.y, e.x);
     return n.dot(f) * n.dot(g) >= 0;
 }
 
@@ -93,24 +93,24 @@ pub fn dropMaxAxis(n: vec.Vec3, points: anytype) [@typeInfo(@TypeOf(points)).Arr
         if (x > z) {
             // drop x
             for (points) |p, i| {
-                result[i] = vec.Vec2.init(p.y, p.z);
+                result[i] = vec.Vec2.values(p.y, p.z);
             }
         } else {
             // drop z
             for (points) |p, i| {
-                result[i] = vec.Vec2.init(p.x, p.y);
+                result[i] = vec.Vec2.values(p.x, p.y);
             }
         }
     } else {
         if (y > z) {
             // drop y
             for (points) |p, i| {
-                result[i] = vec.Vec2.init(p.x, p.z);
+                result[i] = vec.Vec2.values(p.x, p.z);
             }
         } else {
             // drop z
             for (points) |p, i| {
-                result[i] = vec.Vec2.init(p.x, p.y);
+                result[i] = vec.Vec2.values(p.x, p.y);
             }
         }
     }
@@ -196,10 +196,10 @@ test "ray not hit" {
     const p = ray.position(t);
     try std.testing.expectEqual(vec.Vec3.values(10, 0, 0), p);
     const p2d = dropMaxAxis(l.n, [_]vec.Vec3{ p, tri.v0, tri.v1, tri.v2 });
-    try std.testing.expectEqual(vec.Vec2.init(10, 0), p2d[0]);
-    try std.testing.expectEqual(vec.Vec2.init(-1, -1), p2d[1]);
-    try std.testing.expectEqual(vec.Vec2.init(1, -1), p2d[2]);
-    try std.testing.expectEqual(vec.Vec2.init(0, 1), p2d[3]);
+    try std.testing.expectEqual(vec.Vec2.values(10, 0), p2d[0]);
+    try std.testing.expectEqual(vec.Vec2.values(-1, -1), p2d[1]);
+    try std.testing.expectEqual(vec.Vec2.values(1, -1), p2d[2]);
+    try std.testing.expectEqual(vec.Vec2.values(0, 1), p2d[3]);
     try std.testing.expect(tri.intersect(ray) == null);
 }
 

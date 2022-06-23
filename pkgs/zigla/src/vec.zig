@@ -6,7 +6,7 @@ pub const Vec2 = struct {
     const Self = @This();
     x: f32,
     y: f32,
-    pub fn init(x: f32, y: f32) Self {
+    pub fn values(x: f32, y: f32) Self {
         return .{ .x = x, .y = y };
     }
     pub fn inversed(self: Self) Self {
@@ -45,7 +45,7 @@ pub const Vec3 = struct {
     pub fn vec2(v: Vec2, z: f32) Vec3 {
         return .{ .x = v.x, .y = v.y, .z = z };
     }
-    pub fn array(self: *Self) [3]f32 {
+    pub fn toArray(self: *Self) [3]f32 {
         return (@ptrCast([*]f32, &self.x))[0..3].*;
     }
     pub fn toVec2(self: Self) Vec2 {
@@ -107,7 +107,7 @@ pub const Vec4 = struct {
     y: f32,
     z: f32,
     w: f32,
-    pub fn init(x: f32, y: f32, z: f32, w: f32) Self {
+    pub fn values(x: f32, y: f32, z: f32, w: f32) Self {
         return .{ .x = x, .y = y, .z = z, .w = w };
     }
     pub fn vec3(v: Vec3, w: f32) Vec4 {

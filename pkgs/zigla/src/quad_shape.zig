@@ -209,15 +209,15 @@ pub fn RingDragFactory(comptime axis_index: usize) type {
     return struct {
         pub fn createRingDragContext(start_screen_pos: vec.Vec2, init_matrix: transformation.Mat4, camera: *camera_types.Camera) DragContext {
             const vp = camera.getViewProjectionMatrix();
-            const center_pos = @"*"(init_matrix, vp).apply(vec.Vec4.init(0, 0, 0, 1));
+            const center_pos = @"*"(init_matrix, vp).apply(vec.Vec4.values(0, 0, 0, 1));
             const cx = center_pos.x / center_pos.w;
             const cy = center_pos.y / center_pos.w;
-            const center_screen_pos = vec.Vec2.init(
+            const center_screen_pos = vec.Vec2.values(
                 (cx * 0.5 + 0.5) * @intToFloat(f32, camera.projection.width),
                 (cy * 0.5 + 0.5) * @intToFloat(f32, camera.projection.height),
             );
             const screen_dir = @"-"(start_screen_pos, center_screen_pos);
-            var n = vec.Vec2.init(-screen_dir.y, screen_dir.x);
+            var n = vec.Vec2.values(-screen_dir.y, screen_dir.x);
             n.normalize();
 
             const view_axis = @"*"(init_matrix, camera.view.getViewMatrix()).getRow(axis_index).toVec3();
@@ -235,7 +235,7 @@ pub fn RollDragFactory(comptime axis_index: usize) type {
     return struct {
         pub fn createRingDragContext(start_screen_pos: vec.Vec2, init_matrix: transformation.Mat4, camera: *camera_types.Camera) DragContext {
             var view_axis = @"*"(init_matrix, camera.view.getViewMatrix()).getRow(axis_index).toVec3();
-            const n = vec.Vec2.init(view_axis.y, -view_axis.x).normalized();
+            const n = vec.Vec2.values(view_axis.y, -view_axis.x).normalized();
             return DragContext.init(ScreenLine.init(start_screen_pos, n), init_matrix, identity.getRow(axis_index));
         }
     };

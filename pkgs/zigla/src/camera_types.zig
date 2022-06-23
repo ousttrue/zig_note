@@ -84,7 +84,7 @@ test "Camera" {
     c.projection.resize(2, 2);
 
     const m = c.view.getTransformMatrix();
-    try std.testing.expectEqual(vec.Vec4.init(0, 0, 5, 1), m._3);
+    try std.testing.expectEqual(vec.Vec4.values(0, 0, 5, 1), m._3);
 
     const ray = c.getRay(1, 1);
     try std.testing.expectEqual(vec.Vec3.values(0, 0, 5), ray.origin);

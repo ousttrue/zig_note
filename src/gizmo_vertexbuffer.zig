@@ -10,7 +10,7 @@ const @"-" = zigla.@"-";
 const VS = @embedFile("gizmo.vs");
 const FS = @embedFile("gizmo.fs");
 
-// const white = zigla.Vec4.init(1, 1, 1, 1);
+// const white = zigla.Vec4.values(1, 1, 1, 1);
 
 pub const Vertex = struct {
     position: zigla.Vec3,
@@ -66,7 +66,7 @@ pub const GizmoVertexBuffer = struct {
     shapes: [256]quad_shape.Shape = undefined,
     shape_count: u32 = 0,
     hit: RayHit = .{
-        .cursor_pos = zigla.Vec2.init(0, 0),
+        .cursor_pos = zigla.Vec2.values(0, 0),
         .ray = .{
             .origin = zigla.Vec3.scalar(0),
             .dir = zigla.Vec3.scalar(0),

@@ -8,17 +8,17 @@ pub const Mat4 = struct {
     const Self = @This();
 
     // rows
-    _0: Vec4 = Vec4.init(1, 0, 0, 0),
-    _1: Vec4 = Vec4.init(0, 1, 0, 0),
-    _2: Vec4 = Vec4.init(0, 0, 1, 0),
-    _3: Vec4 = Vec4.init(0, 0, 0, 1),
+    _0: Vec4 = Vec4.values(1, 0, 0, 0),
+    _1: Vec4 = Vec4.values(0, 1, 0, 0),
+    _2: Vec4 = Vec4.values(0, 0, 1, 0),
+    _3: Vec4 = Vec4.values(0, 0, 0, 1),
 
     pub fn init(_00: f32, _01: f32, _02: f32, _03: f32, _10: f32, _11: f32, _12: f32, _13: f32, _20: f32, _21: f32, _22: f32, _23: f32, _30: f32, _31: f32, _32: f32, _33: f32) Mat4 {
         return .{
-            ._0 = Vec4.init(_00, _01, _02, _03),
-            ._1 = Vec4.init(_10, _11, _12, _13),
-            ._2 = Vec4.init(_20, _21, _22, _23),
-            ._3 = Vec4.init(_30, _31, _32, _33),
+            ._0 = Vec4.values(_00, _01, _02, _03),
+            ._1 = Vec4.values(_10, _11, _12, _13),
+            ._2 = Vec4.values(_20, _21, _22, _23),
+            ._3 = Vec4.values(_30, _31, _32, _33),
         };
     }
 
@@ -52,10 +52,10 @@ pub const Mat4 = struct {
     pub fn frustum(b: f32, t: f32, l: f32, r: f32, n: f32, f: f32) Self {
         // set OpenGL perspective projection matrix
         return Self.rows(
-            Vec4.init(2 * n / (r - l), 0, 0, 0),
-            Vec4.init(0, 2 * n / (t - b), 0, 0),
-            Vec4.init((r + l) / (r - l), (t + b) / (t - b), -(f + n) / (f - n), -1),
-            Vec4.init(0, 0, -2 * f * n / (f - n), 0),
+            Vec4.values(2 * n / (r - l), 0, 0, 0),
+            Vec4.values(0, 2 * n / (t - b), 0, 0),
+            Vec4.values((r + l) / (r - l), (t + b) / (t - b), -(f + n) / (f - n), -1),
+            Vec4.values(0, 0, -2 * f * n / (f - n), 0),
         );
     }
 
@@ -70,9 +70,9 @@ pub const Mat4 = struct {
 
     pub fn translate(t: Vec3) Self {
         return Self.rows(
-            Vec4.init(1, 0, 0, 0),
-            Vec4.init(0, 1, 0, 0),
-            Vec4.init(0, 0, 1, 0),
+            Vec4.values(1, 0, 0, 0),
+            Vec4.values(0, 1, 0, 0),
+            Vec4.values(0, 0, 1, 0),
             Vec4.vec3(t, 1),
         );
     }
@@ -82,7 +82,7 @@ pub const Mat4 = struct {
             Vec4.vec3(m._0, 0),
             Vec4.vec3(m._1, 0),
             Vec4.vec3(m._2, 0),
-            Vec4.init(0, 0, 0, 1),
+            Vec4.values(0, 0, 0, 1),
         );
     }
 
@@ -91,16 +91,16 @@ pub const Mat4 = struct {
     }
 
     pub fn col0(self: Self) Vec4 {
-        return Vec4.init(self._0.x, self._1.x, self._2.x, self._3.x);
+        return Vec4.values(self._0.x, self._1.x, self._2.x, self._3.x);
     }
     pub fn col1(self: Self) Vec4 {
-        return Vec4.init(self._0.y, self._1.y, self._2.y, self._3.y);
+        return Vec4.values(self._0.y, self._1.y, self._2.y, self._3.y);
     }
     pub fn col2(self: Self) Vec4 {
-        return Vec4.init(self._0.z, self._1.z, self._2.z, self._3.z);
+        return Vec4.values(self._0.z, self._1.z, self._2.z, self._3.z);
     }
     pub fn col3(self: Self) Vec4 {
-        return Vec4.init(self._0.w, self._1.w, self._2.w, self._3.w);
+        return Vec4.values(self._0.w, self._1.w, self._2.w, self._3.w);
     }
 
     ///             [m00, m01, m02, m03]
@@ -108,7 +108,7 @@ pub const Mat4 = struct {
     /// [x, y, z, w][m20, m21, m22, m23]
     ///             [m30, m31, m32, m33]
     pub fn apply(self: Self, v: Vec4) Vec4 {
-        return Vec4.init(
+        return Vec4.values(
             v.dot(self.col0()),
             v.dot(self.col1()),
             v.dot(self.col2()),
@@ -131,25 +131,25 @@ pub const Mat4 = struct {
 
     pub fn mul(self: Self, rhs: Self) Self {
         return Self.rows(
-            Vec4.init(
+            Vec4.values(
                 self._0.dot(rhs.col0()),
                 self._0.dot(rhs.col1()),
                 self._0.dot(rhs.col2()),
                 self._0.dot(rhs.col3()),
             ),
-            Vec4.init(
+            Vec4.values(
                 self._1.dot(rhs.col0()),
                 self._1.dot(rhs.col1()),
                 self._1.dot(rhs.col2()),
                 self._1.dot(rhs.col3()),
             ),
-            Vec4.init(
+            Vec4.values(
                 self._2.dot(rhs.col0()),
                 self._2.dot(rhs.col1()),
                 self._2.dot(rhs.col2()),
                 self._2.dot(rhs.col3()),
             ),
-            Vec4.init(
+            Vec4.values(
                 self._3.dot(rhs.col0()),
                 self._3.dot(rhs.col1()),
                 self._3.dot(rhs.col2()),
