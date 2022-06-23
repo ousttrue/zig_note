@@ -44,10 +44,9 @@ test "RigidBody inv" {
 }
 
 test "RigidBody" {
-    const angleAxis = rotation.AngleAxis.init(std.math.pi / 2.0, vec.Vec3.values(1, 0, 0));
-    const q = rotation.Quaternion.angleAxis(angleAxis);
+    const q = rotation.Quaternion.angleAxis(std.math.pi / 2.0, vec.Vec3.values(1, 0, 0));
     const t = vec.Vec3.values(0, 0, 1);
     const rb = RigidBodyTransformation{ .rotation = q, .translation = t };
     const inv = rb.inversed();
-    try std.testing.expect(util.nearlyEqual(@as(f32, 1e-5), 3, vec.Vec3.values(0, -1, 0).array(), inv.translation.const_array()));
+    try std.testing.expect(util.nearlyEqual(@as(f32, 1e-5), 3, vec.Vec3.values(0, -1, 0).toArray(), inv.translation.const_array()));
 }

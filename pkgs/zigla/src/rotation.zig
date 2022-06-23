@@ -42,7 +42,7 @@ pub const Mat3 = struct {
     _1: Vec3 = Vec3.values(0, 1, 0),
     _2: Vec3 = Vec3.values(0, 0, 1),
 
-    pub fn init(_00: f32, _01: f32, _02: f32, _10: f32, _11: f32, _12: f32, _20: f32, _21: f32, _22: f32) Self {
+    pub fn values(_00: f32, _01: f32, _02: f32, _10: f32, _11: f32, _12: f32, _20: f32, _21: f32, _22: f32) Self {
         return .{
             ._0 = Vec3.values(_00, _01, _02),
             ._1 = Vec3.values(_10, _11, _12),
@@ -154,7 +154,7 @@ pub const Mat3 = struct {
         return Quaternion{ .x = q1, .y = q2, .z = q3, .w = q0 };
     }
 
-    pub fn array(self: *Self) [9]f32 {
+    pub fn toArray(self: *Self) [9]f32 {
         return @ptrCast([*]f32, &self._0.x)[0..9].*;
     }
     pub fn col0(self: Self) Vec3 {
@@ -167,7 +167,7 @@ pub const Mat3 = struct {
         return Vec3.values(self._0.z, self._1.z, self._2.z);
     }
 
-    pub fn transposed(self: *Self) Self {
+    pub fn transposed(self: Self) Self {
         return Mat3.rows(
             self.col0(),
             self.col1(),
@@ -188,7 +188,7 @@ pub const Mat3 = struct {
     pub fn normalize(self: *Self) void {
         const d = self.det();
         const f = 1.0 / d;
-        const s = Mat3.init(
+        const s = Mat3.values(
             f,
             0,
             0,
@@ -229,7 +229,7 @@ test "Mat3" {
     axis.normalize();
     const angle = std.math.pi * 25.0 / 180.0;
     const q = Quaternion.angleAxis(angle, axis);
-    try std.testing.expect(util.nearlyEqual(@as(f32, 1e-5), 9, Mat3.rotate(q).array(), Mat3.angleAxis(angle, axis).array()));
+    try std.testing.expect(util.nearlyEqual(@as(f32, 1e-5), 9, Mat3.quaternion(q).toArray(), Mat3.angleAxis(angle, axis).toArray()));
 }
 
 pub const Quaternion = struct {
@@ -291,7 +291,7 @@ test "Quaternion" {
     const q = Quaternion{};
     try std.testing.expectEqual(q, q.mul(q));
 
-    const m = Mat3.rotate(q);
+    const m = Mat3.quaternion(q);
     const qq = m.toQuaternion();
     try std.testing.expectEqual(q, qq);
     try std.testing.expectEqual(Quaternion{ .x = 0, .y = 0, .z = 0, .w = 1 }, qq);
@@ -316,6 +316,14 @@ pub const Rotation = union(enum) {
             .identity => .{},
             .mat3 => |mat3| mat3,
             .quaternion => |q| Mat3.quaternion(q),
+        };
+    }
+
+    pub fn inversed(self: Self) Self {
+        return switch (self) {
+            .identity => .identity,
+            .mat3 => |mat3| .{ .mat3 = mat3.transposed() },
+            .quaternion => |q| .{ .quaternion = q.inversed() },
         };
     }
 
