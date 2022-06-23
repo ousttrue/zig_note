@@ -140,7 +140,7 @@ pub const Model = struct {
                     var dst = &builder.vertices.items[j + vertex_offset];
                     dst.position = v;
                     dst.normal = normal[j];
-                    dst.color = zigla.Vec3.init(1, 1, 1);
+                    dst.color = zigla.Vec3.values(1, 1, 1);
                 }
 
                 index_offset += indices_accessor.count;

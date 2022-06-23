@@ -140,7 +140,7 @@ pub const FboDock = struct {
             while (j < 3) : (j += 1) {
                 const quads = zigla.quad_shape.createCube(0.5, 0.5, 0.5);
                 const shape = self.gizmo.createShape(&quads, zigla.colors.white, null);
-                shape.setPosition(zigla.Vec3.init(
+                shape.setPosition(zigla.Vec3.values(
                     @intToFloat(f32, i),
                     @intToFloat(f32, j),
                     0,

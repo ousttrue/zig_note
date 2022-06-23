@@ -1,13 +1,16 @@
 const std = @import("std");
-const la = @import("./linear_algebra.zig");
+const vec = @import("./vec.zig");
+const rotation = @import("./rotation.zig");
+const transformation = @import("./transformation.zig");
 const rigidbody = @import("./rigidbody_transformation.zig");
 const ray_intersection = @import("./ray_intersection.zig");
 const camera_types = @import("./camera_types.zig");
+const util = @import("./util.zig");
 const Ray = ray_intersection.Ray;
 const Triangle = ray_intersection.Triangle;
-const @"+" = la.@"+";
-const @"*" = la.@"*";
-const @"-" = la.@"-";
+const @"+" = util.@"+";
+const @"*" = util.@"*";
+const @"-" = util.@"-";
 
 pub const Quad = struct {
     const Self = @This();
@@ -15,14 +18,14 @@ pub const Quad = struct {
     t0: Triangle,
     t1: Triangle,
 
-    pub fn from_points(v0: la.Vec3, v1: la.Vec3, v2: la.Vec3, v3: la.Vec3) Self {
+    pub fn from_points(v0: vec.Vec3, v1: vec.Vec3, v2: vec.Vec3, v3: vec.Vec3) Self {
         return Self{
             .t0 = Triangle{ .v0 = v0, .v1 = v1, .v2 = v2 },
             .t1 = Triangle{ .v0 = v2, .v1 = v3, .v2 = v0 },
         };
     }
 
-    pub fn transform(self: Self, m: la.Mat4) Self {
+    pub fn transform(self: Self, m: transformation.Mat4) Self {
         return Self{
             .t0 = self.t0.transform(m),
             .t1 = self.t1.transform(m),
@@ -91,11 +94,11 @@ pub const Shape = struct {
 
     allocator: std.mem.Allocator,
     quads: []const Quad,
-    matrix: *la.Mat4,
+    matrix: *transformation.Mat4,
     state: StateReference,
     drag_factory: ?*const DragFactory = null,
 
-    pub fn init(allocator: std.mem.Allocator, quads: []const Quad, pMatrix: *la.Mat4, state: StateReference) Self {
+    pub fn init(allocator: std.mem.Allocator, quads: []const Quad, pMatrix: *transformation.Mat4, state: StateReference) Self {
         var self = Self{
             .allocator = allocator,
             .quads = allocator.dupe(Quad, quads) catch @panic("dupe"),
@@ -109,8 +112,8 @@ pub const Shape = struct {
         self.allocator.free(self.quads);
     }
 
-    pub fn setPosition(self: *Self, p: la.Vec3) void {
-        self.matrix._3 = la.Vec4.vec3(p, 1);
+    pub fn setPosition(self: *Self, p: vec.Vec3) void {
+        self.matrix._3 = vec.Vec4.vec3(p, 1);
     }
 
     pub fn localRay(self: Self, ray: Ray) Ray {
@@ -155,21 +158,21 @@ pub const Shape = struct {
 pub const ScreenLine = struct {
     const Self = @This();
 
-    start: la.Vec2,
-    dir: la.Vec2,
+    start: vec.Vec2,
+    dir: vec.Vec2,
 
-    pub fn init(start: la.Vec2, dir: la.Vec2) Self {
+    pub fn init(start: vec.Vec2, dir: vec.Vec2) Self {
         return .{
             .start = start,
             .dir = dir.normalized(),
         };
     }
 
-    pub fn beginEnd(start: la.Vec2, end: la.Vec2, w: f32, h: f32) Self {
+    pub fn beginEnd(start: vec.Vec2, end: vec.Vec2, w: f32, h: f32) Self {
         return Self.init(start, @"-"(end, start), w, h);
     }
 
-    pub fn drag(self: *Self, v: la.Vec2) f32 {
+    pub fn drag(self: *Self, v: vec.Vec2) f32 {
         return @"-"(v, self.start).dot(self.dir);
     }
 };
@@ -178,10 +181,10 @@ pub const DragContext = struct {
     const Self = @This();
 
     line: ScreenLine,
-    init_matrix: la.Mat4,
-    axis: la.Vec3,
+    init_matrix: transformation.Mat4,
+    axis: vec.Vec3,
 
-    pub fn init(line: ScreenLine, init_matrix: la.Mat4, axis: la.Vec3) Self {
+    pub fn init(line: ScreenLine, init_matrix: transformation.Mat4, axis: vec.Vec3) Self {
         return .{
             .line = line,
             .init_matrix = init_matrix,
@@ -189,36 +192,36 @@ pub const DragContext = struct {
         };
     }
 
-    pub fn drag(self: *Self, cursor_pos: la.Vec2) la.Mat4 {
+    pub fn drag(self: *Self, cursor_pos: vec.Vec2) transformation.Mat4 {
         const d = self.line.drag(cursor_pos);
         const angle = d * 0.02;
-        const delta = la.Mat3.angleAxis(angle, self.axis);
-        return @"*"(la.Mat4.mat3(delta), self.init_matrix);
+        const delta = rotation.Mat3.angleAxis(angle, self.axis);
+        return @"*"(transformation.Mat4.mat3(delta), self.init_matrix);
     }
 };
 
-pub const DragFactory = fn (cursor_pos: la.Vec2, init_matrix: la.Mat4, camera: *camera_types.Camera) DragContext;
+pub const DragFactory = fn (cursor_pos: vec.Vec2, init_matrix: transformation.Mat4, camera: *camera_types.Camera) DragContext;
 
-const identity = la.Mat3{};
+const identity = rotation.Mat3{};
 
 /// 円盤面のドラッグ
 pub fn RingDragFactory(comptime axis_index: usize) type {
     return struct {
-        pub fn createRingDragContext(start_screen_pos: la.Vec2, init_matrix: la.Mat4, camera: *camera_types.Camera) DragContext {
+        pub fn createRingDragContext(start_screen_pos: vec.Vec2, init_matrix: transformation.Mat4, camera: *camera_types.Camera) DragContext {
             const vp = camera.getViewProjectionMatrix();
-            const center_pos = @"*"(init_matrix, vp).apply(la.Vec4.init(0, 0, 0, 1));
+            const center_pos = @"*"(init_matrix, vp).apply(vec.Vec4.init(0, 0, 0, 1));
             const cx = center_pos.x / center_pos.w;
             const cy = center_pos.y / center_pos.w;
-            const center_screen_pos = la.Vec2.init(
+            const center_screen_pos = vec.Vec2.init(
                 (cx * 0.5 + 0.5) * @intToFloat(f32, camera.projection.width),
                 (cy * 0.5 + 0.5) * @intToFloat(f32, camera.projection.height),
             );
             const screen_dir = @"-"(start_screen_pos, center_screen_pos);
-            var n = la.Vec2.init(-screen_dir.y, screen_dir.x);
+            var n = vec.Vec2.init(-screen_dir.y, screen_dir.x);
             n.normalize();
 
             const view_axis = @"*"(init_matrix, camera.view.getViewMatrix()).getRow(axis_index).toVec3();
-            if (view_axis.dot(la.Vec3.init(0, 0, 1)) < 0) {
+            if (view_axis.dot(vec.Vec3.values(0, 0, 1)) < 0) {
                 n = n.inversed();
             }
 
@@ -230,9 +233,9 @@ pub fn RingDragFactory(comptime axis_index: usize) type {
 /// 車輪面のドラッグ
 pub fn RollDragFactory(comptime axis_index: usize) type {
     return struct {
-        pub fn createRingDragContext(start_screen_pos: la.Vec2, init_matrix: la.Mat4, camera: *camera_types.Camera) DragContext {
+        pub fn createRingDragContext(start_screen_pos: vec.Vec2, init_matrix: transformation.Mat4, camera: *camera_types.Camera) DragContext {
             var view_axis = @"*"(init_matrix, camera.view.getViewMatrix()).getRow(axis_index).toVec3();
-            const n = la.Vec2.init(view_axis.y, -view_axis.x).normalized();
+            const n = vec.Vec2.init(view_axis.y, -view_axis.x).normalized();
             return DragContext.init(ScreenLine.init(start_screen_pos, n), init_matrix, identity.getRow(axis_index));
         }
     };
@@ -251,14 +254,14 @@ pub fn createCube(width: f32, height: f32, depth: f32) [6]Quad {
     const x = width / 2;
     const y = height / 2;
     const z = depth / 2;
-    const v0 = la.Vec3.init(-x, y, z);
-    const v1 = la.Vec3.init(-x, -y, z);
-    const v2 = la.Vec3.init(x, -y, z);
-    const v3 = la.Vec3.init(x, y, z);
-    const v4 = la.Vec3.init(-x, y, -z);
-    const v5 = la.Vec3.init(-x, -y, -z);
-    const v6 = la.Vec3.init(x, -y, -z);
-    const v7 = la.Vec3.init(x, y, -z);
+    const v0 = vec.Vec3.values(-x, y, z);
+    const v1 = vec.Vec3.values(-x, -y, z);
+    const v2 = vec.Vec3.values(x, -y, z);
+    const v3 = vec.Vec3.values(x, y, z);
+    const v4 = vec.Vec3.values(-x, y, -z);
+    const v5 = vec.Vec3.values(-x, -y, -z);
+    const v6 = vec.Vec3.values(x, -y, -z);
+    const v7 = vec.Vec3.values(x, y, -z);
     return .{
         Quad.from_points(v0, v1, v2, v3),
         Quad.from_points(v3, v2, v6, v7),
@@ -269,11 +272,12 @@ pub fn createCube(width: f32, height: f32, depth: f32) [6]Quad {
     };
 }
 
-pub fn createRing(comptime sections: usize, axis: la.Vec3, start: la.Vec3, inner: f32, outer: f32, depth: f32) [sections * 2]Quad {
+pub fn createRing(comptime sections: usize, axis: vec.Vec3, start: vec.Vec3, inner: f32, outer: f32, depth: f32) [sections * 2]Quad {
     const delta = std.math.pi * 2.0 / @as(f32, sections);
-    var vertices: [sections]la.Vec3 = undefined;
+    var vertices: [sections]vec.Vec3 = undefined;
     for (vertices) |*v, i| {
-        v.* = la.Quaternion.angleAxis(@intToFloat(f32, i) * delta, axis).rotate(start);
+        const angleAxis = rotation.AngleAxis.init(@intToFloat(f32, i) * delta, axis);
+        v.* = rotation.Quaternion.angleAxis(angleAxis).rotate(start);
     }
 
     var quads: [sections * 2]Quad = undefined;
@@ -299,22 +303,23 @@ pub fn createRing(comptime sections: usize, axis: la.Vec3, start: la.Vec3, inner
 }
 
 pub fn createXRing(comptime sections: usize, inner: f32, outer: f32, depth: f32) [sections * 2]Quad {
-    return createRing(sections, la.Vec3.init(1, 0, 0), la.Vec3.init(0, 1, 0), inner, outer, depth);
+    return createRing(sections, vec.Vec3.values(1, 0, 0), vec.Vec3.values(0, 1, 0), inner, outer, depth);
 }
 
 pub fn createYRing(comptime sections: usize, inner: f32, outer: f32, depth: f32) [sections * 2]Quad {
-    return createRing(sections, la.Vec3.init(0, 1, 0), la.Vec3.init(0, 0, 1), inner, outer, depth);
+    return createRing(sections, vec.Vec3.values(0, 1, 0), vec.Vec3.values(0, 0, 1), inner, outer, depth);
 }
 
 pub fn createZRing(comptime sections: usize, inner: f32, outer: f32, depth: f32) [sections * 2]Quad {
-    return createRing(sections, la.Vec3.init(0, 0, 1), la.Vec3.init(1, 0, 0), inner, outer, depth);
+    return createRing(sections, vec.Vec3.values(0, 0, 1), vec.Vec3.values(1, 0, 0), inner, outer, depth);
 }
 
-pub fn createRoll(comptime sections: usize, axis: la.Vec3, start: la.Vec3, outer: f32, depth: f32) [sections]Quad {
+pub fn createRoll(comptime sections: usize, axis: vec.Vec3, start: vec.Vec3, outer: f32, depth: f32) [sections]Quad {
     const delta = std.math.pi * 2.0 / @as(f32, sections);
-    var vertices: [sections]la.Vec3 = undefined;
+    var vertices: [sections]vec.Vec3 = undefined;
     for (vertices) |*v, i| {
-        v.* = la.Quaternion.angleAxis(@intToFloat(f32, i) * delta, axis).rotate(start);
+        const angleAxis = rotation.AngleAxis.init(@intToFloat(f32, i) * delta, axis);
+        v.* = rotation.Quaternion.angleAxis(angleAxis).rotate(start);
     }
 
     var quads: [sections]Quad = undefined;
@@ -338,18 +343,18 @@ pub fn createRoll(comptime sections: usize, axis: la.Vec3, start: la.Vec3, outer
 }
 
 pub fn createXRoll(comptime sections: usize, outer: f32, depth: f32) [sections]Quad {
-    return createRoll(sections, la.Vec3.init(1, 0, 0), la.Vec3.init(0, 1, 0), outer, depth);
+    return createRoll(sections, vec.Vec3.values(1, 0, 0), vec.Vec3.values(0, 1, 0), outer, depth);
 }
 pub fn createYRoll(comptime sections: usize, outer: f32, depth: f32) [sections]Quad {
-    return createRoll(sections, la.Vec3.init(0, 1, 0), la.Vec3.init(0, 0, 1), outer, depth);
+    return createRoll(sections, vec.Vec3.values(0, 1, 0), vec.Vec3.values(0, 0, 1), outer, depth);
 }
 pub fn createZRoll(comptime sections: usize, outer: f32, depth: f32) [sections]Quad {
-    return createRoll(sections, la.Vec3.init(0, 0, 1), la.Vec3.init(1, 0, 0), outer, depth);
+    return createRoll(sections, vec.Vec3.values(0, 0, 1), vec.Vec3.values(1, 0, 0), outer, depth);
 }
 
 test "Shape" {
     const quads = createCube(2, 4, 6);
-    var m = la.Mat4{};
+    var m = transformation.Mat4{};
     var s: [1]f32 = .{0};
     var state = StateReference{
         .state = &s,
@@ -361,13 +366,13 @@ test "Shape" {
     defer cube.deinit();
 
     const ray = Ray{
-        .origin = la.Vec3.init(0, 0, 5),
-        .dir = la.Vec3.init(0, 0, -1),
+        .origin = vec.Vec3.values(0, 0, 5),
+        .dir = vec.Vec3.values(0, 0, -1),
     };
 
     const localRay = cube.localRay(ray);
-    try std.testing.expectEqual(la.Vec3.init(0, 0, 5), localRay.origin);
-    try std.testing.expectEqual(la.Vec3.init(0, 0, -1), localRay.dir);
+    try std.testing.expectEqual(vec.Vec3.values(0, 0, 5), localRay.origin);
+    try std.testing.expectEqual(vec.Vec3.values(0, 0, -1), localRay.dir);
 
     const t = cube.intersect(ray);
     try std.testing.expectEqual(@as(f32, 2.0), t.?);

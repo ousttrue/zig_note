@@ -1,23 +1,25 @@
 const std = @import("std");
-const la = @import("./linear_algebra.zig");
-const @"-" = la.@"-";
-const @"+" = la.@"+";
-const @"*" = la.@"*";
+const vec = @import("./vec.zig");
+const rotation = @import("./rotation.zig");
+const util = @import("./util.zig");
+const @"-" = util.@"-";
+const @"+" = util.@"+";
+const @"*" = util.@"*";
 
 pub const Ray = struct {
     const Self = @This();
 
-    origin: la.Vec3,
-    dir: la.Vec3,
+    origin: vec.Vec3,
+    dir: vec.Vec3,
 
-    pub fn createFromScreen(x: f32, y: f32, w: f32, h: f32, t: la.Vec3, r: la.Mat3, fov_y: f32, aspect: f32) Self {
+    pub fn createFromScreen(x: f32, y: f32, w: f32, h: f32, t: vec.Vec3, r: rotation.Mat3, fov_y: f32, aspect: f32) Self {
         const half_fov = fov_y / 2.0;
 
         const xx = (x / w * 2 - 1);
         const yy = -(y / h * 2 - 1);
         // std.log.debug("({d:.2}, {d:.2}), ({d:.2}, {d:.2}), {d:.2}, {d:.2}", .{ x, y, w, h, xx, yy });
 
-        var dir = r.apply(la.Vec3.init(
+        var dir = r.apply(vec.Vec3.values(
             xx * std.math.tan(half_fov) * (aspect),
             yy * std.math.tan(half_fov),
             -1,
@@ -28,17 +30,17 @@ pub const Ray = struct {
         return .{ .origin = t, .dir = dir };
     }
 
-    pub fn position(self: Self, t: f32) la.Vec3 {
+    pub fn position(self: Self, t: f32) vec.Vec3 {
         return @"+"(self.origin, self.dir.mul(t));
     }
 };
 
 pub const Plain = struct {
     const Self = @This();
-    n: la.Vec3,
+    n: vec.Vec3,
     d: f32,
 
-    pub fn triangle(v0: la.Vec3, v1: la.Vec3, v2: la.Vec3) Plain {
+    pub fn triangle(v0: vec.Vec3, v1: vec.Vec3, v2: vec.Vec3) Plain {
         const n = (@"-"(v1, v0)).cross(@"-"(v2, v0)).normalized();
         const d = -n.dot(v0);
         return .{
@@ -48,14 +50,14 @@ pub const Plain = struct {
     }
 
     pub fn intersect(self: Self, ray: Ray) ?f32 {
-        const l = la.Vec4.vec3(self.n, self.d);
-        const lv = l.dot(la.Vec4.vec3(ray.dir, 0));
+        const l = vec.Vec4.vec3(self.n, self.d);
+        const lv = l.dot(vec.Vec4.vec3(ray.dir, 0));
         if (std.math.fabs(lv) < 1e-5) {
             // parallel
             return null;
         }
 
-        const lq = l.dot(la.Vec4.vec3(ray.origin, 1));
+        const lq = l.dot(vec.Vec4.vec3(ray.origin, 1));
         const t = -lq / lv;
         return t;
     }
@@ -64,12 +66,12 @@ pub const Plain = struct {
 /// e-f
 /// |/ g
 /// o
-fn isFGSameSide(e: la.Vec2, f: la.Vec2, g: la.Vec2) bool {
-    const n = la.Vec2.init(-e.y, e.x);
+fn isFGSameSide(e: vec.Vec2, f: vec.Vec2, g: vec.Vec2) bool {
+    const n = vec.Vec2.init(-e.y, e.x);
     return n.dot(f) * n.dot(g) >= 0;
 }
 
-fn isInside2D(p: la.Vec2, v0: la.Vec2, v1: la.Vec2, v2: la.Vec2) bool {
+fn isInside2D(p: vec.Vec2, v0: vec.Vec2, v1: vec.Vec2, v2: vec.Vec2) bool {
     // v0 origin
     if (!isFGSameSide(@"-"(v1, v0), @"-"(v2, v0), @"-"(p, v0))) return false;
     // v1 origin
@@ -80,8 +82,8 @@ fn isInside2D(p: la.Vec2, v0: la.Vec2, v1: la.Vec2, v2: la.Vec2) bool {
     return true;
 }
 
-pub fn dropMaxAxis(n: la.Vec3, points: anytype) [@typeInfo(@TypeOf(points)).Array.len]la.Vec2 {
-    var result: [@typeInfo(@TypeOf(points)).Array.len]la.Vec2 = undefined;
+pub fn dropMaxAxis(n: vec.Vec3, points: anytype) [@typeInfo(@TypeOf(points)).Array.len]vec.Vec2 {
+    var result: [@typeInfo(@TypeOf(points)).Array.len]vec.Vec2 = undefined;
 
     const x = std.math.fabs(n.x);
     const y = std.math.fabs(n.y);
@@ -91,24 +93,24 @@ pub fn dropMaxAxis(n: la.Vec3, points: anytype) [@typeInfo(@TypeOf(points)).Arra
         if (x > z) {
             // drop x
             for (points) |p, i| {
-                result[i] = la.Vec2.init(p.y, p.z);
+                result[i] = vec.Vec2.init(p.y, p.z);
             }
         } else {
             // drop z
             for (points) |p, i| {
-                result[i] = la.Vec2.init(p.x, p.y);
+                result[i] = vec.Vec2.init(p.x, p.y);
             }
         }
     } else {
         if (y > z) {
             // drop y
             for (points) |p, i| {
-                result[i] = la.Vec2.init(p.x, p.z);
+                result[i] = vec.Vec2.init(p.x, p.z);
             }
         } else {
             // drop z
             for (points) |p, i| {
-                result[i] = la.Vec2.init(p.x, p.y);
+                result[i] = vec.Vec2.init(p.x, p.y);
             }
         }
     }
@@ -118,15 +120,15 @@ pub fn dropMaxAxis(n: la.Vec3, points: anytype) [@typeInfo(@TypeOf(points)).Arra
 pub const Triangle = struct {
     const Self = @This();
 
-    v0: la.Vec3,
-    v1: la.Vec3,
-    v2: la.Vec3,
+    v0: vec.Vec3,
+    v1: vec.Vec3,
+    v2: vec.Vec3,
 
     pub fn getPlain(self: Self) Plain {
         return Plain.triangle(self.v0, self.v1, self.v2);
     }
 
-    pub fn transform(self: Self, m: la.Mat4) Self {
+    pub fn transform(self: Self, m: transform.Mat4) Self {
         return .{
             .v0 = m.applyVec3(self.v0, 1),
             .v1 = m.applyVec3(self.v1, 1),
@@ -142,75 +144,75 @@ pub const Triangle = struct {
 
         const p = ray.position(t);
 
-        const p2d = dropMaxAxis(l.n, [_]la.Vec3{ p, self.v0, self.v1, self.v2 });
+        const p2d = dropMaxAxis(l.n, [_]vec.Vec3{ p, self.v0, self.v1, self.v2 });
         return if (isInside2D(p2d[0], p2d[1], p2d[2], p2d[3])) t else null;
     }
 };
 
 test "ray triangle ccw" {
     const ray = Ray{
-        .origin = la.Vec3.init(0, 0, -1),
-        .dir = la.Vec3.init(0, 0, 1),
+        .origin = vec.Vec3.values(0, 0, -1),
+        .dir = vec.Vec3.values(0, 0, 1),
     };
 
     const t = Triangle{
-        .v0 = la.Vec3.init(-1, -1, 0),
-        .v1 = la.Vec3.init(1, -1, 0),
-        .v2 = la.Vec3.init(0, 1, 0),
+        .v0 = vec.Vec3.values(-1, -1, 0),
+        .v1 = vec.Vec3.values(1, -1, 0),
+        .v2 = vec.Vec3.values(0, 1, 0),
     };
     try std.testing.expectEqual(@as(f32, 1.0), t.intersect(ray).?);
 }
 
 test "ray triangle cw" {
     const ray = Ray{
-        .origin = la.Vec3.init(0, 0, -1),
-        .dir = la.Vec3.init(0, 0, 1),
+        .origin = vec.Vec3.values(0, 0, -1),
+        .dir = vec.Vec3.values(0, 0, 1),
     };
 
     const t = Triangle{
-        .v0 = la.Vec3.init(1, 2, -3),
-        .v2 = la.Vec3.init(1, -2, -3),
-        .v1 = la.Vec3.init(-1, -2, -3),
+        .v0 = vec.Vec3.values(1, 2, -3),
+        .v2 = vec.Vec3.values(1, -2, -3),
+        .v1 = vec.Vec3.values(-1, -2, -3),
     };
     try std.testing.expectEqual(@as(f32, -2.0), t.intersect(ray).?);
 }
 
 test "ray not hit" {
     const ray = Ray{
-        .origin = la.Vec3.init(10, 0, -1),
-        .dir = la.Vec3.init(0, 0, 1),
+        .origin = vec.Vec3.values(10, 0, -1),
+        .dir = vec.Vec3.values(0, 0, 1),
     };
     const p0 = ray.position(3);
-    try std.testing.expectEqual(la.Vec3.init(10, 0, 2), p0);
+    try std.testing.expectEqual(vec.Vec3.values(10, 0, 2), p0);
 
     const tri = Triangle{
-        .v0 = la.Vec3.init(-1, -1, 0),
-        .v1 = la.Vec3.init(1, -1, 0),
-        .v2 = la.Vec3.init(0, 1, 0),
+        .v0 = vec.Vec3.values(-1, -1, 0),
+        .v1 = vec.Vec3.values(1, -1, 0),
+        .v2 = vec.Vec3.values(0, 1, 0),
     };
     const l = tri.getPlain();
     const t = l.intersect(ray).?;
     try std.testing.expectEqual(@as(f32, 1), t);
     const p = ray.position(t);
-    try std.testing.expectEqual(la.Vec3.init(10, 0, 0), p);
-    const p2d = dropMaxAxis(l.n, [_]la.Vec3{ p, tri.v0, tri.v1, tri.v2 });
-    try std.testing.expectEqual(la.Vec2.init(10, 0), p2d[0]);
-    try std.testing.expectEqual(la.Vec2.init(-1, -1), p2d[1]);
-    try std.testing.expectEqual(la.Vec2.init(1, -1), p2d[2]);
-    try std.testing.expectEqual(la.Vec2.init(0, 1), p2d[3]);
+    try std.testing.expectEqual(vec.Vec3.values(10, 0, 0), p);
+    const p2d = dropMaxAxis(l.n, [_]vec.Vec3{ p, tri.v0, tri.v1, tri.v2 });
+    try std.testing.expectEqual(vec.Vec2.init(10, 0), p2d[0]);
+    try std.testing.expectEqual(vec.Vec2.init(-1, -1), p2d[1]);
+    try std.testing.expectEqual(vec.Vec2.init(1, -1), p2d[2]);
+    try std.testing.expectEqual(vec.Vec2.init(0, 1), p2d[3]);
     try std.testing.expect(tri.intersect(ray) == null);
 }
 
 test "ray negative" {
     const t = Triangle{
-        .v0 = la.Vec3.init(-1, -1, 0),
-        .v1 = la.Vec3.init(1, -1, 0),
-        .v2 = la.Vec3.init(0, 1, 0),
+        .v0 = vec.Vec3.values(-1, -1, 0),
+        .v1 = vec.Vec3.values(1, -1, 0),
+        .v2 = vec.Vec3.values(0, 1, 0),
     };
     const l = t.getPlain();
     const ray = Ray{
-        .origin = la.Vec3.init(0, 0, 1),
-        .dir = la.Vec3.init(0, 0, -1),
+        .origin = vec.Vec3.values(0, 0, 1),
+        .dir = vec.Vec3.values(0, 0, -1),
     };
 
     try std.testing.expectEqual(@as(f32, 1.0), l.intersect(ray).?);
@@ -219,19 +221,19 @@ test "ray negative" {
 
 test "ray debug" {
     const ray = Ray{
-        .origin = la.Vec3.init(100, 0, 5),
-        .dir = la.Vec3.init(0, 0, -1),
+        .origin = vec.Vec3.values(100, 0, 5),
+        .dir = vec.Vec3.values(0, 0, -1),
     };
     const tri = Triangle{
-        .v0 = la.Vec3.init(1, 2, -3),
-        .v1 = la.Vec3.init(1, -2, -3),
-        .v2 = la.Vec3.init(-1, -2, -3),
+        .v0 = vec.Vec3.values(1, 2, -3),
+        .v1 = vec.Vec3.values(1, -2, -3),
+        .v2 = vec.Vec3.values(-1, -2, -3),
     };
 
     const l = tri.getPlain();
     const t = l.intersect(ray).?;
     const p = ray.position(t);
-    const p2d = dropMaxAxis(l.n, [_]la.Vec3{ p, tri.v0, tri.v1, tri.v2 });
+    const p2d = dropMaxAxis(l.n, [_]vec.Vec3{ p, tri.v0, tri.v1, tri.v2 });
     _ = p2d;
 
     try std.testing.expect(tri.intersect(ray) == null);

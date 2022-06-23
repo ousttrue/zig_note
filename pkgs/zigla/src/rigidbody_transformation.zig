@@ -1,5 +1,8 @@
 const std = @import("std");
-const la = @import("./linear_algebra.zig");
+const vec = @import("./vec.zig");
+const rotation = @import("./rotation.zig");
+const transformation = @import("./transformation.zig");
+const util = @import("./util.zig");
 
 /// R|0
 /// -+-
@@ -7,10 +10,10 @@ const la = @import("./linear_algebra.zig");
 pub const RigidBodyTransformation = struct {
     const Self = @This();
 
-    rotation: la.Quaternion = .{},
-    translation: la.Vec3 = la.Vec3.scalar(0),
+    rotation: rotation.Quaternion = .{},
+    translation: vec.Vec3 = vec.Vec3.scalar(0),
 
-    pub fn mat4(m: la.Mat4) Self {
+    pub fn mat4(m: transformation.Mat4) Self {
         return .{
             .rotation = m.toMat3().toQuaternion(),
             .translation = m._3.toVec3(),
@@ -29,7 +32,7 @@ pub const RigidBodyTransformation = struct {
         };
     }
 
-    pub fn transform(self: Self, point: la.Vec3) la.Vec3 {
+    pub fn transform(self: Self, point: vec.Vec3) vec.Vec3 {
         return self.rotation.rotate(point).add(self.translation);
     }
 };
@@ -41,9 +44,10 @@ test "RigidBody inv" {
 }
 
 test "RigidBody" {
-    const q = la.Quaternion.angleAxis(std.math.pi / 2.0, la.Vec3.init(1, 0, 0));
-    const t = la.Vec3.init(0, 0, 1);
+    const angleAxis = rotation.AngleAxis.init(std.math.pi / 2.0, vec.Vec3.values(1, 0, 0));
+    const q = rotation.Quaternion.angleAxis(angleAxis);
+    const t = vec.Vec3.values(0, 0, 1);
     const rb = RigidBodyTransformation{ .rotation = q, .translation = t };
     const inv = rb.inversed();
-    try std.testing.expect(la.nearlyEqual(@as(f32, 1e-5), 3, la.Vec3.init(0, -1, 0).array(), inv.translation.const_array()));
+    try std.testing.expect(util.nearlyEqual(@as(f32, 1e-5), 3, vec.Vec3.values(0, -1, 0).array(), inv.translation.const_array()));
 }

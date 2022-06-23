@@ -8,7 +8,7 @@ pub fn getArcballVector(mouse_input: MouseInput) zigla.Vec3 {
     // https://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Arcball
     const x = @intToFloat(f32, mouse_input.x) / @intToFloat(f32, mouse_input.width) * 2 - 1.0; // -1 ~ +1
     const y = @intToFloat(f32, mouse_input.y) / @intToFloat(f32, mouse_input.height) * 2 - 1.0; // -1 ~ +1
-    var P = zigla.Vec3.init(x, -y, 0);
+    var P = zigla.Vec3.values(x, -y, 0);
     const OP_squared = P.x * P.x + P.y * P.y;
     if (OP_squared <= 1) {
         P.z = std.math.sqrt(1 - OP_squared); // Pythagoras
@@ -57,8 +57,9 @@ pub const ArcBall = struct {
                 const dot = va.dot(vb);
                 const angle = std.math.acos(std.math.min(1.0, dot)) * 2;
                 const axis = va.cross(vb);
+                const angleAxis = zigla.AngleAxis.init(angle, axis);
                 // std.log.debug("[{d:.2}, {d:.2}, {d:.2}], [{d:.2}, {d:.2}, {d:.2}][{d:.2}, {d:.2}, {d:.2}], {d:.2}, {d:.2}", .{ va.x, va.y, va.z, vb.x, vb.y, vb.z, axis.x, axis.y, axis.z, dot, angle });
-                self.tmp_rotation = zigla.Quaternion.angleAxis(angle, axis);
+                self.tmp_rotation = zigla.Quaternion.angleAxis(angleAxis);
                 self.update();
             }
         }
@@ -90,8 +91,8 @@ pub const TurnTable = struct {
     }
 
     pub fn update(self: *Self) void {
-        const yaw = zigla.Mat3.angleAxis(self.yaw, zigla.Vec3.init(0, 1, 0));
-        const pitch = zigla.Mat3.angleAxis(self.pitch, zigla.Vec3.init(1, 0, 0));
+        const yaw = zigla.Mat3.angleAxis(self.yaw, zigla.Vec3.values(0, 1, 0));
+        const pitch = zigla.Mat3.angleAxis(self.pitch, zigla.Vec3.values(1, 0, 0));
         self.view.rotation = @"*"(pitch, yaw);
     }
 
