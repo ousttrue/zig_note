@@ -348,9 +348,7 @@ pub fn createZRoll(comptime sections: usize, outer: f32, depth: f32) [sections]Q
 }
 
 test "Shape" {
-    const allocator = std.testing.allocator;
-    const quads = createCube(allocator, 2, 4, 6);
-    defer allocator.free(quads);
+    const quads = createCube(2, 4, 6);
     var m = la.Mat4{};
     var s: [1]f32 = .{0};
     var state = StateReference{
@@ -358,7 +356,9 @@ test "Shape" {
         .count = 1,
         .stride = 0,
     };
-    const cube = Shape.init(quads, &m, state);
+    const allocator = std.testing.allocator;
+    var cube = Shape.init(allocator, &quads, &m, state);
+    defer cube.deinit();
 
     const ray = Ray{
         .origin = la.Vec3.init(0, 0, 5),
