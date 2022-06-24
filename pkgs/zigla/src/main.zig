@@ -31,6 +31,7 @@ pub const Rotation = rotation.Rotation;
 
 // transformation
 pub const Mat4 = tramsformation.Mat4;
+pub const Transform = tramsformation.Transform;
 
 pub const Camera = camera_types.Camera;
 pub const Ray = ray_intersection.Ray;

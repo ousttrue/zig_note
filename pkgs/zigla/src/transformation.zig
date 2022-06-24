@@ -213,7 +213,7 @@ test "RigidBody" {
     try std.testing.expect(util.nearlyEqual(@as(f32, 1e-5), 3, vec.Vec3.values(0, -1, 0).toArray(), inv.translation.const_array()));
 }
 
-pub const Transformation = union(enum) {
+pub const Transform = union(enum) {
     const Self = @This();
 
     identity,
@@ -241,8 +241,3 @@ pub const Transformation = union(enum) {
         };
     }
 };
-
-// pub fn mat4(m: Mat4) Self {
-//     return .{
-//     };
-// }

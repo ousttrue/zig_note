@@ -56,20 +56,45 @@ pub const MeshResource = struct {
     }
 };
 
+pub const Node = struct {
+    const Self = @This();
+
+    allocator: std.mem.Allocator,
+    name: []const u8,
+    transform: zigla.Transform = .identity,
+
+    pub fn init(allocator: std.mem.Allocator, name: []const u8) Self {
+        return Self{
+            .allocator = allocator,
+            .name = allocator.dupe(name),
+        };
+    }
+
+    pub fn deinit(self: *Self) void {
+        self.allocator.free(self.name);
+    }
+};
+
 pub const Model = struct {
     const Self = @This();
 
     meshes: std.ArrayList(scene_loader.Loader),
     resources: std.ArrayList(MeshResource),
+    nodes: std.ArrayList(Node),
 
     pub fn init(allocator: std.mem.Allocator) Self {
         return Self{
             .meshes = std.ArrayList(scene_loader.Loader).init(allocator),
             .resources = std.ArrayList(MeshResource).init(allocator),
+            .nodes = std.ArrayList(Node).init(allocator),
         };
     }
 
     pub fn deinit(self: *Self) void {
+        for (self.nodes) |*n| {
+            n.deinit();
+        }
+        self.nodes.deinit();
         for (self.resources) |*r| {
             r.deinit();
         }
@@ -148,7 +173,7 @@ pub const Model = struct {
             }
 
             self.meshes.append(scene_loader.Loader.create(builder)) catch unreachable;
-            self.resources.append(.{.allocator=allocator}) catch unreachable;
+            self.resources.append(.{ .allocator = allocator }) catch unreachable;
         }
 
         return self;
