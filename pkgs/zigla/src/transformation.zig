@@ -167,12 +167,27 @@ pub const Mat4 = struct {
             ),
         );
     }
+
+    pub fn setTranslation(self: *Self, t: Vec3)void
+    {
+        self._3 = Vec4.vec3(t, 1);
+    }
 };
 
 pub const Scaling = union(enum) {
+    const Self = @This();
+
     identity,
-    uniform: u32,
+    uniform: f32,
     vec3: Vec3,
+
+    pub fn toMat3(self: Self) rotation.Mat3 {
+        return switch (self) {
+            .identity => .{},
+            .uniform => |u| rotation.Mat3.scale(Vec3.values(u, u, u)),
+            .vec3 => |v| rotation.Mat3.scale(v),
+        };
+    }
 };
 
 /// R|0
@@ -206,6 +221,14 @@ pub const TRS = struct {
             unreachable;
         }
     }
+
+    pub fn toMat4(self: Self) Mat4 {
+        const r = self.rotation.toMat3();
+        const s = self.scale.toMat3();
+        var m = Mat4.mat3(r.mul(s));
+        m.setTranslation(self.translation);
+        return m;
+    }
 };
 
 test "RigidBody inv" {
@@ -234,6 +257,14 @@ pub const Transform = union(enum) {
             .identity => v,
             .trs => |trs| trs.applyVec3(v, w),
             .mat4 => |m| m.applyVec3(v, w),
+        };
+    }
+
+    pub fn toMat4(self: Self) Mat4 {
+        return switch (self) {
+            .identity => .{},
+            .trs => |trs| trs.toMat4(),
+            .mat4 => |m| m,
         };
     }
 

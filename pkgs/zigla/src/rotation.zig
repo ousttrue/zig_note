@@ -54,6 +54,14 @@ pub const Mat3 = struct {
         return .{ ._0 = _0, ._1 = _1, ._2 = _2 };
     }
 
+    pub fn scale(s: Vec3) Self {
+        return .{
+            ._0 = Vec3.values(s.x, 0, 0),
+            ._1 = Vec3.values(0, s.y, 0),
+            ._2 = Vec3.values(0, 0, s.z),
+        };
+    }
+
     pub fn angleAxis(angle: f32, a: Vec3) Self {
         const c = std.math.cos(angle);
         const s = std.math.sin(angle);

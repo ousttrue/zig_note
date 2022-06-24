@@ -26,7 +26,7 @@ pub const MeshResource = struct {
         self.builder.delete();
     }
 
-    pub fn render(self: *Self, camera: *zigla.Camera, light: zigla.Vec4) void {
+    pub fn render(self: *Self, camera: *zigla.Camera, light: zigla.Vec4, world: zigla.Mat4) void {
         if (self.shader == null) {
             var shader = glo.Shader.load(self.allocator, vs, fs) catch {
                 std.debug.print("{s}\n", .{glo.getErrorMessage()});
@@ -58,7 +58,7 @@ pub const MeshResource = struct {
             shader.use();
             defer shader.unuse();
 
-            shader.setMat4("uMVP", &camera.getViewProjectionMatrix()._0.x);
+            shader.setMat4("uMVP", &world.mul(camera.getViewProjectionMatrix())._0.x);
             shader.setMat4("uView", &camera.view.getViewMatrix()._0.x);
             shader.setVec4("uLight", &light.x);
             if (self.vao) |vao| {
@@ -93,6 +93,16 @@ pub const Node = struct {
     pub fn addChild(self: *Self, child: *Node) void {
         self.children.append(child) catch unreachable;
     }
+
+    pub fn render(self: *Self, camera: *zigla.Camera, light: zigla.Vec4, parent: zigla.Mat4) void {
+        const world = self.transform.toMat4().mul(parent);
+        if (self.mesh) |mesh| {
+            mesh.render(camera, light, world);
+        }
+        for (self.children.items) |child| {
+            child.render(camera, light, world);
+        }
+    }
 };
 
 pub const Model = struct {
@@ -100,20 +110,23 @@ pub const Model = struct {
 
     resources: std.ArrayList(MeshResource),
     nodes: std.ArrayList(Node),
+    roots: std.ArrayList(*Node),
 
     pub fn init(allocator: std.mem.Allocator) Self {
         return Self{
             .resources = std.ArrayList(MeshResource).init(allocator),
             .nodes = std.ArrayList(Node).init(allocator),
+            .roots = std.ArrayList(*Node).init(allocator),
         };
     }
 
     pub fn deinit(self: *Self) void {
-        for (self.nodes) |*n| {
+        self.roots.deinit();
+        for (self.nodes.items) |*n| {
             n.deinit();
         }
         self.nodes.deinit();
-        for (self.resources) |*r| {
+        for (self.resources.items) |*r| {
             r.deinit();
         }
         self.resource.deinit();
@@ -217,14 +230,17 @@ pub const Model = struct {
             }
         }
 
+        const gltf_scene = parsed.scenes[0];
+        for (gltf_scene.nodes) |root_index| {
+            self.roots.append(&self.nodes.items[@intCast(usize, root_index)]) catch unreachable;
+        }
+
         return self;
     }
 
     pub fn render(self: *Self, camera: *zigla.Camera, light: zigla.Vec4) void {
-        for (self.nodes.items) |node| {
-            if (node.mesh) |mesh| {
-                mesh.render(camera, light);
-            }
+        for (self.roots.items) |node| {
+            node.render(camera, light, .{});
         }
     }
 };

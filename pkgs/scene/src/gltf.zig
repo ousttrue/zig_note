@@ -75,7 +75,7 @@ pub const Asset = struct {
 };
 
 pub const Scene = struct {
-    nodes: ?[]const u32,
+    nodes: []const u32 = &.{},
 };
 
 pub const Node = struct {
@@ -189,7 +189,7 @@ pub const Buffer = struct {
 pub const Gltf = struct {
     // asset: ?Asset,
     // scene: ?u32,
-    // scenes: ?[]Scene,
+    scenes: []Scene = &.{},
     nodes: []Node = &.{},
     // cameras: ?[]Camera,
     meshes: []Mesh = &.{},
