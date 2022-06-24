@@ -10,11 +10,23 @@ pub const MeshResource = struct {
     const Self = @This();
 
     allocator: std.mem.Allocator,
+    builder: *scene_loader.Builder,
     shader: ?glo.Shader = null,
     vao: ?glo.Vao = null,
     draw_count: u32 = 0,
 
-    pub fn render(self: *Self, loader: *scene_loader.Loader, camera: *zigla.Camera, light: zigla.Vec4) void {
+    pub fn init(allocator: std.mem.Allocator, builder: *scene_loader.Builder) Self {
+        return Self{
+            .allocator = allocator,
+            .builder = builder,
+        };
+    }
+
+    pub fn deinit(self: *Self) void {
+        self.builder.delete();
+    }
+
+    pub fn render(self: *Self, camera: *zigla.Camera, light: zigla.Vec4) void {
         if (self.shader == null) {
             var shader = glo.Shader.load(self.allocator, vs, fs) catch {
                 std.debug.print("{s}\n", .{glo.getErrorMessage()});
@@ -25,13 +37,13 @@ pub const MeshResource = struct {
 
         if (self.shader) |*shader| {
             var vbo = glo.Vbo.init();
-            const vertices = loader.getVertices();
+            const vertices = self.builder.getVertices();
             vbo.setVertices(scene_loader.Vertex, vertices, false);
             if (self.vao) |*vao| {
                 vao.deinit();
             }
 
-            if (loader.getIndices()) |indices| {
+            if (self.builder.getIndices()) |indices| {
                 var ibo = glo.Ibo.init();
                 ibo.setIndices(u32, indices, false);
                 self.draw_count = @intCast(u32, indices.len);
@@ -62,29 +74,35 @@ pub const Node = struct {
     allocator: std.mem.Allocator,
     name: []const u8,
     transform: zigla.Transform = .identity,
+    children: std.ArrayList(*Node),
+    mesh: ?*MeshResource = null,
 
     pub fn init(allocator: std.mem.Allocator, i: usize, _name: ?[]const u8) Self {
         return Self{
             .allocator = allocator,
             .name = if (_name) |name| (allocator.dupe(u8, name) catch unreachable) else (std.fmt.allocPrint(allocator, "{}", .{i}) catch unreachable),
+            .children = std.ArrayList(*Node).init(allocator),
         };
     }
 
     pub fn deinit(self: *Self) void {
+        self.children.deinit();
         self.allocator.free(self.name);
+    }
+
+    pub fn addChild(self: *Self, child: *Node) void {
+        self.children.append(child) catch unreachable;
     }
 };
 
 pub const Model = struct {
     const Self = @This();
 
-    meshes: std.ArrayList(scene_loader.Loader),
     resources: std.ArrayList(MeshResource),
     nodes: std.ArrayList(Node),
 
     pub fn init(allocator: std.mem.Allocator) Self {
         return Self{
-            .meshes = std.ArrayList(scene_loader.Loader).init(allocator),
             .resources = std.ArrayList(MeshResource).init(allocator),
             .nodes = std.ArrayList(Node).init(allocator),
         };
@@ -99,10 +117,6 @@ pub const Model = struct {
             r.deinit();
         }
         self.resource.deinit();
-        for (self.meshes) |*m| {
-            m.deinit();
-        }
-        self.meshes.deinit();
     }
 
     pub fn load(allocator: std.mem.Allocator, path: []const u8) ?Self {
@@ -122,6 +136,7 @@ pub const Model = struct {
 
         var stream = std.json.TokenStream.init(glb.jsonChunk);
         const options = std.json.ParseOptions{ .allocator = allocator, .ignore_unknown_fields = true };
+        @setEvalBranchQuota(2000);
         const parsed = std.json.parse(gltf.Gltf, &stream, options) catch |err| {
             std.debug.print("json.parse: {s}", .{@errorName(err)});
             return null;
@@ -172,22 +187,44 @@ pub const Model = struct {
                 vertex_offset += position.len;
             }
 
-            self.meshes.append(scene_loader.Loader.create(builder)) catch unreachable;
-            self.resources.append(.{ .allocator = allocator }) catch unreachable;
+            self.resources.append(MeshResource.init(allocator, builder)) catch unreachable;
         }
 
         for (parsed.nodes) |*gltf_node, i| {
             var node = Node.init(allocator, i, gltf_node.name);
             std.debug.print("[{}] {s}\n", .{ i, node.name });
+            if (gltf_node.matrix) |m| {
+                node.transform = .{ .mat4 = @bitCast(zigla.Mat4, m) };
+            } else {
+                node.transform = .{ .trs = .{
+                    .translation = @bitCast(zigla.Vec3, gltf_node.translation),
+                    .rotation = .{ .quaternion = @bitCast(zigla.Quaternion, gltf_node.rotation) },
+                    .scale = .{ .vec3 = @bitCast(zigla.Vec3, gltf_node.scale) },
+                } };
+            }
+            if (gltf_node.mesh) |mesh_index| {
+                node.mesh = &self.resources.items[@intCast(usize, mesh_index)];
+            }
             self.nodes.append(node) catch unreachable;
+        }
+
+        // build tree
+        for (parsed.nodes) |*gltf_node, i| {
+            var node = &self.nodes.items[i];
+            for (gltf_node.children) |child_index| {
+                var child = &self.nodes.items[@intCast(usize, child_index)];
+                node.addChild(child);
+            }
         }
 
         return self;
     }
 
     pub fn render(self: *Self, camera: *zigla.Camera, light: zigla.Vec4) void {
-        for (self.meshes.items) |*src, i| {
-            self.resources.items[i].render(src, camera, light);
+        for (self.nodes.items) |node| {
+            if (node.mesh) |mesh| {
+                mesh.render(camera, light);
+            }
         }
     }
 };

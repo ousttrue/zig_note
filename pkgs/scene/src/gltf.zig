@@ -82,6 +82,9 @@ pub const Node = struct {
     name: ?[]const u8 = null,
     children: []const u32 = &.{},
     matrix: ?[16]f32 = null,
+    translation: [3]f32 = .{ 0, 0, 0 },
+    rotation: [4]f32 = .{ 0, 0, 0, 1 },
+    scale: [3]f32 = .{ 1, 1, 1 },
     camera: ?u32 = null,
     mesh: ?u32 = null,
 };

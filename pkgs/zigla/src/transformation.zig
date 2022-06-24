@@ -14,6 +14,15 @@ pub const Mat4 = struct {
     _2: Vec4 = Vec4.values(0, 0, 1, 0),
     _3: Vec4 = Vec4.values(0, 0, 0, 1),
 
+    pub fn array(a: [16]f32) Self {
+        return .{
+            ._0 = Vec4.values(a[0], a[1], a[2], a[3]),
+            ._1 = Vec4.values(a[4], a[5], a[6], a[7]),
+            ._2 = Vec4.values(a[8], a[9], a[10], a[11]),
+            ._3 = Vec4.values(a[12], a[13], a[14], a[15]),
+        };
+    }
+
     pub fn values(_00: f32, _01: f32, _02: f32, _03: f32, _10: f32, _11: f32, _12: f32, _13: f32, _20: f32, _21: f32, _22: f32, _23: f32, _30: f32, _31: f32, _32: f32, _33: f32) Mat4 {
         return .{
             ._0 = Vec4.values(_00, _01, _02, _03),
