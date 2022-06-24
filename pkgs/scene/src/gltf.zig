@@ -79,10 +79,11 @@ pub const Scene = struct {
 };
 
 pub const Node = struct {
-    children: ?[]const u32,
-    matrix: ?[16]f32,
-    camera: ?u32,
-    mesh: ?u32,
+    name: ?[]const u8 = null,
+    children: []const u32 = &.{},
+    matrix: ?[16]f32 = null,
+    camera: ?u32 = null,
+    mesh: ?u32 = null,
 };
 
 pub const Camera = struct {
@@ -186,7 +187,7 @@ pub const Gltf = struct {
     // asset: ?Asset,
     // scene: ?u32,
     // scenes: ?[]Scene,
-    // nodes: ?[]Node,
+    nodes: []Node = &.{},
     // cameras: ?[]Camera,
     meshes: []Mesh = &.{},
     accessors: []Accessor = &.{},

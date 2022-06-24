@@ -63,10 +63,10 @@ pub const Node = struct {
     name: []const u8,
     transform: zigla.Transform = .identity,
 
-    pub fn init(allocator: std.mem.Allocator, name: []const u8) Self {
+    pub fn init(allocator: std.mem.Allocator, i: usize, _name: ?[]const u8) Self {
         return Self{
             .allocator = allocator,
-            .name = allocator.dupe(name),
+            .name = if (_name) |name| (allocator.dupe(u8, name) catch unreachable) else (std.fmt.allocPrint(allocator, "{}", .{i}) catch unreachable),
         };
     }
 
@@ -135,12 +135,12 @@ pub const Model = struct {
             .accessors = parsed.accessors,
         };
 
-        for (parsed.meshes) |*mesh, i| {
-            std.debug.print("mesh#{}: {} prims\n", .{ i, mesh.primitives.len });
+        for (parsed.meshes) |*gltf_mesh, i| {
+            std.debug.print("mesh#{}: {} prims\n", .{ i, gltf_mesh.primitives.len });
 
             var vertex_count: usize = 0;
             var index_count: usize = 0;
-            for (mesh.primitives) |*prim| {
+            for (gltf_mesh.primitives) |*prim| {
                 vertex_count += parsed.accessors[prim.attributes.POSITION].count;
                 index_count += parsed.accessors[prim.indices.?].count;
             }
@@ -151,7 +151,7 @@ pub const Model = struct {
 
             var vertex_offset: usize = 0;
             var index_offset: usize = 0;
-            for (mesh.primitives) |*prim| {
+            for (gltf_mesh.primitives) |*prim| {
                 // join submeshes
                 _ = prim;
                 std.debug.print("POSITIONS={}, indices={}\n", .{ prim.indices, prim.attributes.POSITION });
@@ -174,6 +174,12 @@ pub const Model = struct {
 
             self.meshes.append(scene_loader.Loader.create(builder)) catch unreachable;
             self.resources.append(.{ .allocator = allocator }) catch unreachable;
+        }
+
+        for (parsed.nodes) |*gltf_node, i| {
+            var node = Node.init(allocator, i, gltf_node.name);
+            std.debug.print("[{}] {s}\n", .{ i, node.name });
+            self.nodes.append(node) catch unreachable;
         }
 
         return self;
