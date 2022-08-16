@@ -10,7 +10,7 @@ const imnodes = @import("pkgs/imnodes/pkg.zig");
 
 const gl = std.build.Pkg{
     .name = "gl",
-    .path = std.build.FileSource{ .path = "pkgs/zig-opengl/exports/gl_4v0.zig" },
+    .source = std.build.FileSource{ .path = "pkgs/zig-opengl/exports/gl_4v0.zig" },
 };
 
 pub fn build(b: *std.build.Builder) void {
@@ -35,9 +35,9 @@ pub fn build(b: *std.build.Builder) void {
     exe.linkLibCpp();
     const ziglaPkg = zigla.addTo(allocator, exe, "pkgs/zigla", null);
     _ = ziglaPkg;
-    glfw.addTo(exe, "pkgs/glfw");
-    nanovg.addTo(exe, "pkgs/nanovg");
-    imgui.addTo(exe, "pkgs/imgui");
+    glfw.addTo(allocator, exe, "pkgs/glfw");
+    nanovg.addTo(allocator, exe, "pkgs/nanovg");
+    imgui.addTo(allocator, exe, "pkgs/imgui");
     const gloPkg = glo.addTo(allocator, exe, "pkgs/glo", &.{gl});
     const screenPkg = screen.addTo(allocator, exe, "pkgs/screen", &.{ziglaPkg});
     scene.addTo(allocator, exe, "pkgs/scene", &.{ screenPkg, gloPkg, ziglaPkg });

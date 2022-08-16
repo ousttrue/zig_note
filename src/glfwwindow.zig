@@ -3,7 +3,7 @@ const glfw = @import("glfw");
 const Store = @import("./store.zig").Store;
 
 fn glfw_error_callback(code: c_int, description: ?[*:0]const u8) callconv(.C) void {
-    std.debug.print("Glfw Error {}: {s}", .{ code, description });
+    std.debug.print("Glfw Error {}: {any}", .{ code, description });
 }
 
 const STORE_KEY = "glfw";

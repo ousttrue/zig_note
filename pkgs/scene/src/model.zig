@@ -182,7 +182,7 @@ pub const Model = struct {
             for (gltf_mesh.primitives) |*prim| {
                 // join submeshes
                 _ = prim;
-                std.debug.print("POSITIONS={}, indices={}\n", .{ prim.indices, prim.attributes.POSITION });
+                std.debug.print("POSITIONS={any}, indices={}\n", .{ prim.indices, prim.attributes.POSITION });
 
                 const indices_accessor = parsed.accessors[prim.indices.?];
                 reader.getUIntIndicesFromAccessor(prim.indices.?, builder.indices.items[index_offset .. index_offset + indices_accessor.count], vertex_offset);

@@ -3,8 +3,8 @@ const Pkg = std.build.Pkg;
 const FileSource = std.build.FileSource;
 const LibExeObjStep = std.build.LibExeObjStep;
 
-fn concat(lhs: []const u8, rhs: []const u8) []const u8 {
-    if (std.testing.allocator.alloc(u8, lhs.len + rhs.len)) |buf| {
+fn concat(allocator: std.mem.Allocator, lhs: []const u8, rhs: []const u8) []const u8 {
+    if (allocator.alloc(u8, lhs.len + rhs.len)) |buf| {
         for (lhs) |c, i| {
             buf[i] = c;
         }
@@ -29,19 +29,19 @@ const SOURCES = [_][]const u8{
     "/src/internal.cpp",
 };
 
-pub fn addTo(exe: *LibExeObjStep, relativePath: []const u8) void {
+pub fn addTo(allocator: std.mem.Allocator, exe: *LibExeObjStep, relativePath: []const u8) void {
     exe.addPackage(Pkg{
         .name = "imgui",
-        .path = FileSource{ .path = concat(relativePath, "/src/main.zig") },
+        .source = FileSource{ .path = concat(allocator, relativePath, "/src/main.zig") },
     });
     // exe.defineCMacro("_GLFW_WIN32", "1");
     // exe.defineCMacro("UNICODE", "1");
     // exe.defineCMacro("_UNICODE", "1");
-    exe.addIncludeDir(concat(relativePath, "/pkgs/imgui"));
+    exe.addIncludeDir(concat(allocator, relativePath, "/pkgs/imgui"));
     // exe.addIncludeDir(concat(relativePath, "/pkgs/glfw/src"));
     for (SOURCES) |src| {
         exe.addCSourceFiles(&.{
-            concat(relativePath, src),
+            concat(allocator, relativePath, src),
         }, &.{});
     }
 }

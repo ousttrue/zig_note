@@ -27,9 +27,9 @@ pub fn main() anyerror!void {
     // Load the OpenGL function pointers
     //
     try gl.load(window.handle, getProc);
-    std.log.info("OpenGL Version:  {s}", .{std.mem.span(gl.getString(gl.VERSION))});
-    std.log.info("OpenGL Vendor:   {s}", .{std.mem.span(gl.getString(gl.VENDOR))});
-    std.log.info("OpenGL Renderer: {s}", .{std.mem.span(gl.getString(gl.RENDERER))});
+    std.log.info("OpenGL Version:  {any}", .{std.mem.span(gl.getString(gl.VERSION))});
+    std.log.info("OpenGL Vendor:   {any}", .{std.mem.span(gl.getString(gl.VENDOR))});
+    std.log.info("OpenGL Renderer: {any}", .{std.mem.span(gl.getString(gl.RENDERER))});
 
     //
     // init imgui
@@ -61,7 +61,7 @@ pub fn main() anyerror!void {
     _ = imgui.ImGui_ImplOpenGL3_Init(.{ .glsl_version = glsl_version });
     defer imgui.ImGui_ImplOpenGL3_Shutdown();
 
-    var renderer = try Renderer.new(std.testing.allocator);
+    var renderer = try Renderer.new(allocator);
     defer renderer.delete();
 
     if (std.os.argv.len > 1) {
