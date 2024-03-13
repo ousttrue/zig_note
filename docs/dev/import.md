@@ -14,7 +14,7 @@
 
 ## std
 
-<https://ziglang.org/documentation/master/std/>
+https://ziglang.org/documentation/master/std/
 
 ## std.os.windows
 

@@ -1,6 +1,6 @@
 # basic
 
-* <https://zig.news/jarredsumner/setting-up-visual-studio-code-for-writing-zig-kcj>
+* https://zig.news/jarredsumner/setting-up-visual-studio-code-for-writing-zig-kcj
 
 ## project
 
@@ -42,8 +42,8 @@ zig-out
 
 ### launch.json
 
-* <https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools> pdb debugger for Windows.
-* <https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb> for set break point.
+* https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools pdb debugger for Windows.
+* https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb for set break point.
 
 ```js
 {
@@ -96,7 +96,7 @@ test "basic test" {
 
 [builtin function](https://ziglang.org/documentation/0.9.0/#Builtin-Functions) に `@` がついている。
 
-* <https://zig.news/mattnite/import-and-packages-23mb>
+* https://zig.news/mattnite/import-and-packages-23mb
 
 
 ### `.{}`
@@ -110,7 +110,7 @@ test "basic test" {
 
 ### 関数定義
 
-<https://ziglang.org/documentation/master/#Functions>
+https://ziglang.org/documentation/master/#Functions
 
 
 ```zig
@@ -122,7 +122,7 @@ fn NAME(params) RETURN_TYPE
 
 ### ErrorUnionType
 
-<https://ziglang.org/documentation/master/#Error-Union-Type>
+https://ziglang.org/documentation/master/#Error-Union-Type
 
 
 ```zig
@@ -138,7 +138,7 @@ pub fn main() anyerror|void {
 
 ### Null
 
-<https://ziglang.org/documentation/master/#Optionals>
+https://ziglang.org/documentation/master/#Optionals
 
 ### pointer
 

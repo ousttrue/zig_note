@@ -1,3 +1,3 @@
 # zpm
 
-<https://github.com/zigtools/zpm>
+https://github.com/zigtools/zpm

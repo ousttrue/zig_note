@@ -1,13 +1,13 @@
 # gyro
 
-<https://github.com/mattnite/gyro>
-- <https://astrolabe.pm/>
+https://github.com/mattnite/gyro
+- https://astrolabe.pm/
 
 ## zgl
 
-<https://github.com/ziglibs/zgl>
+https://github.com/ziglibs/zgl
 
-- <https://github.com/anholt/libepoxy>
+- https://github.com/anholt/libepoxy
 
 ```
 vcpkg.exe install libepoxy --triplet x64-windows-static

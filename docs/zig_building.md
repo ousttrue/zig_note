@@ -7,14 +7,14 @@ LLVM をクロス環境込みで独自ビルドするのがわりと大変。
 `zig` コンパイラが LLVM の `static` ビルドとリンクするようになっているので、
 `static` ビルドを作る必要がある。
 
-<https://github.com/ziglang/zig/wiki/How-to-build-LLVM,-libclang,-and-liblld-from-source#windows>
+https://github.com/ziglang/zig/wiki/How-to-build-LLVM,-libclang,-and-liblld-from-source#windows
 
 ## `vcpkg` 使えるか？
 
 `x64-windows-static`
 `atl` 必要
 
-<https://github.com/microsoft/vcpkg/issues/7543>
+https://github.com/microsoft/vcpkg/issues/7543
 
 ```
 LINK : fatal error LNK1201: error writing to program database ''; check for insufficient disk space, invalid path,      or insufficient privilege

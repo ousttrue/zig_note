@@ -49,6 +49,6 @@ pub fn collectImports(import_arr: *std.ArrayList([]const u8), tree: Ast) !void
 `cImport` するとインテリセンスが効かない。`zig` でラップしたものの方が使いやすいかも。
 `zls` の進化待ち。
 
-<https://github.com/zigtools/zls>
+https://github.com/zigtools/zls
 
 > Notable language features that are not currently implemented include @cImport as well as most forms of compile time evaluation.

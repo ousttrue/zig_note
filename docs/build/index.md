@@ -1,6 +1,6 @@
 # build
 
-- <https://ziglang.org/documentation/master/#Zig-Build-System>
+- https://ziglang.org/documentation/master/#Zig-Build-System
 - [Zig Build System Internals – Mitchell Hashimoto](https://mitchellh.com/zig/build-internals)
 
 zig の独特の感じになれる必要がある。
@@ -30,8 +30,8 @@ pub fn build(b: *std.build.Builder) void {
 }
 ```
 
-- <https://ziglang.org/documentation/0.9.1/std/#std;build.Builder.addExecutable>
-- <https://ziglang.org/documentation/0.9.1/std/#std;build.LibExeObjStep>
+- https://ziglang.org/documentation/0.9.1/std/#std;build.Builder.addExecutable
+- https://ziglang.org/documentation/0.9.1/std/#std;build.LibExeObjStep
 
 CMake ぽい？ `addexecutable` でビルドターゲットを定義するという感じか。
 
@@ -45,7 +45,7 @@ build to `zig-out/bin/hello.exe`
 
 Pkg でエントリーポイントの依存を接続できる。
 
-<https://github.com/ziglang/zig/wiki/FAQ#zig-build>
+https://github.com/ziglang/zig/wiki/FAQ#zig-build
 
 ```zig
     const pkg_common = std.build.Pkg{

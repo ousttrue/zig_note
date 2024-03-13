@@ -1,10 +1,10 @@
 # @cImport
 
-<https://ziglang.org/documentation/master/#toc-Import-from-C-Header-File>
+https://ziglang.org/documentation/master/#toc-Import-from-C-Header-File
 
 ## 例
 
-<https://github.com/michal-z/zig-gamedev/blob/main/samples/intro/build.zig>
+https://github.com/michal-z/zig-gamedev/blob/main/samples/intro/build.zig
 
 ```zig
         const external = "../../external/src";
@@ -22,7 +22,7 @@
         exe.addCSourceFile(external ++ "/cimgui.cpp", &[_][]const u8{""});
 ```
 
-<https://github.com/michal-z/zig-gamedev/blob/main/libs/common/c.zig>
+https://github.com/michal-z/zig-gamedev/blob/main/libs/common/c.zig
 
 ```zig
 pub usingnamespace @cImport({

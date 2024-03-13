@@ -1,6 +1,6 @@
 # example_win32_directx11 の移植
 
-<https://github.com/ocornut/imgui/tree/master/examples/example_win32_directx11>
+https://github.com/ocornut/imgui/tree/master/examples/example_win32_directx11
 
 最初の一歩として上記のコードを zig 化してみよう。
 
@@ -74,11 +74,11 @@ pub fn main() anyerror!void {
 
 先人の手法を眺める・・・
 
-* <https://github.com/SpexGuy/Zig-ImGui/blob/master/zig/imgui.zig>
+* https://github.com/SpexGuy/Zig-ImGui/blob/master/zig/imgui.zig
 
 `extern` を生成している？
 
-* <https://github.com/michal-z/zig-gamedev/blob/main/libs/common/c.zig>
+* https://github.com/michal-z/zig-gamedev/blob/main/libs/common/c.zig
 
 `cImport` でヘッダーを直接読み込んでいる？
 `cImport` やってみよう。
