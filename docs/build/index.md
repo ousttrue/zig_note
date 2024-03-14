@@ -5,9 +5,9 @@
 
 zig の独特の感じになれる必要がある。
 
-* main.zig(entrypoint) からの `@import` の連鎖
-* build.zig の Pkg を介した連鎖
-* Pkg を介した連鎖は、build.zig を連鎖できないことを解決しようとする `gyro` などのパッケージマネージャー
+- main.zig(entrypoint) からの `@import` の連鎖
+- build.zig の Pkg を介した連鎖
+- Pkg を介した連鎖は、build.zig を連鎖できないことを解決しようとする `gyro` などのパッケージマネージャー
 
 を理解する。
 
@@ -74,16 +74,4 @@ Pkg で `build.zig` でやっていることを引き継ぐことができない
 ```zig
 // 例
 exe.addIncludePath("libepoxy_build/include");
-```
-
-```{toctree}
-gyro
-zigmod
-zpm
-```
-
-## 外部ライブラリ
-
-```{toctree}
-external/index
 ```

@@ -9,6 +9,12 @@
 0.11.0
 ```
 
+:::tip 任意のバージョンをインストールできるようにする
+
+👉 [zigup](/docs/zig_version/zigup)
+
+:::
+
 ## hello world
 
 ```sh title="powershell の例"

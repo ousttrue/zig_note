@@ -13,16 +13,41 @@ import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
 const sidebars: SidebarsConfig = {
   sidebar: [
     'index',
-    'zig_version',
     {
       type: 'category',
       label: 'ことはじめ',
       items: [
         'getstarted/index',
-        'getstarted/nvim',
       ],
     },
-    'build/index',
+    {
+      type: 'category',
+      label: 'zig tools',
+      items: [
+        'tools/nvim',
+        'tools/zls',
+        'tools/zls_source',
+      ]
+    },
+    {
+      type: 'category',
+      label: 'zig version',
+      items: [
+        'zig_version/zigup',
+        'zig_version/breaking_changes',
+      ]
+    },
+    {
+      type: 'category',
+      label: 'build',
+      items: [
+        'build/index',
+        'build/zon',
+        'build/gyro',
+        'build/zigmod',
+        'build/zpm',
+      ]
+    },
     {
       type: 'category',
       label: 'use zig',
@@ -39,7 +64,6 @@ const sidebars: SidebarsConfig = {
     },
     'std/index',
     'ast/index',
-    'zls/index',
     'zig_building',
     'articles/index',
   ],

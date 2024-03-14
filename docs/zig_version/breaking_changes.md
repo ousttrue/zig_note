@@ -1,7 +1,12 @@
-# zig version
+# breaking changes
+
+## 0.12.0.dev
+
+### exe.addModule の変更
+
+- [Upcoming zig 0.12 changes of writing `build.zig`](https://zig.news/liyu1981/upcoming-zig-012-changes-of-writing-buildzig-1hb7)
 
 ## 0.11.0
-
 
 ## 0.10.0
 
