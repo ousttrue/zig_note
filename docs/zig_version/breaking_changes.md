@@ -1,6 +1,22 @@
 # breaking changes
 
-## 0.12.0.dev
+## 0.12.0
+
+### addPackage => addModule
+
+- https://github.com/ziglang/zig/issues/14278
+
+### std.build.LibExeObjStep => std.Build.Step.Compile;
+
+- https://github.com/ziglang/zig/pull/14498
+
+### extra capture in for loop
+
+- https://github.com/dmgk/zig-uuid/issues/2
+
+### zig init-exe は zig init に
+
+なった。
 
 ### exe.addModule の変更
 
@@ -12,7 +28,7 @@
 
 ### std.ChildProcess.init
 
-* https://github.com/ziglang/zig/commit/a0a2ce92ca129d28e22c63f7bace1672c43776b5
+- https://github.com/ziglang/zig/commit/a0a2ce92ca129d28e22c63f7bace1672c43776b5
 
 ```zig
 const proc = try std.ChildProcess.init(argv, gpa);
@@ -35,17 +51,17 @@ pub const glfw = Pkg{
 
 ## 0.9.1 (20220214)
 
-* https://ziglang.org/download/0.9.1/release-notes.html
+- https://ziglang.org/download/0.9.1/release-notes.html
 
 ## 0.9.0
 
-* https://ziglang.org/download/0.9.0/release-notes.html
+- https://ziglang.org/download/0.9.0/release-notes.html
 
-* [c_void renamed to anyopaque](https://ziglang.org/download/0.9.0/release-notes.html#c_void-renamed-to-anyopaque)
+- [c_void renamed to anyopaque](https://ziglang.org/download/0.9.0/release-notes.html#c_void-renamed-to-anyopaque)
 
 ### `use of undeclared identifier`
 
-* [usingnamespace No Longer Affects Identifier Lookup](https://ziglang.org/download/0.9.0/release-notes.html#usingnamespace-No-Longer-Affects-Identifier-Lookup)
+- [usingnamespace No Longer Affects Identifier Lookup](https://ziglang.org/download/0.9.0/release-notes.html#usingnamespace-No-Longer-Affects-Identifier-Lookup)
 
 https://ziglang.org/download/0.9.0/release-notes.html#usingnamespace-No-Longer-Affects-Identifier-Lookup
 
@@ -71,8 +87,7 @@ pub fn main() anyerror!void {
 
 ### Unused-Locals
 
-* https://ziglang.org/download/0.9.0/release-notes.html#Compile-Errors-for-Unused-Locals
-
+- https://ziglang.org/download/0.9.0/release-notes.html#Compile-Errors-for-Unused-Locals
 
 ```zig
 const a = 0;
@@ -82,13 +97,13 @@ _ = a;
 
 ## 0.8.0
 
-* https://ziglang.org/download/0.8.0/release-notes.html
+- https://ziglang.org/download/0.8.0/release-notes.html
 
-* [No More Extern or Packed Enums](https://ziglang.org/download/0.8.0/release-notes.html#No-More-Extern-or-Packed-Enums)
+- [No More Extern or Packed Enums](https://ziglang.org/download/0.8.0/release-notes.html#No-More-Extern-or-Packed-Enums)
 
 ### builtin
 
-* https://ziglang.org/download/0.8.0/release-notes.html#importbuiltin-no-longer-re-exports-stdbuiltin
+- https://ziglang.org/download/0.8.0/release-notes.html#importbuiltin-no-longer-re-exports-stdbuiltin
 
 `container 'std.builtin' has no member called 'os'`
 
@@ -105,8 +120,7 @@ const separator = if (builtin.os.tag == builtin.Os.windows) '\\' else '/';
 
 ## 0.7.0
 
-* https://ziglang.org/download/0.7.0/release-notes.html
-
+- https://ziglang.org/download/0.7.0/release-notes.html
 
 ### comptime var to anytype
 
@@ -128,12 +142,11 @@ comptime name: anytype
 
 ## 0.6.0
 
-* https://ziglang.org/download/0.6.0/release-notes.html
+- https://ziglang.org/download/0.6.0/release-notes.html
 
-* [Remove Array-to-Reference Type Coercion](https://ziglang.org/download/0.6.0/release-notes.html#Remove-Array-to-Reference-Type-Coercion)
+- [Remove Array-to-Reference Type Coercion](https://ziglang.org/download/0.6.0/release-notes.html#Remove-Array-to-Reference-Type-Coercion)
 
 ## Trouble
-
 
 ### `libc headers not available; compilation does not link against libc`
 

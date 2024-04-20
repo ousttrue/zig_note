@@ -26,8 +26,8 @@ fn makeFullPath(allocator: std.mem.Allocator, path: []const u8) []const u8 {
         return allocator.dupe(u8, path) catch @panic("dupe");
     } else {
         var buffer: [std.fs.MAX_PATH_BYTES]u8 = undefined;
-        const cwd = std.os.getcwd(buffer[0..buffer.len]) catch @panic("getcwd");
-        return std.fmt.allocPrint(allocator, "{s}/{s}", .{cwd, path}) catch @panic("allocPrint");
+        const cwd = std.process.getCwd(buffer[0..buffer.len]) catch @panic("getcwd");
+        return std.fmt.allocPrint(allocator, "{s}/{s}", .{ cwd, path }) catch @panic("allocPrint");
     }
 }
 
@@ -42,15 +42,15 @@ const Reader = struct {
     }
 
     pub fn slice(self: *Self, len: usize) []const u8 {
-        var values = self.buffer[self.pos .. self.pos + len];
+        const values = self.buffer[self.pos .. self.pos + len];
         self.pos += len;
         return values;
     }
 
     pub fn readInt(self: *Self) u32 {
-        const value = @ptrCast(*const u32, @alignCast(4, &self.buffer[self.pos])).*;
+        const value: *const u32 = @ptrCast(&self.buffer[self.pos]);
         self.pos += 4;
-        return value;
+        return value.*;
     }
 };
 
@@ -84,7 +84,7 @@ pub const Store = struct {
         const f = try std.fs.openFileAbsolute(self.path, .{});
         defer f.close();
         const size = try f.getEndPos();
-        std.debug.assert((try f.reader().readInt(u32, .Little)) == MAGIC);
+        std.debug.assert((try f.reader().readInt(u32, .little)) == MAGIC);
         try self.buffer.resize(size - 4);
         _ = try f.readAll(self.buffer.items);
     }
@@ -108,9 +108,9 @@ pub const Store = struct {
 
     pub fn push(self: *Self, key: []const u8, value: []const u8) !void {
         var w = self.buffer.writer();
-        try w.writeInt(i32, @intCast(i32, key.len), .Little);
+        try w.writeInt(i32, @as(i32, @intCast(key.len)), .little);
         _ = try w.write(key);
-        try w.writeInt(i32, @intCast(i32, value.len), .Little);
+        try w.writeInt(i32, @as(i32, @intCast(value.len)), .little);
         _ = try w.write(value);
     }
 
@@ -118,7 +118,7 @@ pub const Store = struct {
         const f = try std.fs.createFileAbsolute(self.path, .{});
         defer f.close();
         var w = f.writer();
-        try w.writeInt(i32, MAGIC, .Little);
+        try w.writeInt(i32, MAGIC, .little);
         try w.writeAll(self.buffer.items);
     }
 };

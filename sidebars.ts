@@ -18,6 +18,7 @@ const sidebars: SidebarsConfig = {
       label: 'ことはじめ',
       items: [
         'getstarted/index',
+        'getstarted/project',
       ],
     },
     {

@@ -1,19 +1,27 @@
 # build
 
-- https://ziglang.org/documentation/master/#Zig-Build-System
-- [Zig Build System Internals – Mitchell Hashimoto](https://mitchellh.com/zig/build-internals)
-
-zig の独特の感じになれる必要がある。
-
-- main.zig(entrypoint) からの `@import` の連鎖
-- build.zig の Pkg を介した連鎖
-- Pkg を介した連鎖は、build.zig を連鎖できないことを解決しようとする `gyro` などのパッケージマネージャー
-
-を理解する。
-
 ## minimum
 
-```zig
+```zig title="0.12.0"
+const std = @import("std");
+
+pub fn build(b: *std.Build) void {
+    const target = b.standardTargetOptions(.{});
+    const optimize = b.standardOptimizeOption(.{});
+
+    const exe = b.addExecutable(.{
+        .name = "zig-hello",
+        .root_source_file = b.path("src/main.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // install to zig-out/bin/ when build
+    b.installArtifact(exe);
+}
+```
+
+```zig title="0.11.0?"
 const std = @import("std");
 
 // minimum

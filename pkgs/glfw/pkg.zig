@@ -1,14 +1,14 @@
 const std = @import("std");
 const Pkg = std.build.Pkg;
 const FileSource = std.build.FileSource;
-const LibExeObjStep = std.build.LibExeObjStep;
+const LibExeObjStep = std.Build.Step.Compile;
 
 fn concat(allocator: std.mem.Allocator, lhs: []const u8, rhs: []const u8) []const u8 {
     if (allocator.alloc(u8, lhs.len + rhs.len)) |buf| {
-        for (lhs) |c, i| {
+        for (lhs, 0..) |c, i| {
             buf[i] = c;
         }
-        for (rhs) |c, i| {
+        for (rhs, 0..) |c, i| {
             buf[i + lhs.len] = c;
         }
         return buf;
@@ -19,7 +19,7 @@ fn concat(allocator: std.mem.Allocator, lhs: []const u8, rhs: []const u8) []cons
 
 pub fn addTo(allocator: std.mem.Allocator, exe: *LibExeObjStep, relativePath: []const u8) void {
     // pkgs/glfw/pkgs/glfw/src/CMakeLists.txt
-    exe.addPackage(Pkg{
+    exe.addModule(Pkg{
         .name = "glfw",
         .source = FileSource{ .path = concat(allocator, relativePath, "/src/main.zig") },
     });
