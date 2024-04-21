@@ -2,9 +2,13 @@
 
 ## 0.12.0
 
-### addPackage => addModule
+### addPackage => addModule => addImport
 
 - https://github.com/ziglang/zig/issues/14278
+
+👇
+
+- https://ziggit.dev/t/what-happened-to-addmodule/2908
 
 ### std.build.LibExeObjStep => std.Build.Step.Compile;
 
@@ -23,6 +27,10 @@
 - [Upcoming zig 0.12 changes of writing `build.zig`](https://zig.news/liyu1981/upcoming-zig-012-changes-of-writing-buildzig-1hb7)
 
 ## 0.11.0
+
+### json.TokenStream
+
+- https://ziglang.org/download/0.11.0/release-notes.html#JSON
 
 ## 0.10.0
 

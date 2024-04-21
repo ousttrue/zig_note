@@ -23,6 +23,17 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'build',
+      items: [
+        'build/index',
+        'build/zon',
+        'build/gyro',
+        'build/zigmod',
+        'build/zpm',
+      ]
+    },
+    {
+      type: 'category',
       label: 'zig tools',
       items: [
         'tools/nvim',
@@ -36,17 +47,6 @@ const sidebars: SidebarsConfig = {
       items: [
         'zig_version/zigup',
         'zig_version/breaking_changes',
-      ]
-    },
-    {
-      type: 'category',
-      label: 'build',
-      items: [
-        'build/index',
-        'build/zon',
-        'build/gyro',
-        'build/zigmod',
-        'build/zpm',
       ]
     },
     {
