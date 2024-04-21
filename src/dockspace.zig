@@ -5,22 +5,22 @@ const TypeEraser = screen.TypeEraser;
 
 pub fn dockspace(name: [*:0]const u8, toolbar_size: f32) i32 {
     var io = imgui.GetIO();
-    io.ConfigFlags |= @enumToInt(imgui.ImGuiConfigFlags._DockingEnable);
+    io.ConfigFlags |= @intFromEnum(imgui.ImGuiConfigFlags._DockingEnable);
 
-    const flags = (@enumToInt(imgui.ImGuiWindowFlags._MenuBar) |
-        @enumToInt(imgui.ImGuiWindowFlags._NoDocking) |
-        @enumToInt(imgui.ImGuiWindowFlags._NoBackground) |
-        @enumToInt(imgui.ImGuiWindowFlags._NoTitleBar) |
-        @enumToInt(imgui.ImGuiWindowFlags._NoCollapse) |
-        @enumToInt(imgui.ImGuiWindowFlags._NoResize) |
-        @enumToInt(imgui.ImGuiWindowFlags._NoMove) |
-        @enumToInt(imgui.ImGuiWindowFlags._NoBringToFrontOnFocus) |
-        @enumToInt(imgui.ImGuiWindowFlags._NoNavFocus));
+    const flags = (@intFromEnum(imgui.ImGuiWindowFlags._MenuBar) |
+        @intFromEnum(imgui.ImGuiWindowFlags._NoDocking) |
+        @intFromEnum(imgui.ImGuiWindowFlags._NoBackground) |
+        @intFromEnum(imgui.ImGuiWindowFlags._NoTitleBar) |
+        @intFromEnum(imgui.ImGuiWindowFlags._NoCollapse) |
+        @intFromEnum(imgui.ImGuiWindowFlags._NoResize) |
+        @intFromEnum(imgui.ImGuiWindowFlags._NoMove) |
+        @intFromEnum(imgui.ImGuiWindowFlags._NoBringToFrontOnFocus) |
+        @intFromEnum(imgui.ImGuiWindowFlags._NoNavFocus));
 
     const viewport = imgui.GetMainViewport() orelse @panic("GetMainViewport");
-    var x = viewport.Pos.x;
+    const x = viewport.Pos.x;
     var y = viewport.Pos.y;
-    var w = viewport.Size.x;
+    const w = viewport.Size.x;
     var h = viewport.Size.y;
     y += toolbar_size;
     h -= toolbar_size;
@@ -28,8 +28,8 @@ pub fn dockspace(name: [*:0]const u8, toolbar_size: f32) i32 {
     imgui.SetNextWindowPos(.{ .x = x, .y = y }, .{});
     imgui.SetNextWindowSize(.{ .x = w, .y = h }, .{});
     // imgui.set_next_window_viewport(viewport.id)
-    imgui.PushStyleVar(@enumToInt(imgui.ImGuiStyleVar._WindowBorderSize), 0.0);
-    imgui.PushStyleVar(@enumToInt(imgui.ImGuiStyleVar._WindowRounding), 0.0);
+    imgui.PushStyleVar(@intFromEnum(imgui.ImGuiStyleVar._WindowBorderSize), 0.0);
+    imgui.PushStyleVar(@intFromEnum(imgui.ImGuiStyleVar._WindowRounding), 0.0);
 
     // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
     // local window_flags = self.window_flags
@@ -42,7 +42,7 @@ pub fn dockspace(name: [*:0]const u8, toolbar_size: f32) i32 {
     // all active windows docked into it will lose their parent and become undocked.
     // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
     // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-    imgui.PushStyleVar_2(@enumToInt(imgui.ImGuiStyleVar._WindowPadding), .{ .x = 0, .y = 0 });
+    imgui.PushStyleVar_2(@intFromEnum(imgui.ImGuiStyleVar._WindowPadding), .{ .x = 0, .y = 0 });
     _ = imgui.Begin(name, .{ .p_open = null, .flags = flags });
     imgui.PopStyleVar(.{});
     imgui.PopStyleVar(.{ .count = 2 });
@@ -54,7 +54,7 @@ pub fn dockspace(name: [*:0]const u8, toolbar_size: f32) i32 {
 
     // DockSpace
     const dockspace_id = imgui.GetID(name);
-    _ = imgui.DockSpace(dockspace_id, .{ .size = .{ .x = 0, .y = 0 }, .flags = @enumToInt(imgui.ImGuiDockNodeFlags._PassthruCentralNode) });
+    _ = imgui.DockSpace(dockspace_id, .{ .size = .{ .x = 0, .y = 0 }, .flags = @intFromEnum(imgui.ImGuiDockNodeFlags._PassthruCentralNode) });
 
     imgui.End();
 

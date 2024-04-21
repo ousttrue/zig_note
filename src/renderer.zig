@@ -34,7 +34,7 @@ pub const Renderer = struct {
     }
 
     pub fn new(allocator: std.mem.Allocator) !*Self {
-        var self = try allocator.create(Renderer);
+        var self = try allocator.create(Self);
         try self.init(allocator);
         return self;
     }

@@ -30,7 +30,7 @@ pub const Vbo = struct {
 
     pub fn setVertices(self: *Self, comptime T: type, vertices: []const T, isDynamic: bool) void {
         self.bind();
-        gl.bufferData(gl.ARRAY_BUFFER, @intCast(gl.GLsizeiptr, @sizeOf(T) * vertices.len), &vertices[0], if (isDynamic) gl.DYNAMIC_DRAW else gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, @as(gl.GLsizeiptr, @intCast(@sizeOf(T) * vertices.len)), &vertices[0], if (isDynamic) gl.DYNAMIC_DRAW else gl.STATIC_DRAW);
         self.unbind();
     }
 
@@ -77,7 +77,7 @@ pub const Ibo = struct {
             else => @panic("not implemented"),
         }
         self.bind();
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, @intCast(gl.GLsizeiptr, @sizeOf(T) * indices.len), &indices[0], if (isDynamic) gl.DYNAMIC_DRAW else gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, @as(gl.GLsizeiptr, @intCast(@sizeOf(T) * indices.len)), &indices[0], if (isDynamic) gl.DYNAMIC_DRAW else gl.STATIC_DRAW);
         self.unbind();
     }
 
@@ -116,8 +116,8 @@ pub const Vao = struct {
         self.bind();
         for (layouts) |*layout| {
             gl.enableVertexAttribArray(layout.attribute.location);
-            const value = @intCast(usize, layout.byteOffset);
-            const p = if (value == 0) null else @intToPtr(*anyopaque, value);
+            const value = @as(usize, @intCast(layout.byteOffset));
+            const p = if (value == 0) null else @as(*anyopaque, @ptrFromInt(value));
             gl.vertexAttribPointer(layout.attribute.location, layout.itemCount, gl.FLOAT, gl.FALSE, layout.stride, p);
         }
         if (ibo) |ibo_| {
@@ -152,9 +152,9 @@ pub const Vao = struct {
         defer self.unbind();
 
         if (self.ibo) |ibo_| {
-            gl.drawElements(__default__.topology, @intCast(i32, count), ibo_.format, @intToPtr(?*const anyopaque, @intCast(usize, __default__.offset)));
+            gl.drawElements(__default__.topology, @as(i32, @intCast(count)), ibo_.format, @as(?*const anyopaque, @ptrFromInt(@as(usize, @intCast(__default__.offset)))));
         } else {
-            gl.drawArrays(__default__.topology, @intCast(i32, __default__.offset), @intCast(i32, count));
+            gl.drawArrays(__default__.topology, @as(i32, @intCast(__default__.offset)), @as(i32, @intCast(count)));
         }
     }
 };

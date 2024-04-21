@@ -10,7 +10,7 @@ pub const Scene = struct {
     model: ?Model = null,
 
     pub fn new(allocator: std.mem.Allocator) *Self {
-        var scene = allocator.create(Scene) catch @panic("create");
+        const scene = allocator.create(Scene) catch @panic("create");
         scene.* = Scene{
             .allocator = allocator,
         };

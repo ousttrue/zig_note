@@ -1,7 +1,7 @@
 const std = @import("std");
 
 pub fn nearlyEqual(comptime epsilon: anytype, comptime n: usize, lhs: [n]@TypeOf(epsilon), rhs: [n]@TypeOf(epsilon)) bool {
-    for (lhs) |l, i| {
+    for (lhs, 0..) |l, i| {
         const delta = std.math.fabs(l - rhs[i]);
         if (delta > epsilon) {
             std.debug.print("\n", .{});

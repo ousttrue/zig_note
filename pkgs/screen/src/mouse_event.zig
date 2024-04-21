@@ -136,7 +136,7 @@ pub const MouseEvent = struct {
     }
 
     pub fn new(allocator: std.mem.Allocator) *Self {
-        var ptr = allocator.create(Self) catch @panic("create");
+        const ptr = allocator.create(Self) catch @panic("create");
         ptr.* = Self.init(allocator);
         return ptr;
     }

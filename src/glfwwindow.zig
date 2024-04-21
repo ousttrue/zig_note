@@ -8,44 +8,41 @@ fn glfw_error_callback(code: c_int, description: ?[*:0]const u8) callconv(.C) vo
 
 const STORE_KEY = "glfw";
 
-pub const Size = struct{width: c_int, height: c_int};
+pub const Size = struct { width: c_int, height: c_int };
 
-pub const Ini = struct
-{
+pub const Ini = struct {
     width: i32 = 1920,
     height: i32 = 1080,
     full: bool = false,
 };
 
-pub const GlfwWindow = struct
-{
+pub const GlfwWindow = struct {
     const Self = @This();
 
     allocator: std.mem.Allocator,
     store: *Store,
     handle: *glfw.GLFWwindow,
 
-    pub fn init(allocator: std.mem.Allocator, store: *Store, title: [*:0]const u8) Self
-    {
+    pub fn init(allocator: std.mem.Allocator, store: *Store, title: [*:0]const u8) Self {
         // Initialize the library
         _ = glfw.glfwSetErrorCallback(&glfw_error_callback);
 
-        if (glfw.glfwInit() == 0){
+        if (glfw.glfwInit() == 0) {
             @panic("glfwInit");
         }
 
-        var ini = Ini{};
-        if(store.get(STORE_KEY))|buffer|
-        {
-            var stream = std.json.TokenStream.init(buffer);
-            if(std.json.parse(Ini, &stream, .{}))|loaded|
-            {
-                ini = loaded;
-            }
-            else|_|{}
-        }
+        const ini = Ini{};
+        // if(store.get(STORE_KEY))|buffer|
+        // {
+        //     var stream = std.json.TokenStream.init(buffer);
+        //     if(std.json.parse(Ini, &stream, .{}))|loaded|
+        //     {
+        //         ini = loaded;
+        //     }
+        //     else|_|{}
+        // }
 
-        // 1920, 1080, "zig"        
+        // 1920, 1080, "zig"
         // Create a windowed mode window and its OpenGL context
         const window = glfw.glfwCreateWindow(ini.width, ini.height, title, null, null) orelse @panic("glfwCreateWindow");
 
@@ -60,8 +57,7 @@ pub const GlfwWindow = struct
         };
     }
 
-    pub fn deinit(self: *const Self) !void
-    { 
+    pub fn deinit(self: *const Self) !void {
         var ini: Ini = undefined;
         glfw.glfwGetFramebufferSize(self.handle, &ini.width, &ini.height);
 
@@ -73,9 +69,8 @@ pub const GlfwWindow = struct
         glfw.glfwTerminate();
     }
 
-    pub fn nextFrame(self: *const Self) ?Size
-    {
-        if(glfw.glfwWindowShouldClose(self.handle) != 0) {
+    pub fn nextFrame(self: *const Self) ?Size {
+        if (glfw.glfwWindowShouldClose(self.handle) != 0) {
             return null;
         }
 

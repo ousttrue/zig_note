@@ -18,10 +18,10 @@ pub const NanoVgRenderer = struct {
     fontNormal: c_int = 0,
 
     pub fn init(allocator: std.mem.Allocator, font_path: ?[:0]const u8, font_name: ?[:0]const u8) Self {
-        var self = Self{
-            .vg = nanovg.nvgCreate(@enumToInt(nanovg.NVGcreateFlags.NVG_ANTIALIAS) |
-                @enumToInt(nanovg.NVGcreateFlags.NVG_STENCIL_STROKES) |
-                @enumToInt(nanovg.NVGcreateFlags.NVG_DEBUG)).?,
+        const self = Self{
+            .vg = nanovg.nvgCreate(@intFromEnum(nanovg.NVGcreateFlags.NVG_ANTIALIAS) |
+                @intFromEnum(nanovg.NVGcreateFlags.NVG_STENCIL_STROKES) |
+                @intFromEnum(nanovg.NVGcreateFlags.NVG_DEBUG)).?,
             .font_path = font_path orelse get_system_font(),
             .font_name = font_name orelse "nanovg_font",
         };

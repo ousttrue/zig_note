@@ -163,7 +163,7 @@ pub const Mat3 = struct {
     }
 
     pub fn toArray(self: *Self) [9]f32 {
-        return @ptrCast([*]f32, &self._0.x)[0..9].*;
+        return @as([*]f32, @ptrCast(&self._0.x))[0..9].*;
     }
     pub fn col0(self: Self) Vec3 {
         return Vec3.values(self._0.x, self._1.x, self._2.x);

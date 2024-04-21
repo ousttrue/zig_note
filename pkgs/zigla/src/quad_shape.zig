@@ -61,7 +61,7 @@ pub const StateReference = struct {
     count: u32,
 
     pub fn setState(self: *Self, fstate: ShapeState) void {
-        const new_state = @intToFloat(f32, @enumToInt(fstate));
+        const new_state = @as(f32, @floatFromInt(@intFromEnum(fstate)));
         var i: i32 = 0;
         var p = self.state;
         while (i < self.count) : ({
@@ -73,18 +73,18 @@ pub const StateReference = struct {
     }
 
     pub fn addState(self: *Self, state: ShapeState) void {
-        const value = @floatToInt(u32, self.state[0]) | @enumToInt(state);
-        const new_state = @intToEnum(ShapeState, value);
+        const value = @as(u32, @intFromFloat(self.state[0])) | @intFromEnum(state);
+        const new_state = @as(ShapeState, @enumFromInt(value));
         self.setState(new_state);
     }
 
     pub fn removeState(self: *Self, state: ShapeState) void {
-        const new_state = @intToEnum(ShapeState, @floatToInt(u32, self.state[0]) & ~@enumToInt(state));
+        const new_state = @as(ShapeState, @enumFromInt(@as(u32, @intFromFloat(self.state[0])) & ~@intFromEnum(state)));
         self.setState(new_state);
     }
 
     pub fn hasState(self: Self, state: ShapeState) bool {
-        return (@floatToInt(u32, self.state[0]) & @enumToInt(state)) != 0;
+        return (@as(u32, @intFromFloat(self.state[0])) & @intFromEnum(state)) != 0;
     }
 };
 
@@ -98,7 +98,7 @@ pub const Shape = struct {
     drag_factory: ?*const DragFactory = null,
 
     pub fn init(allocator: std.mem.Allocator, quads: []const Quad, pMatrix: *transformation.Mat4, state: StateReference) Self {
-        var self = Self{
+        const self = Self{
             .allocator = allocator,
             .quads = allocator.dupe(Quad, quads) catch @panic("dupe"),
             .matrix = pMatrix,
@@ -212,8 +212,8 @@ pub fn RingDragFactory(comptime axis_index: usize) type {
             const cx = center_pos.x / center_pos.w;
             const cy = center_pos.y / center_pos.w;
             const center_screen_pos = vec.Vec2.values(
-                (cx * 0.5 + 0.5) * @intToFloat(f32, camera.projection.width),
-                (cy * 0.5 + 0.5) * @intToFloat(f32, camera.projection.height),
+                (cx * 0.5 + 0.5) * @as(f32, @floatFromInt(camera.projection.width)),
+                (cy * 0.5 + 0.5) * @as(f32, @floatFromInt(camera.projection.height)),
             );
             const screen_dir = @"-"(start_screen_pos, center_screen_pos);
             var n = vec.Vec2.values(-screen_dir.y, screen_dir.x);
@@ -233,7 +233,7 @@ pub fn RingDragFactory(comptime axis_index: usize) type {
 pub fn RollDragFactory(comptime axis_index: usize) type {
     return struct {
         pub fn createRingDragContext(start_screen_pos: vec.Vec2, init_matrix: transformation.Mat4, camera: *camera_types.Camera) DragContext {
-            var view_axis = @"*"(init_matrix, camera.view.getViewMatrix()).getRow(axis_index).toVec3();
+            const view_axis = @"*"(init_matrix, camera.view.getViewMatrix()).getRow(axis_index).toVec3();
             const n = vec.Vec2.values(view_axis.y, -view_axis.x).normalized();
             return DragContext.init(ScreenLine.init(start_screen_pos, n), init_matrix, identity.getRow(axis_index));
         }
@@ -273,14 +273,14 @@ pub fn createCube(width: f32, height: f32, depth: f32) [6]Quad {
 
 pub fn createRing(comptime sections: usize, axis: vec.Vec3, start: vec.Vec3, inner: f32, outer: f32, depth: f32) [sections * 2]Quad {
     const delta = std.math.pi * 2.0 / @as(f32, sections);
-    var vertices: [sections]vec.Vec3 = undefined;
-    for (vertices) |*v, i| {
-        v.* = rotation.Quaternion.angleAxis(@intToFloat(f32, i) * delta, axis).rotate(start);
+    const vertices: [sections]vec.Vec3 = undefined;
+    for (vertices, 0..) |*v, i| {
+        v.* = rotation.Quaternion.angleAxis(@as(f32, @floatFromInt(i)) * delta, axis).rotate(start);
     }
 
     var quads: [sections * 2]Quad = undefined;
     const d = axis.mul(depth * 0.5);
-    for (vertices) |v, i| {
+    for (vertices, 0..) |v, i| {
         const vv = vertices[(i + 1) % sections];
         const v0 = @"+"(d, v.mul(inner));
         const v1 = @"+"(d, v.mul(outer));
@@ -314,14 +314,14 @@ pub fn createZRing(comptime sections: usize, inner: f32, outer: f32, depth: f32)
 
 pub fn createRoll(comptime sections: usize, axis: vec.Vec3, start: vec.Vec3, outer: f32, depth: f32) [sections]Quad {
     const delta = std.math.pi * 2.0 / @as(f32, sections);
-    var vertices: [sections]vec.Vec3 = undefined;
-    for (vertices) |*v, i| {
-        v.* = rotation.Quaternion.angleAxis(@intToFloat(f32, i) * delta, axis).rotate(start);
+    const vertices: [sections]vec.Vec3 = undefined;
+    for (vertices, 0..) |*v, i| {
+        v.* = rotation.Quaternion.angleAxis(@as(f32, @floatFromInt(i)) * delta, axis).rotate(start);
     }
 
     var quads: [sections]Quad = undefined;
     const d = axis.mul(depth * 0.5);
-    for (vertices) |v, i| {
+    for (vertices, 0..) |v, i| {
         const vv = vertices[(i + 1) % sections];
         // const v0 = @"+"(d, v.mul(inner));
         const v1 = @"+"(d, v.mul(outer));
@@ -353,7 +353,7 @@ test "Shape" {
     const quads = createCube(2, 4, 6);
     var m = transformation.Mat4{};
     var s: [1]f32 = .{0};
-    var state = StateReference{
+    const state = StateReference{
         .state = &s,
         .count = 1,
         .stride = 0,

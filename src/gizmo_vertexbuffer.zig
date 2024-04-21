@@ -31,7 +31,7 @@ const Material = struct {
     pub fn init(shader: glo.Shader) Self {
         const uVP = glo.UniformLocation.init(shader.handle, "uVP");
         const uBoneMatrices = glo.UniformLocation.init(shader.handle, "uBoneMatrices");
-        var self = Self{
+        const self = Self{
             .shader = shader,
             .uVP = uVP,
             .uBoneMatrices = uBoneMatrices,
@@ -118,7 +118,7 @@ pub const GizmoVertexBuffer = struct {
         self.vertex_count += 1;
         self.vertices[i] = Vertex{
             .position = position,
-            .joint = @intToFloat(f32, joint),
+            .joint = @as(f32, @floatFromInt(joint)),
             .color = color,
             .normal = normal,
             .state = 0,
@@ -158,7 +158,7 @@ pub const GizmoVertexBuffer = struct {
     pub fn createShape(self: *Self, quads: []const quad_shape.Quad, color: zigla.Vec4, drag: ?*const zigla.quad_shape.DragFactory) *quad_shape.Shape {
         const shape_index = self.shape_count;
         self.shape_count += 1;
-        var m = &self.skin[shape_index];
+        const m = &self.skin[shape_index];
         m.* = .{};
 
         const start = self.vertex_count;
@@ -168,7 +168,7 @@ pub const GizmoVertexBuffer = struct {
         const end = self.vertex_count;
 
         var state = quad_shape.StateReference{
-            .state = @ptrCast([*]f32, &self.vertices[start].state),
+            .state = @as([*]f32, @ptrCast(&self.vertices[start].state)),
             .stride = @sizeOf(Vertex) / @sizeOf(f32),
             .count = end - start,
         };
@@ -194,7 +194,6 @@ pub const GizmoVertexBuffer = struct {
 
             // vao
             const vertex_layout = shader.createVertexLayout(self.allocator);
-            _ = vertex_layout;
             var vbo = glo.Vbo.init();
             vbo.setVertices(Vertex, &self.vertices, true);
             var ibo = glo.Ibo.init();
@@ -230,7 +229,7 @@ pub const GizmoVertexBuffer = struct {
         var hit_shape: ?*zigla.quad_shape.Shape = null;
         var hit_distance: f32 = std.math.inf(f32);
         const ray = camera.getRay(x, y);
-        for (self.shapes) |*shape, i| {
+        for (self.shapes, 0..) |*shape, i| {
             if (i >= self.shape_count) {
                 break;
             }
@@ -250,7 +249,7 @@ pub const GizmoVertexBuffer = struct {
             }
         }
         self.hit = .{
-            .cursor_pos = .{ .x = @intToFloat(f32, x), .y = @intToFloat(f32, y) },
+            .cursor_pos = .{ .x = @floatFromInt(x), .y = @as(f32, @floatFromInt(y)) },
             .ray = ray,
             .shape = hit_shape,
             .distance = hit_distance,

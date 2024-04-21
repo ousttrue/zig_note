@@ -6,7 +6,7 @@ pub fn compile(shader_type: gl.GLuint, src: []const u8) error_handling.ShaderErr
     const handle = gl.createShader(shader_type);
     errdefer gl.deleteShader(handle);
 
-    const len = [1]c_int{@intCast(c_int, src.len)};
+    const len = [1]c_int{@as(c_int, @intCast(src.len))};
     const sources: [1][*c]const u8 = .{&src[0]};
     gl.shaderSource(handle, 1, &sources, &len);
     gl.compileShader(handle);
@@ -49,7 +49,7 @@ pub const AttributeLocation = struct {
         std.debug.assert(location != -1);
         return .{
             .name = name,
-            .location = @intCast(c_uint, location),
+            .location = @as(c_uint, @intCast(location)),
         };
     }
 };
@@ -77,12 +77,12 @@ pub const Shader = struct {
     location_map: std.StringHashMap(c_int),
 
     pub fn load(allocator: std.mem.Allocator, vs_src: []const u8, fs_src: []const u8) error_handling.ShaderError!Self {
-        var vs = compile(gl.VERTEX_SHADER, vs_src) catch {
+        const vs = compile(gl.VERTEX_SHADER, vs_src) catch {
             @panic(error_handling.getErrorMessage());
         };
         defer gl.deleteShader(vs);
 
-        var fs = compile(gl.FRAGMENT_SHADER, fs_src) catch {
+        const fs = compile(gl.FRAGMENT_SHADER, fs_src) catch {
             @panic(error_handling.getErrorMessage());
         };
         defer gl.deleteShader(fs);
@@ -143,10 +143,9 @@ pub const Shader = struct {
     }
 
     pub fn createVertexLayout(self: *Self, allocator: std.mem.Allocator) []const VertexLayout {
-        _ = self;
         var count: gl.GLint = undefined;
         gl.getProgramiv(self.handle, gl.ACTIVE_ATTRIBUTES, &count);
-        var tmp = allocator.alloc(VertexLayout, @intCast(usize, count)) catch @panic("alloc []VertexLayout");
+        var tmp = allocator.alloc(VertexLayout, @as(usize, @intCast(count))) catch @panic("alloc []VertexLayout");
         defer allocator.free(tmp);
 
         var stride: c_int = 0;
@@ -156,10 +155,10 @@ pub const Shader = struct {
             var length: c_int = undefined;
             var size: gl.GLsizei = undefined;
             var gl_type: gl.GLenum = undefined;
-            gl.getActiveAttrib(self.handle, i, @intCast(gl.GLuint, buffer.len), &length, &size, &gl_type, &buffer[0]);
+            gl.getActiveAttrib(self.handle, i, @as(gl.GLuint, @intCast(buffer.len)), &length, &size, &gl_type, &buffer[0]);
             // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGetActiveAttrib.xhtml
             std.debug.assert(size == 1);
-            const name = buffer[0..@intCast(usize, length)];
+            const name = buffer[0..@as(usize, @intCast(length))];
             const attribute = AttributeLocation.create(self.handle, name);
             const itemCount: c_int = switch (gl_type) {
                 gl.FLOAT_VEC2 => 2, // 0x8B50
@@ -170,7 +169,7 @@ pub const Shader = struct {
                     @panic("not implemented");
                 },
             };
-            var offset = itemCount * 4;
+            const offset = itemCount * 4;
             tmp[i] = VertexLayout{
                 .attribute = attribute,
                 .itemCount = itemCount,
@@ -220,7 +219,7 @@ pub const UniformLocation = struct {
     }
 
     pub fn setMat4(self: *const Self, value: *const f32, __: struct { transpose: bool = false, count: c_uint = 1 }) void {
-        gl.uniformMatrix4fv(self.location, @intCast(c_int, __.count), if (__.transpose) gl.TRUE else gl.FALSE, value);
+        gl.uniformMatrix4fv(self.location, @as(c_int, @intCast(__.count)), if (__.transpose) gl.TRUE else gl.FALSE, value);
     }
 };
 

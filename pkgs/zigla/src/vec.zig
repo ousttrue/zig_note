@@ -46,13 +46,13 @@ pub const Vec3 = struct {
         return .{ .x = v.x, .y = v.y, .z = z };
     }
     pub fn toArray(self: *Self) [3]f32 {
-        return (@ptrCast([*]f32, &self.x))[0..3].*;
+        return (@as([*]f32, @ptrCast(&self.x)))[0..3].*;
     }
     pub fn toVec2(self: Self) Vec2 {
         return .{ .x = self.x, .y = self.y };
     }
     pub fn const_array(self: *const Self) [3]f32 {
-        return (@ptrCast([*]const f32, &self.x))[0..3].*;
+        return (@as([*]const f32, @ptrCast(&self.x)))[0..3].*;
     }
     pub fn inversed(self: Self) Self {
         return .{ .x = -self.x, .y = -self.y, .z = -self.z };

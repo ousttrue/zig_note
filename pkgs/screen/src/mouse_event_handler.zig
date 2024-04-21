@@ -6,8 +6,8 @@ const MouseInput = @import("./mouse_input.zig").MouseInput;
 
 pub fn getArcballVector(mouse_input: MouseInput) zigla.Vec3 {
     // https://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Tutorial_Arcball
-    const x = @intToFloat(f32, mouse_input.x) / @intToFloat(f32, mouse_input.width) * 2 - 1.0; // -1 ~ +1
-    const y = @intToFloat(f32, mouse_input.y) / @intToFloat(f32, mouse_input.height) * 2 - 1.0; // -1 ~ +1
+    const x = @as(f32, @floatFromInt(mouse_input.x)) / @as(f32, @floatFromInt(mouse_input.width)) * 2 - 1.0; // -1 ~ +1
+    const y = @as(f32, @floatFromInt(mouse_input.y)) / @as(f32, @floatFromInt(mouse_input.height)) * 2 - 1.0; // -1 ~ +1
     var P = zigla.Vec3.values(x, -y, 0);
     const OP_squared = P.x * P.x + P.y * P.y;
     if (OP_squared <= 1) {
@@ -97,8 +97,8 @@ pub const TurnTable = struct {
     pub fn begin(_: *Self, _: MouseInput) void {}
 
     pub fn drag(self: *Self, _: MouseInput, dx: i32, dy: i32) void {
-        self.yaw += @intToFloat(f32, dx) * 0.01;
-        self.pitch += @intToFloat(f32, dy) * 0.01;
+        self.yaw += @as(f32, @floatFromInt(dx)) * 0.01;
+        self.pitch += @as(f32, @floatFromInt(dy)) * 0.01;
         self.update();
     }
 
@@ -126,8 +126,8 @@ pub const ScreenShift = struct {
 
     pub fn drag(self: *Self, _: MouseInput, dx: i32, dy: i32) void {
         const plane_height = std.math.tan(self.projection.fovy * 0.5) * std.math.fabs(self.view.shift.z) * 4;
-        self.view.shift.x += @intToFloat(f32, dx) / @intToFloat(f32, self.projection.height) * plane_height;
-        self.view.shift.y -= @intToFloat(f32, dy) / @intToFloat(f32, self.projection.height) * plane_height;
+        self.view.shift.x += @as(f32, @floatFromInt(dx)) / @as(f32, @floatFromInt(self.projection.height)) * plane_height;
+        self.view.shift.y -= @as(f32, @floatFromInt(dy)) / @as(f32, @floatFromInt(self.projection.height)) * plane_height;
     }
 
     pub fn end(_: *Self, _: MouseInput) void {}

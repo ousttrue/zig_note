@@ -19,7 +19,7 @@ pub const Ray = struct {
         const yy = -(y / h * 2 - 1);
         // std.log.debug("({d:.2}, {d:.2}), ({d:.2}, {d:.2}), {d:.2}, {d:.2}", .{ x, y, w, h, xx, yy });
 
-        var dir = r.apply(vec.Vec3.values(
+        const dir = r.apply(vec.Vec3.values(
             xx * std.math.tan(half_fov) * (aspect),
             yy * std.math.tan(half_fov),
             -1,
@@ -92,24 +92,24 @@ pub fn dropMaxAxis(n: vec.Vec3, points: anytype) [@typeInfo(@TypeOf(points)).Arr
     if (x > y) {
         if (x > z) {
             // drop x
-            for (points) |p, i| {
+            for (points, 0..) |p, i| {
                 result[i] = vec.Vec2.values(p.y, p.z);
             }
         } else {
             // drop z
-            for (points) |p, i| {
+            for (points, 0..) |p, i| {
                 result[i] = vec.Vec2.values(p.x, p.y);
             }
         }
     } else {
         if (y > z) {
             // drop y
-            for (points) |p, i| {
+            for (points, 0..) |p, i| {
                 result[i] = vec.Vec2.values(p.x, p.z);
             }
         } else {
             // drop z
-            for (points) |p, i| {
+            for (points, 0..) |p, i| {
                 result[i] = vec.Vec2.values(p.x, p.y);
             }
         }

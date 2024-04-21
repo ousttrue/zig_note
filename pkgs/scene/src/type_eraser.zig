@@ -2,6 +2,7 @@ pub fn TypeEraser(comptime T: type, comptime name: []const u8) type {
     const field = @field(T, name);
     const info = @typeInfo(@TypeOf(field));
     const alignment = @typeInfo(*T).Pointer.alignment;
+    _ = alignment;
 
     switch (info) {
         .Fn => |f| {
@@ -9,7 +10,7 @@ pub fn TypeEraser(comptime T: type, comptime name: []const u8) type {
                 1 => {
                     return struct {
                         pub fn call(ptr: *anyopaque) (f.return_type orelse void) {
-                            const self = @ptrCast(f.args[0].arg_type.?, @alignCast(alignment, ptr));
+                            const self = @as(f.args[0].arg_type.?, @ptrCast(ptr));
                             return @call(.{}, field, .{self});
                         }
                     };
@@ -17,7 +18,7 @@ pub fn TypeEraser(comptime T: type, comptime name: []const u8) type {
                 2 => {
                     return struct {
                         pub fn call(ptr: *anyopaque, a0: f.args[1].arg_type.?) (f.return_type orelse void) {
-                            const self = @ptrCast(f.args[0].arg_type.?, @alignCast(alignment, ptr));
+                            const self = @as(f.args[0].arg_type.?, @ptrCast(ptr));
                             return @call(.{}, field, .{ self, a0 });
                         }
                     };
@@ -25,7 +26,7 @@ pub fn TypeEraser(comptime T: type, comptime name: []const u8) type {
                 3 => {
                     return struct {
                         pub fn call(ptr: *anyopaque, a0: f.args[1].arg_type.?, a1: f.args[2].arg_type.?) (f.return_type orelse void) {
-                            const self = @ptrCast(f.args[0].arg_type.?, @alignCast(alignment, ptr));
+                            const self = @as(f.args[0].arg_type.?, @ptrCast(ptr));
                             return @call(.{}, field, .{ self, a0, a1 });
                         }
                     };
@@ -33,7 +34,7 @@ pub fn TypeEraser(comptime T: type, comptime name: []const u8) type {
                 4 => {
                     return struct {
                         pub fn call(ptr: *anyopaque, a0: f.args[1].arg_type.?, a1: f.args[2].arg_type.?, a2: f.args[3].arg_type.?) (f.return_type orelse void) {
-                            const self = @ptrCast(f.args[0].arg_type.?, @alignCast(alignment, ptr));
+                            const self = @as(f.args[0].arg_type.?, @ptrCast(ptr));
                             return @call(.{}, field, .{ self, a0, a1, a2 });
                         }
                     };

@@ -17,41 +17,52 @@ fn concat(allocator: std.mem.Allocator, lhs: []const u8, rhs: []const u8) []cons
     }
 }
 
-pub fn addTo(allocator: std.mem.Allocator, exe: *LibExeObjStep, relativePath: []const u8) void {
+pub fn addTo(allocator: std.mem.Allocator, b: *std.Build, exe: *LibExeObjStep, relativePath: []const u8) void {
     // pkgs/glfw/pkgs/glfw/src/CMakeLists.txt
-    exe.addModule(Pkg{
-        .name = "glfw",
-        .source = FileSource{ .path = concat(allocator, relativePath, "/src/main.zig") },
-    });
+    // exe.addModule(Pkg{
+    //     .name = "glfw",
+    //     .source = FileSource{ .path = concat(allocator, relativePath, "/src/main.zig") },
+    // });
+    exe.root_module.addImport("glfw", b.createModule(.{
+        .root_source_file = .{
+            .path = concat(allocator, relativePath, "/src/main.zig"),
+        },
+    }));
     exe.defineCMacro("_GLFW_WIN32", "1");
     exe.defineCMacro("UNICODE", "1");
     exe.defineCMacro("_UNICODE", "1");
-    exe.addIncludeDir(concat(allocator, relativePath, "/pkgs/glfw/include"));
+    exe.addIncludePath(.{ .path = concat(allocator, relativePath, "/pkgs/glfw/include") });
     // exe.addIncludeDir(concat(relativePath, "/pkgs/glfw/src"));
-    exe.addCSourceFiles(&.{
-        concat(allocator, relativePath, "/pkgs/glfw/src/context.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/init.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/input.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/monitor.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/platform.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/vulkan.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/window.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/egl_context.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/osmesa_context.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/null_init.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/null_monitor.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/null_window.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/null_joystick.c"),
-    }, &.{});
-    exe.addCSourceFiles(&.{
-        concat(allocator, relativePath, "/pkgs/glfw/src/win32_module.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/win32_time.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/win32_thread.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/win32_init.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/win32_joystick.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/win32_monitor.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/win32_window.c"),
-        concat(allocator, relativePath, "/pkgs/glfw/src/wgl_context.c"),
-    }, &.{});
+    exe.addCSourceFiles(.{
+        .files = &.{
+            concat(allocator, relativePath, "/pkgs/glfw/src/context.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/init.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/input.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/monitor.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/platform.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/vulkan.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/window.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/egl_context.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/osmesa_context.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/null_init.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/null_monitor.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/null_window.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/null_joystick.c"),
+        },
+        .flags = &.{},
+    });
+    exe.addCSourceFiles(.{
+        .files = &.{
+            concat(allocator, relativePath, "/pkgs/glfw/src/win32_module.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/win32_time.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/win32_thread.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/win32_init.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/win32_joystick.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/win32_monitor.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/win32_window.c"),
+            concat(allocator, relativePath, "/pkgs/glfw/src/wgl_context.c"),
+        },
+        .flags = &.{},
+    });
     exe.linkSystemLibrary("gdi32");
 }

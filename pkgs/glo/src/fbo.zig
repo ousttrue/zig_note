@@ -87,7 +87,7 @@ pub const FboManager = struct {
             gl.clearDepth(1.0);
             gl.depthFunc(gl.LESS);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            return @intToPtr(*anyopaque, fbo.texture.handle);
+            return @as(*anyopaque, @ptrFromInt(fbo.texture.handle));
         }
 
         unreachable;

@@ -95,16 +95,16 @@ pub const MouseHandler = struct {
     }
 
     pub fn debugDraw(self: *Self, mouse_input: screen.MouseInput) void {
-        if (self.nvg.begin(@intToFloat(f32, mouse_input.width), @intToFloat(f32, mouse_input.height))) |vg| {
+        if (self.nvg.begin(@floatFromInt(mouse_input.width), @floatFromInt(mouse_input.height))) |vg| {
             defer self.nvg.end();
             if (self.mouse_event.left_button.active) |start| {
-                draw_line(vg, @intToFloat(f32, start.x), @intToFloat(f32, start.y), @intToFloat(f32, mouse_input.x), @intToFloat(f32, mouse_input.y), 255, 0, 0);
+                draw_line(vg, @floatFromInt(start.x), @as(f32, @floatFromInt(start.y)), @as(f32, @floatFromInt(mouse_input.x)), @as(f32, @floatFromInt(mouse_input.y)), 255, 0, 0);
             }
             if (self.mouse_event.right_button.active) |start| {
-                draw_line(vg, @intToFloat(f32, start.x), @intToFloat(f32, start.y), @intToFloat(f32, mouse_input.x), @intToFloat(f32, mouse_input.y), 0, 255, 0);
+                draw_line(vg, @floatFromInt(start.x), @as(f32, @floatFromInt(start.y)), @as(f32, @floatFromInt(mouse_input.x)), @as(f32, @floatFromInt(mouse_input.y)), 0, 255, 0);
             }
             if (self.mouse_event.middle_button.active) |start| {
-                draw_line(vg, @intToFloat(f32, start.x), @intToFloat(f32, start.y), @intToFloat(f32, mouse_input.x), @intToFloat(f32, mouse_input.y), 0, 0, 255);
+                draw_line(vg, @floatFromInt(start.x), @as(f32, @floatFromInt(start.y)), @as(f32, @floatFromInt(mouse_input.x)), @as(f32, @floatFromInt(mouse_input.y)), 0, 0, 255);
             }
         }
     }
@@ -141,8 +141,8 @@ pub const FboDock = struct {
                 const quads = zigla.quad_shape.createCube(0.5, 0.5, 0.5);
                 const shape = self.gizmo.createShape(&quads, zigla.colors.white, null);
                 shape.setPosition(zigla.Vec3.values(
-                    @intToFloat(f32, i),
-                    @intToFloat(f32, j),
+                    @floatFromInt(i),
+                    @floatFromInt(j),
                     0,
                 ));
             }
@@ -174,7 +174,7 @@ pub const FboDock = struct {
 
     pub fn showFbo(self: *Self, x: f32, y: f32, size: imgui.ImVec2) void {
         // std.debug.assert(size != imgui.ImVec2{.x=0, .y=0});
-        if (self.fbo.clear(@floatToInt(c_int, size.x), @floatToInt(c_int, size.y), self.clear_color)) |texture| {
+        if (self.fbo.clear(@as(c_int, @intFromFloat(size.x)), @as(c_int, @intFromFloat(size.y)), self.clear_color)) |texture| {
             defer self.fbo.unbind();
             _ = imgui.ImageButton(texture, size, .{
                 .uv0 = .{ .x = 0, .y = 1 },
@@ -195,16 +195,16 @@ pub const FboDock = struct {
                 // skip
             } else {
                 const mouse_input = screen.MouseInput{
-                    .x = @floatToInt(i32, io.MousePos.x - x),
-                    .y = @floatToInt(i32, io.MousePos.y - y),
-                    .width = @floatToInt(i32, size.x),
-                    .height = @floatToInt(i32, size.y),
+                    .x = @as(i32, @intFromFloat(io.MousePos.x - x)),
+                    .y = @as(i32, @intFromFloat(io.MousePos.y - y)),
+                    .width = @as(i32, @intFromFloat(size.x)),
+                    .height = @as(i32, @intFromFloat(size.y)),
                     .left_down = io.MouseDown[0],
                     .right_down = io.MouseDown[1],
                     .middle_down = io.MouseDown[2],
                     .is_active = imgui.IsItemActive(),
                     .is_hover = imgui.IsItemHovered(.{}),
-                    .wheel = @floatToInt(i32, io.MouseWheel),
+                    .wheel = @as(i32, @intFromFloat(io.MouseWheel)),
                 };
                 // std.debug.print("{}\n", .{mouse_input});
                 const camera = self.mouse_handler.process(mouse_input, true);
@@ -220,14 +220,14 @@ pub const FboDock = struct {
             return;
         }
 
-        imgui.PushStyleVar_2(@enumToInt(imgui.ImGuiStyleVar._WindowPadding), .{ .x = 0, .y = 0 });
-        if (imgui.Begin("render target", .{ .p_open = p_open, .flags = (@enumToInt(imgui.ImGuiWindowFlags._NoScrollbar) | @enumToInt(imgui.ImGuiWindowFlags._NoScrollWithMouse)) })) {
+        imgui.PushStyleVar_2(@intFromEnum(imgui.ImGuiStyleVar._WindowPadding), .{ .x = 0, .y = 0 });
+        if (imgui.Begin("render target", .{ .p_open = p_open, .flags = (@intFromEnum(imgui.ImGuiWindowFlags._NoScrollbar) | @intFromEnum(imgui.ImGuiWindowFlags._NoScrollWithMouse)) })) {
             var pos = imgui.GetWindowPos();
             // _ = imgui.InputFloat3("shift", &self.scene.camera.view.shift[0], .{});
             // _ = imgui.InputFloat4("rotation", &self.scene.camera.view.rotation.x, .{});
             // pos.y = 40;
             pos.y += imgui.GetFrameHeight();
-            var size = imgui.GetContentRegionAvail();
+            const size = imgui.GetContentRegionAvail();
             self.showFbo(pos.x, pos.y, size);
         }
         imgui.End();
@@ -257,16 +257,16 @@ pub const CameraDock = struct {
                 self.mult_color[3] = self.clear_color[3];
             }
 
-            imgui.SetNextItemOpen(true, .{ .cond = @enumToInt(imgui.ImGuiCond._FirstUseEver) });
+            imgui.SetNextItemOpen(true, .{ .cond = @intFromEnum(imgui.ImGuiCond._FirstUseEver) });
             if (imgui.CollapsingHeader("projection", .{})) {
-                _ = imgui.InputInt("width", @ptrCast(*i32, &self.camera.projection.width), .{});
-                _ = imgui.InputInt("height", @ptrCast(*i32, &self.camera.projection.height), .{});
+                _ = imgui.InputInt("width", @as(*i32, @ptrCast(&self.camera.projection.width)), .{});
+                _ = imgui.InputInt("height", @as(*i32, @ptrCast(&self.camera.projection.height)), .{});
                 _ = imgui.InputFloat("fovy", &self.camera.projection.fovy, .{});
                 _ = imgui.InputFloat("near", &self.camera.projection.near, .{});
                 _ = imgui.InputFloat("far", &self.camera.projection.far, .{});
             }
 
-            imgui.SetNextItemOpen(true, .{ .cond = @enumToInt(imgui.ImGuiCond._FirstUseEver) });
+            imgui.SetNextItemOpen(true, .{ .cond = @intFromEnum(imgui.ImGuiCond._FirstUseEver) });
             if (imgui.CollapsingHeader("view", .{})) {
                 _ = imgui.InputFloat3("shift", &self.camera.view.shift.x, .{});
                 // _ = imgui.InputFloat4("rotation", &self.camera.view.rotation.x, .{});

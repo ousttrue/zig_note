@@ -24,8 +24,8 @@ pub fn loadCompileErrorMessage(handle: gl.GLuint) void {
     }
 
     var size: gl.GLsizei = undefined;
-    gl.getShaderInfoLog(handle, @intCast(c_int, error_buffer.len), &size, @ptrCast([*c]gl.GLchar, &error_buffer[0]));
-    message = error_buffer[0..@intCast(usize, size)];
+    gl.getShaderInfoLog(handle, @as(c_int, @intCast(error_buffer.len)), &size, @as([*c]gl.GLchar, @ptrCast(&error_buffer[0])));
+    message = error_buffer[0..@as(usize, @intCast(size))];
 }
 
 pub fn loadLinkErrorMessage(handle: gl.GLuint) void {
@@ -34,6 +34,6 @@ pub fn loadLinkErrorMessage(handle: gl.GLuint) void {
     }
 
     var size: gl.GLsizei = undefined;
-    gl.getProgramInfoLog(handle, @intCast(c_int, error_buffer.len), &size, @ptrCast([*c]gl.GLchar, &error_buffer[0]));
-    message = error_buffer[0..@intCast(usize, size)];
+    gl.getProgramInfoLog(handle, @as(c_int, @intCast(error_buffer.len)), &size, @as([*c]gl.GLchar, @ptrCast(&error_buffer[0])));
+    message = error_buffer[0..@as(usize, @intCast(size))];
 }

@@ -27,7 +27,7 @@ pub const Texture = struct {
         // gl.glPixelStorei(gl.UNPACK_ROW_LENGTH, width);
         gl.pixelStorei(gl.UNPACK_SKIP_PIXELS, 0);
         gl.pixelStorei(gl.UNPACK_SKIP_ROWS, 0);
-        gl.texImage2D(gl.TEXTURE_2D, 0, texture.pixelFormat, width, height, 0, @intCast(c_uint, texture.pixelFormat), gl.UNSIGNED_BYTE, data);
+        gl.texImage2D(gl.TEXTURE_2D, 0, texture.pixelFormat, width, height, 0, @as(c_uint, @intCast(texture.pixelFormat)), gl.UNSIGNED_BYTE, data);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         return texture;
@@ -53,7 +53,7 @@ pub const Texture = struct {
         gl.pixelStorei(gl.UNPACK_SKIP_PIXELS, x);
         gl.pixelStorei(gl.UNPACK_SKIP_ROWS, y);
 
-        gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, w, h, @intCast(c_uint, self.pixelFormat), gl.UNSIGNED_BYTE, data);
+        gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, w, h, @as(c_uint, @intCast(self.pixelFormat)), gl.UNSIGNED_BYTE, data);
 
         gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
         gl.pixelStorei(gl.UNPACK_ROW_LENGTH, 0);

@@ -28,7 +28,7 @@ pub const MeshResource = struct {
 
     pub fn render(self: *Self, camera: *zigla.Camera, light: zigla.Vec4, world: zigla.Mat4) void {
         if (self.shader == null) {
-            var shader = glo.Shader.load(self.allocator, vs, fs) catch {
+            const shader = glo.Shader.load(self.allocator, vs, fs) catch {
                 std.debug.print("{s}\n", .{glo.getErrorMessage()});
                 @panic("load");
             };
@@ -46,10 +46,10 @@ pub const MeshResource = struct {
             if (self.builder.getIndices()) |indices| {
                 var ibo = glo.Ibo.init();
                 ibo.setIndices(u32, indices, false);
-                self.draw_count = @intCast(u32, indices.len);
+                self.draw_count = @as(u32, @intCast(indices.len));
                 self.vao = glo.Vao.init(vbo, shader.createVertexLayout(self.allocator), ibo);
             } else {
-                self.draw_count = @intCast(u32, vertices.len);
+                self.draw_count = @as(u32, @intCast(vertices.len));
                 self.vao = glo.Vao.init(vbo, shader.createVertexLayout(self.allocator), null);
             }
         }
@@ -163,7 +163,7 @@ pub const Model = struct {
             .accessors = parsed.accessors,
         };
 
-        for (parsed.meshes) |*gltf_mesh, i| {
+        for (parsed.meshes, 0..) |*gltf_mesh, i| {
             std.debug.print("mesh#{}: {} prims\n", .{ i, gltf_mesh.primitives.len });
 
             var vertex_count: usize = 0;
@@ -181,7 +181,6 @@ pub const Model = struct {
             var index_offset: usize = 0;
             for (gltf_mesh.primitives) |*prim| {
                 // join submeshes
-                _ = prim;
                 std.debug.print("POSITIONS={any}, indices={}\n", .{ prim.indices, prim.attributes.POSITION });
 
                 const indices_accessor = parsed.accessors[prim.indices.?];
@@ -189,7 +188,7 @@ pub const Model = struct {
 
                 const position = reader.getTypedFromAccessor(zigla.Vec3, prim.attributes.POSITION);
                 const normal = reader.getTypedFromAccessor(zigla.Vec3, prim.attributes.NORMAL.?);
-                for (position) |v, j| {
+                for (position, 0..) |v, j| {
                     var dst = &builder.vertices.items[j + vertex_offset];
                     dst.position = v;
                     dst.normal = normal[j];
@@ -203,36 +202,36 @@ pub const Model = struct {
             self.resources.append(MeshResource.init(allocator, builder)) catch unreachable;
         }
 
-        for (parsed.nodes) |*gltf_node, i| {
+        for (parsed.nodes, 0..) |*gltf_node, i| {
             var node = Node.init(allocator, i, gltf_node.name);
             std.debug.print("[{}] {s}\n", .{ i, node.name });
             if (gltf_node.matrix) |m| {
-                node.transform = .{ .mat4 = @bitCast(zigla.Mat4, m) };
+                node.transform = .{ .mat4 = @bitCast(m) };
             } else {
                 node.transform = .{ .trs = .{
-                    .translation = @bitCast(zigla.Vec3, gltf_node.translation),
-                    .rotation = .{ .quaternion = @bitCast(zigla.Quaternion, gltf_node.rotation) },
-                    .scale = .{ .vec3 = @bitCast(zigla.Vec3, gltf_node.scale) },
+                    .translation = @as(zigla.Vec3, @bitCast(gltf_node.translation)),
+                    .rotation = .{ .quaternion = @as(zigla.Quaternion, @bitCast(gltf_node.rotation)) },
+                    .scale = .{ .vec3 = @as(zigla.Vec3, @bitCast(gltf_node.scale)) },
                 } };
             }
             if (gltf_node.mesh) |mesh_index| {
-                node.mesh = &self.resources.items[@intCast(usize, mesh_index)];
+                node.mesh = &self.resources.items[@as(usize, @intCast(mesh_index))];
             }
             self.nodes.append(node) catch unreachable;
         }
 
         // build tree
-        for (parsed.nodes) |*gltf_node, i| {
+        for (parsed.nodes, 0..) |*gltf_node, i| {
             var node = &self.nodes.items[i];
             for (gltf_node.children) |child_index| {
-                var child = &self.nodes.items[@intCast(usize, child_index)];
+                const child = &self.nodes.items[@as(usize, @intCast(child_index))];
                 node.addChild(child);
             }
         }
 
         const gltf_scene = parsed.scenes[0];
         for (gltf_scene.nodes) |root_index| {
-            self.roots.append(&self.nodes.items[@intCast(usize, root_index)]) catch unreachable;
+            self.roots.append(&self.nodes.items[@as(usize, @intCast(root_index))]) catch unreachable;
         }
 
         return self;

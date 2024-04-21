@@ -22,7 +22,7 @@ pub const Projection = struct {
     }
 
     pub fn getAspectRatio(self: Self) f32 {
-        return @intToFloat(f32, self.width) / @intToFloat(f32, self.height);
+        return @as(f32, @floatFromInt(self.width)) / @as(f32, @floatFromInt(self.height));
     }
 
     pub fn getMatrix(self: *const Self) transformation.Mat4 {
@@ -67,10 +67,10 @@ pub const Camera = struct {
     pub fn getRay(self: Self, x: i32, y: i32) ray_intersection.Ray {
         const inv = self.view.rotation.toMat3().transposed();
         return ray_intersection.Ray.createFromScreen(
-            @intToFloat(f32, x),
-            @intToFloat(f32, y),
-            @intToFloat(f32, self.projection.width),
-            @intToFloat(f32, self.projection.height),
+            @as(f32, @floatFromInt(x)),
+            @as(f32, @floatFromInt(y)),
+            @as(f32, @floatFromInt(self.projection.width)),
+            @as(f32, @floatFromInt(self.projection.height)),
             inv.apply(self.view.shift.inversed()),
             inv,
             self.projection.fovy,

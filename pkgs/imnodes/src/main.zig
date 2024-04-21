@@ -82,16 +82,40 @@ pub const ImNodesMiniMapLocation = enum(c_int) {
     _TopRight = 3,
 };
 
+pub const EmulateThreeButtonMouse = extern struct {
+    Modifier: ?*bool,
+};
+
+test "sizeof EmulateThreeButtonMouse" {
+    // Optional pointers are the same size as normal pointers, because pointer
+    // value 0 is used as the null value.
+    try expect(@sizeOf(EmulateThreeButtonMouse) == 8);
+}
+
+pub const LinkDetachWithModifierClick = extern struct {
+    Modifier: ?*bool,
+};
+
+test "sizeof LinkDetachWithModifierClick" {
+    // Optional pointers are the same size as normal pointers, because pointer
+    // value 0 is used as the null value.
+    try expect(@sizeOf(LinkDetachWithModifierClick) == 8);
+}
+
+pub const MultipleSelectModifier = extern struct {
+    Modifier: ?*bool,
+};
+
+test "sizeof MultipleSelectModifier" {
+    // Optional pointers are the same size as normal pointers, because pointer
+    // value 0 is used as the null value.
+    try expect(@sizeOf(MultipleSelectModifier) == 8);
+}
+
 pub const ImNodesIO = extern struct {
-    EmulateThreeButtonMouse: extern struct {
-        Modifier: *const bool,
-    },
-    LinkDetachWithModifierClick: extern struct {
-        Modifier: *const bool,
-    },
-    MultipleSelectModifier: extern struct {
-        Modifier: *const bool,
-    },
+    EmulateThreeButtonMouse: EmulateThreeButtonMouse,
+    LinkDetachWithModifierClick: LinkDetachWithModifierClick,
+    MultipleSelectModifier: MultipleSelectModifier,
     AltMouseButton: c_int,
     AutoPanningSpeed: f32,
 };
@@ -126,7 +150,7 @@ pub const ImGuiContext = opaque {};
 pub const ImVec2 = opaque {};
 pub const ImNodesContext = opaque {};
 pub const ImNodesEditorContext = opaque {};
-const ImNodesMiniMapNodeHoveringCallback = fn (_2109176811: c_int, _4235066064: ?*anyopaque) callconv(.C) void;
+const ImNodesMiniMapNodeHoveringCallback = fn (_2488106832: c_int, _855122339: ?*anyopaque) callconv(.C) void;
 extern "c" fn _ZN7ImNodes15SetImGuiContextEP12ImGuiContext(ctx: ?*ImGuiContext) void;
 pub fn SetImGuiContext(ctx: ?*ImGuiContext) void {
     return _ZN7ImNodes15SetImGuiContextEP12ImGuiContext(ctx);
@@ -151,13 +175,13 @@ extern "c" fn _ZN7ImNodes19EditorContextCreateEv() ?*ImNodesEditorContext;
 pub fn EditorContextCreate() ?*ImNodesEditorContext {
     return _ZN7ImNodes19EditorContextCreateEv();
 }
-extern "c" fn _ZN7ImNodes17EditorContextFreeEP20ImNodesEditorContext(_2846435981: ?*ImNodesEditorContext) void;
-pub fn EditorContextFree(_2846435981: ?*ImNodesEditorContext) void {
-    return _ZN7ImNodes17EditorContextFreeEP20ImNodesEditorContext(_2846435981);
+extern "c" fn _ZN7ImNodes17EditorContextFreeEP20ImNodesEditorContext(_3786942939: ?*ImNodesEditorContext) void;
+pub fn EditorContextFree(_3786942939: ?*ImNodesEditorContext) void {
+    return _ZN7ImNodes17EditorContextFreeEP20ImNodesEditorContext(_3786942939);
 }
-extern "c" fn _ZN7ImNodes16EditorContextSetEP20ImNodesEditorContext(_3120688268: ?*ImNodesEditorContext) void;
-pub fn EditorContextSet(_3120688268: ?*ImNodesEditorContext) void {
-    return _ZN7ImNodes16EditorContextSetEP20ImNodesEditorContext(_3120688268);
+extern "c" fn _ZN7ImNodes16EditorContextSetEP20ImNodesEditorContext(_4250536892: ?*ImNodesEditorContext) void;
+pub fn EditorContextSet(_4250536892: ?*ImNodesEditorContext) void {
+    return _ZN7ImNodes16EditorContextSetEP20ImNodesEditorContext(_4250536892);
 }
 extern "c" fn _ZN7ImNodes23EditorContextGetPanningEv() ImVec2;
 pub fn EditorContextGetPanning() ImVec2 {

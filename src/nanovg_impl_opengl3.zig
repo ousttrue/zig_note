@@ -75,7 +75,7 @@ const Pipeline = struct {
     frag: glo.UniformBlockIndex,
 
     fn init(allocator: std.mem.Allocator) Self {
-        var shader = glo.Shader.load(allocator, VS, FS) catch {
+        const shader = glo.Shader.load(allocator, VS, FS) catch {
             @panic(glo.getErrorMessage());
         };
 
@@ -91,7 +91,7 @@ const Pipeline = struct {
 
         var _align: gl.GLint = undefined;
         gl.getIntegerv(gl.UNIFORM_BUFFER_OFFSET_ALIGNMENT, &_align);
-        self.fragSize = @sizeOf(nanovg.GLNVGfragUniforms) + @intCast(usize, _align) - @intCast(usize, @mod(@sizeOf(nanovg.GLNVGfragUniforms), _align));
+        self.fragSize = @sizeOf(nanovg.GLNVGfragUniforms) + @as(usize, @intCast(_align)) - @as(usize, @intCast(@mod(@sizeOf(nanovg.GLNVGfragUniforms), _align)));
 
         checkGlError();
 
@@ -147,7 +147,7 @@ const Renderer = struct {
         self.next_id += 1;
 
         const resource = glo.Texture.init(w, h, gl_pixel_type(image_type), data);
-        const info = nanovg.NVGtextureInfo{ ._id = id, ._handle = 0, ._width = w, ._height = h, ._type = @enumToInt(image_type), ._flags = flags };
+        const info = nanovg.NVGtextureInfo{ ._id = id, ._handle = 0, ._width = w, ._height = h, ._type = @intFromEnum(image_type), ._flags = flags };
         self.textures.put(id, Texture{ .info = info, .resource = resource }) catch @panic("put");
         return id;
     }
@@ -214,7 +214,7 @@ const Renderer = struct {
     }
 
     fn fill(self: *Self, call: *const nanovg.GLNVGcall, pPath: [*]const nanovg.GLNVGpath) void {
-        const paths = pPath[@intCast(usize, call.pathOffset)..@intCast(usize, call.pathOffset + call.pathCount)];
+        const paths = pPath[@as(usize, @intCast(call.pathOffset))..@as(usize, @intCast(call.pathOffset + call.pathCount))];
 
         // Draw shapes
         gl.enable(gl.STENCIL_TEST);
@@ -223,7 +223,7 @@ const Renderer = struct {
         gl.colorMask(gl.FALSE, gl.FALSE, gl.FALSE, gl.FALSE);
 
         // set bindpoint for solid loc
-        self.setUniforms(@intCast(usize, call.uniformOffset));
+        self.setUniforms(@as(usize, @intCast(call.uniformOffset)));
         self.bindTexture(0);
 
         gl.stencilOpSeparate(gl.FRONT, gl.KEEP, gl.KEEP, gl.INCR_WRAP);
@@ -237,7 +237,7 @@ const Renderer = struct {
         // Draw anti-aliased pixels
         gl.colorMask(gl.TRUE, gl.TRUE, gl.TRUE, gl.TRUE);
 
-        self.setUniforms(@intCast(usize, call.uniformOffset) + self.pipeline.?.fragSize);
+        self.setUniforms(@as(usize, @intCast(call.uniformOffset)) + self.pipeline.?.fragSize);
         self.bindTexture(call.image);
 
         // Draw fill
@@ -248,9 +248,9 @@ const Renderer = struct {
     }
 
     fn convexFill(self: *Self, call: *nanovg.GLNVGcall, pPaths: [*c]const nanovg.GLNVGpath) void {
-        const paths = pPaths[@intCast(usize, call.pathOffset)..@intCast(usize, call.pathOffset + call.pathCount)];
+        const paths = pPaths[@as(usize, @intCast(call.pathOffset))..@as(usize, @intCast(call.pathOffset + call.pathCount))];
 
-        self.setUniforms(@intCast(usize, call.uniformOffset));
+        self.setUniforms(@as(usize, @intCast(call.uniformOffset)));
         self.bindTexture(call.image);
 
         for (paths) |path| {
@@ -263,8 +263,8 @@ const Renderer = struct {
     }
 
     fn stroke(self: *Self, call: *nanovg.GLNVGcall, pPaths: [*c]const nanovg.GLNVGpath) void {
-        const paths = pPaths[@intCast(usize, call.pathOffset)..@intCast(usize, call.pathOffset + call.pathCount)];
-        self.setUniforms(@intCast(usize, call.uniformOffset));
+        const paths = pPaths[@as(usize, @intCast(call.pathOffset))..@as(usize, @intCast(call.pathOffset + call.pathCount))];
+        self.setUniforms(@as(usize, @intCast(call.uniformOffset)));
         self.bindTexture(call.image);
         // Draw Strokes
         for (paths) |path| {
@@ -273,7 +273,7 @@ const Renderer = struct {
     }
 
     fn triangles(self: *Self, call: *nanovg.GLNVGcall) void {
-        self.setUniforms(@intCast(usize, call.uniformOffset));
+        self.setUniforms(@as(usize, @intCast(call.uniformOffset)));
         self.bindTexture(call.image);
         gl.drawArrays(gl.TRIANGLES, call.triangleOffset, call.triangleCount);
     }
@@ -305,8 +305,7 @@ const Renderer = struct {
     }
 
     fn render(self: *Self, data: *const nanovg.NVGdrawData) void {
-        if(data.drawCount==0)
-        {
+        if (data.drawCount == 0) {
             return;
         }
 
@@ -328,11 +327,11 @@ const Renderer = struct {
         gl.enableVertexAttribArray(0);
         gl.enableVertexAttribArray(1);
         gl.vertexAttribPointer(0, 2, gl.FLOAT, gl.FALSE, @sizeOf(nanovg.NVGvertex), null);
-        gl.vertexAttribPointer(1, 2, gl.FLOAT, gl.FALSE, @sizeOf(nanovg.NVGvertex), @intToPtr(*anyopaque, 0 + 2 * @sizeOf(f32)));
+        gl.vertexAttribPointer(1, 2, gl.FLOAT, gl.FALSE, @sizeOf(nanovg.NVGvertex), @as(*anyopaque, @ptrFromInt(0 + 2 * @sizeOf(f32))));
 
         gl.bindBuffer(gl.UNIFORM_BUFFER, self.fragBuf);
 
-        const calls = @ptrCast([*]nanovg.GLNVGcall, data.drawData.?)[0..data.drawCount];
+        const calls = @as([*]nanovg.GLNVGcall, @ptrCast(data.drawData.?))[0..data.drawCount];
         const p_path = data.pPath;
 
         // Set view and texture just once per frame.
@@ -344,8 +343,8 @@ const Renderer = struct {
         for (calls) |*call| {
             const blendFunc = GLNVGblend.blendCompositeOperation(call.blendFunc);
             self.blendFuncSeparate(blendFunc);
-            switch (@intToEnum(nanovg.GLNVGcallType, call.type)) {
-                .GLNVG_FILL => self.fill(call, @ptrCast([*]const nanovg.GLNVGpath, p_path)),
+            switch (@as(nanovg.GLNVGcallType, @enumFromInt(call.type))) {
+                .GLNVG_FILL => self.fill(call, @as([*]const nanovg.GLNVGpath, @ptrCast(p_path))),
                 .GLNVG_CONVEXFILL => self.convexFill(call, p_path),
                 .GLNVG_STROKE => self.stroke(call, p_path),
                 .GLNVG_TRIANGLES => self.triangles(call),
@@ -359,7 +358,7 @@ var g_renderer: ?Renderer = null;
 
 // renderCreateTexture: ?*fn (params: ?*NVGparams, _type: c_int, w: c_int, h: c_int, imageFlags: c_int, data: ?*const u8) c_int,
 fn createTexture(_: ?*nanovg.NVGparams, texture_type: c_int, w: c_int, h: c_int, imageFlags: c_int, data: ?*const u8) c_int {
-    return g_renderer.?.createTexture(@intToEnum(nanovg.NVGtexture, texture_type), w, h, imageFlags, data);
+    return g_renderer.?.createTexture(@as(nanovg.NVGtexture, @enumFromInt(texture_type)), w, h, imageFlags, data);
 }
 
 // renderDeleteTexture: ?*fn (params: ?*NVGparams, image: c_int) c_int,
@@ -384,10 +383,10 @@ fn getTexture(_: ?*nanovg.NVGparams, image: c_int) ?*nanovg.NVGtextureInfo {
 pub fn init(allocator: std.mem.Allocator, vg: *nanovg.NVGcontext) void {
     g_renderer = Renderer.init(allocator);
     var params = nanovg.nvgParams(vg);
-    params.?.renderCreateTexture = @ptrCast(?*const fn (params: ?*nanovg.NVGparams, _type: c_int, w: c_int, h: c_int, imageFlags: c_int, data: ?*const u8) c_int, createTexture);
-    params.?.renderDeleteTexture = @ptrCast(?*const fn (params: ?*nanovg.NVGparams, image: c_int) c_int, deleteTexture);
-    params.?.renderUpdateTexture = @ptrCast(?*const fn (params: ?*nanovg.NVGparams, image: c_int, x: c_int, y: c_int, w: c_int, h: c_int, data: ?*const u8) c_int, updateTexture);
-    params.?.renderGetTexture = @ptrCast(?*const fn (params: ?*nanovg.NVGparams, image: c_int) ?*nanovg.NVGtextureInfo, getTexture);
+    params.?.renderCreateTexture = @as(?*const fn (params: ?*nanovg.NVGparams, _type: c_int, w: c_int, h: c_int, imageFlags: c_int, data: ?*const u8) c_int, @ptrCast(createTexture));
+    params.?.renderDeleteTexture = @as(?*const fn (params: ?*nanovg.NVGparams, image: c_int) c_int, @ptrCast(deleteTexture));
+    params.?.renderUpdateTexture = @as(?*const fn (params: ?*nanovg.NVGparams, image: c_int, x: c_int, y: c_int, w: c_int, h: c_int, data: ?*const u8) c_int, @ptrCast(updateTexture));
+    params.?.renderGetTexture = @as(?*const fn (params: ?*nanovg.NVGparams, image: c_int) ?*nanovg.NVGtextureInfo, @ptrCast(getTexture));
 }
 
 pub fn deinit() void {

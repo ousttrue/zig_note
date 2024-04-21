@@ -96,7 +96,7 @@ pub const Camera = struct {
         zfar: ?f32,
         znear: ?f32,
     },
-    @"type": ?[]const u8,
+    type: ?[]const u8,
 };
 
 pub const Primitive = struct {
@@ -120,10 +120,10 @@ pub const Accessor = struct {
     count: usize,
     max: ?[]f32 = null,
     min: ?[]f32 = null,
-    @"type": []const u8,
+    type: []const u8,
 
     pub fn itemSize(self: Self) usize {
-        const t = self.@"type";
+        const t = self.type;
         const component_count: usize =
             if (std.mem.eql(u8, t, "SCALAR")) @as(usize, 1) //
         else if (std.mem.eql(u8, t, "VEC2")) @as(usize, 2) //
@@ -219,7 +219,7 @@ pub const GtlfBufferReader = struct {
     pub fn getTypedFromAccessor(self: Self, comptime T: type, accessor_index: usize) []const T {
         const bytes = self.getBytesFromAccessor(accessor_index);
         const count = self.accessors[accessor_index].count;
-        return @ptrCast([*]const T, @alignCast(@alignOf(T), &bytes[0]))[0..count];
+        return @as([*]const T, @ptrCast(&bytes[0]))[0..count];
     }
 
     pub fn getUIntIndicesFromAccessor(self: Self, accessor_index: usize, out: []u32, vertex_offset: usize) void {
@@ -228,20 +228,20 @@ pub const GtlfBufferReader = struct {
         const index_count = accessor.count;
         switch (accessor.componentType) {
             5120, 5121 => {
-                for (indices_bytes[0..index_count]) |index, j| {
-                    out[j] = index + @intCast(u8, vertex_offset);
+                for (indices_bytes[0..index_count], 0..) |index, j| {
+                    out[j] = index + @as(u8, @intCast(vertex_offset));
                 }
             },
             5122, 5123 => {
-                const indices = @ptrCast([*]const u16, @alignCast(@alignOf(u16), &indices_bytes[0]))[0..index_count];
-                for (indices) |index, j| {
-                    out[j] = index + @intCast(u16, vertex_offset);
+                const indices = @as([*]const u16, @ptrCast(@alignCast(&indices_bytes[0])))[0..index_count];
+                for (indices, 0..) |index, j| {
+                    out[j] = index + @as(u16, @intCast(vertex_offset));
                 }
             },
             5125 => {
-                const indices = @ptrCast([*]const u32, @alignCast(@alignOf(u32), &indices_bytes[0]))[0..index_count];
-                for (indices) |index, j| {
-                    out[j] = index + @intCast(u32, vertex_offset);
+                const indices = @as([*]const u32, @ptrCast(@alignCast(&indices_bytes[0])))[0..index_count];
+                for (indices, 0..) |index, j| {
+                    out[j] = index + @as(u32, @intCast(vertex_offset));
                 }
             },
             else => unreachable,

@@ -7,7 +7,7 @@ pub fn readsource(allocator: std.mem.Allocator, arg: []const u8) ![:0]const u8 {
     defer file.close();
     const file_size = try file.getEndPos();
 
-    var buffer = try allocator.allocSentinel(u8, file_size, 0);
+    const buffer = try allocator.allocSentinel(u8, file_size, 0);
     errdefer allocator.free(buffer);
 
     const bytes_read = try file.read(buffer);
@@ -41,7 +41,7 @@ pub const Triangle = struct {
     allocator: std.mem.Allocator,
 
     pub fn new(allocator: std.mem.Allocator) *Self {
-        var self = allocator.create(Self) catch unreachable;
+        const self = allocator.create(Self) catch unreachable;
         self.* = Self{ .allocator = allocator };
         return self;
     }
@@ -105,7 +105,7 @@ pub const Builder = struct {
     indices: std.ArrayList(u32),
 
     pub fn new(allocator: std.mem.Allocator) *Self {
-        var self = allocator.create(Self) catch unreachable;
+        const self = allocator.create(Self) catch unreachable;
         self.* = Self{
             .allocator = allocator,
             .vertices = std.ArrayList(Vertex).init(allocator),
