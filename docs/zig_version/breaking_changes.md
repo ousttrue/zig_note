@@ -2,6 +2,18 @@
 
 ## 0.12.0
 
+### target 回り
+
+`root_module.resolved_target` !
+
+```zig
+-    const target = step.target;
+-    if (target.isWindows()) {
+
++    const target = step.root_module.resolved_target.?;
++    if (target.result.os.tag == .windows) {
+```
+
 ### addPackage => addModule => addImport
 
 - https://github.com/ziglang/zig/issues/14278

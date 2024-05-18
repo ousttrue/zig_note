@@ -26,6 +26,8 @@ const sidebars: SidebarsConfig = {
       label: 'build',
       items: [
         'build/index',
+        'build/module',
+        'build/c_source',
         'build/zon',
         'build/gyro',
         'build/zigmod',
